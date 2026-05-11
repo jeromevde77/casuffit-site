@@ -1,0 +1,57 @@
+name: Deploy to OVH (FTP)
+
+# Déclenchement : à chaque push sur main, ou manuellement
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  ftp-deploy:
+    name: Deploy via FTP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Déploiement FTP
+        uses: SamKirkland/[email protected]
+        with:
+          server:   ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port:     ${{ secrets.FTP_PORT || 21 }}
+
+          # Dossier local à uploader (racine du repo)
+          local-dir: ./
+
+          # Dossier distant sur OVH (à adapter — souvent / ou /www/)
+          server-dir: ${{ secrets.FTP_SERVER_DIR || '/' }}
+
+          # Ce qu'on n'envoie PAS sur le serveur
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/node_modules/**
+            **/.DS_Store
+            **/Thumbs.db
+            **/README.md
+            **/INSTALL.md
+            **/LIRE_MOI_UPLOAD.txt
+            **/migrate_*.sql
+            **/install.sql
+            **/inject_content.sql
+            **/cloudflare_*.js
+            **/config.php
+
+          # Méthode plus rapide : ne renvoie que les fichiers modifiés
+          state-name: .ftp-deploy-sync-state.json
+
+          # Protocole : ftp ou ftps (recommandé)
+          protocol: ftps
+          security: loose
+
+          # Désactiver le mode strict pour les hébergements mutualisés OVH
+          log-level: standard
