@@ -169,9 +169,9 @@ function selectAltRunway($wdir, $comps, $comps_g) {
     $tw_eff = function($rwy) use ($comps, $comps_g) {
         return max($comps[$rwy]['tw'] ?? 0, $comps_g ? ($comps_g[$rwy]['tw'] ?? 0) : 0);
     };
-    // Calcul crosswind effectif pour une piste
-    $xw_eff = function($rwy) use ($comps, $comps_g) {
-        return max($comps[$rwy]['xw'] ?? 0, $comps_g ? ($comps_g[$rwy]['xw'] ?? 0) : 0);
+    // Calcul crosswind effectif — vent moyen UNIQUEMENT (pas de rafales sur xw selon AIP)
+    $xw_eff = function($rwy) use ($comps) {
+        return $comps[$rwy]['xw'] ?? 0;
     };
 
     if ($d >= 335 || $d < 40) {
@@ -239,9 +239,8 @@ function analyseConfig($wdir, $wspd, $wgst, $visib_m, $ceiling_ft, $variable, $R
     // Vent moyen latéral
     if ($xw_25_moy > $xw_moy_seuil)
         $exceptions[] = 'Vent latéral moyen '.$xw_25_moy.' kt > '.$xw_moy_seuil.' kt';
-    // Rafales latérales
-    if ($xw_25_gust !== null && $xw_25_gust > $xw_gust_seuil)
-        $exceptions[] = 'Rafale latérale '.$xw_25_gust.' kt > '.$xw_gust_seuil.' kt (max toléré)';
+    // Rafales latérales : NON appliquées (AIP — rafales ne comptent que pour le tailwind)
+    // $xw_25_gust ignoré pour le critère PRS
     if ($visib_m !== null && $visib_m < 1900)
         $exceptions[] = 'Visibilité '.$visib_m.' m < 1 900 m';
     if ($ceiling_ft !== null && $ceiling_ft < 500)
