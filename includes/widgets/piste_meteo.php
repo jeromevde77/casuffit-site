@@ -820,11 +820,17 @@ function renderTaf(forecast, rawTaf){
         + impossible.map(function(l){ return '<span class="pmw-taf-cfgtag pmw-cfg-ko">'+l+'</span>'; }).join('')
         + '</div>';
     }
-    // Possibles — le meilleur en vert, les autres en orange
-    if(possible.length) {
+    // Possibles — si PRS actif, seules les configs PRS sont affichées
+    var possibleAffiche = possible;
+    if (f.prs_active) {
+      possibleAffiche = possible.filter(function(p) {
+        return p.label === '25R/25L' || p.label === '19/25R';
+      });
+    }
+    if(possibleAffiche.length) {
       barHtml += '<div class="pmw-taf-cfggroup">'
         + '<span class="pmw-taf-cfglbl pmw-cfg-lbl-ok">✓ Possible</span>'
-        + possible.map(function(p,i){
+        + possibleAffiche.map(function(p,i){
             var cls = i===0 ? 'pmw-cfg-best' : 'pmw-cfg-ok';
             return '<span class="pmw-taf-cfgtag '+cls+'" title="face '+p.hw.toFixed(1)+'kt">'+p.label+'</span>';
           }).join('')
@@ -882,6 +888,7 @@ function render3Col(d) {
     var rwys = document.getElementById(rwysId);
     if(rwys){
       var comps = (d && d.components) ? d.components : {};
+      var prs_active_local = prsData.prs_active;
 
       // Les 6 configurations BATC
       var CONFIGS = [
