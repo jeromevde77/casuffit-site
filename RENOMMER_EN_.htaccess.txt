@@ -1,0 +1,54 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  .htaccess — ça suffit ! ASBL  (UN SEUL fichier à la racine)
+# ═══════════════════════════════════════════════════════════════════════
+
+# ── Interdire le listing de TOUS les dossiers ─────────────────────────
+Options -Indexes
+
+# ── Encodage ──────────────────────────────────────────────────────────
+AddDefaultCharset UTF-8
+
+# ── Fichiers sensibles — accès web interdit ───────────────────────────
+<FilesMatch "^(config\.php|install\.sql|README\.md|\.env)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ── Dossiers sensibles — accès direct interdit ────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Bloquer accès direct aux dossiers système
+    RewriteRule ^cron/(.*)$      - [F,L]
+    RewriteRule ^lib/(.*)$       - [F,L]
+    RewriteRule ^templates/(.*)$ - [F,L]
+    RewriteRule ^includes/(.*)$  - [F,L]
+    RewriteRule ^logs/(.*)$      - [F,L]
+    RewriteRule ^uploads/(.*)$   - [F,L]
+
+    # Médias : autoriser uniquement les images
+    RewriteRule ^medias/.*\.(php|sql|htaccess|env|sh)$ - [F,L]
+</IfModule>
+
+# ── En-têtes de sécurité ─────────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "same-origin"
+</IfModule>
+
+# ── Cache ressources statiques ────────────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg     "access plus 1 month"
+    ExpiresByType image/png      "access plus 1 month"
+    ExpiresByType image/webp     "access plus 1 month"
+    ExpiresByType image/svg+xml  "access plus 1 week"
+    ExpiresByType text/css       "access plus 1 week"
+    ExpiresByType text/javascript "access plus 1 week"
+</IfModule>
+
+# ── Pages d'erreur ────────────────────────────────────────────────────
+ErrorDocument 403 /index.php
+ErrorDocument 404 /index.php

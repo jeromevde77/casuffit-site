@@ -1,0 +1,24 @@
+{
+  "name": "ça suffit ! Admin",
+  "short_name": "CSA Admin",
+  "description": "Administration du site ça suffit ! ASBL",
+  "start_url": "/admin/dashboard.php",
+  "scope": "/admin/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e3d6b",
+  "theme_color": "#0e3d6b",
+  "icons": [
+    {
+      "src": "/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ]
+}

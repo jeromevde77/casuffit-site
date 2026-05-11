@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fond bleu du site -->
+  <rect width="512" height="512" rx="90" fill="#1a3d6b"/>
+  <!-- Cercle fond bleu foncé -->
+  <circle cx="256" cy="230" r="195" fill="#0e2a4a"/>
+  <circle cx="256" cy="230" r="195" fill="none" stroke="white" stroke-width="6"/>
+  <circle cx="256" cy="230" r="183" fill="none" stroke="white" stroke-width="1.5"/>
+  <!-- Clip -->
+  <clipPath id="cl"><circle cx="256" cy="230" r="183"/></clipPath>
+  <g clip-path="url(#cl)">
+    <!-- Skyline blanche bas -->
+    <rect x="80" y="360" width="352" height="80" fill="white"/>
+    <rect x="95"  y="326" width="18" height="36" fill="white"/>
+    <rect x="118" y="310" width="14" height="52" fill="white"/>
+    <rect x="136" y="320" width="22" height="42" fill="white"/>
+    <rect x="162" y="313" width="12" height="49" fill="white"/>
+    <rect x="178" y="328" width="20" height="34" fill="white"/>
+    <rect x="300" y="324" width="20" height="38" fill="white"/>
+    <rect x="324" y="310" width="14" height="52" fill="white"/>
+    <rect x="342" y="319" width="22" height="43" fill="white"/>
+    <rect x="368" y="308" width="14" height="54" fill="white"/>
+    <rect x="386" y="322" width="18" height="40" fill="white"/>
+    <!-- Avion blanc centré -->
+    <g transform="translate(256,215)" fill="white">
+      <ellipse cx="0" cy="0" rx="9" ry="62"/>
+      <path d="M-9,-6 L-80,6 L-74,18 L-9,14 Z"/>
+      <path d="M 9,-6 L 80,6 L 74,18 L  9,14 Z"/>
+      <path d="M-9,36 L-40,52 L-37,62 L-9,48 Z"/>
+      <path d="M 9,36 L 40,52 L 37,62 L  9,48 Z"/>
+      <ellipse cx="0" cy="-58" rx="5" ry="9"/>
+      <rect x="-3" y="-38" width="6" height="4" rx="1" fill="#0e2a4a"/>
+      <rect x="-3" y="-27" width="6" height="4" rx="1" fill="#0e2a4a"/>
+      <rect x="-3" y="-15" width="6" height="4" rx="1" fill="#0e2a4a"/>
+      <rect x="-3" y="-3"  width="6" height="4" rx="1" fill="#0e2a4a"/>
+    </g>
+    <!-- "ça suffit !" orange centré en haut -->
+    <text x="256" y="138" text-anchor="middle"
+          fill="#F5A623" font-size="52" font-weight="900"
+          font-family="Arial Black, Arial, sans-serif" font-style="italic">
+      ça suffit !
+    </text>
+  </g>
+  <!-- WIND en bas -->
+  <text x="256" y="488" text-anchor="middle"
+        fill="rgba(255,255,255,0.7)" font-size="28" font-weight="700"
+        font-family="Arial, sans-serif" letter-spacing="10">
+    WIND
+  </text>
+</svg>

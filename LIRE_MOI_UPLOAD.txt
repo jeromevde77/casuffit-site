@@ -1,0 +1,52 @@
+═══════════════════════════════════════════════════════════
+  ça suffit ! ASBL — CMS PHP v2
+  Consolidation : 2026-05-07
+═══════════════════════════════════════════════════════════
+
+STRUCTURE À UPLOADER SUR OVH (dossier new/)
+─────────────────────────────────────────────
+  index.php              → racine
+  favicon.ico            → racine
+  favicon-32.png         → racine
+  favicon-192.png        → racine
+  .htaccess              → racine (depuis RENOMMER_EN_.htaccess.txt)
+  config.php             → racine (⚠ contient mots de passe)
+  admin/                 → dossier complet
+  api/                   → dossier complet
+  cron/                  → dossier complet
+  includes/              → dossier complet
+  lib/                   → dossier complet
+  medias/                → dossier complet (logos)
+  membre/                → dossier complet
+  newsletter/            → dossier complet
+  templates/             → dossier complet
+
+SQL À EXÉCUTER (seulement ce qui manque)
+─────────────────────────────────────────
+  migrate.sql            → dans phpMyAdmin, ligne par ligne
+                           Ignorer les erreurs "Duplicate column"
+
+RÉSEAUX SOCIAUX (phpMyAdmin)
+────────────────────────────
+  INSERT IGNORE INTO site_config (cle, valeur) 
+    VALUES ('facebook_url', 'https://www.facebook.com/piste01casuffit');
+  INSERT IGNORE INTO site_config (cle, valeur) 
+    VALUES ('instagram_url', '');
+  INSERT IGNORE INTO site_config (cle, valeur) 
+    VALUES ('whatsapp_url', '');
+
+FONCTIONNALITÉS
+───────────────
+  ✅ CMS pages avec éditeur + aperçu temps réel
+  ✅ Actualités avec éditeur palette de styles
+  ✅ Widgets (donation_card, news, newsletter, progression, facebook)
+  ✅ Position widget gauche/droite par page
+  ✅ Newsletter (composition, envoi, historique)
+  ✅ Abonnés + import CSV Wix
+  ✅ Membres + dons
+  ✅ Import CODA bancaire
+  ✅ Dashboard admin mobile-first
+  ✅ Favicon depuis logo
+  ✅ Boutons réseaux sociaux (FB/Instagram/WhatsApp) dans le footer
+  ✅ Page Facebook avec iframe timeline
+  ✅ Admin responsive iPhone

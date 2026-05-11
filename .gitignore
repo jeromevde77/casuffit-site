@@ -1,0 +1,32 @@
+# ─── Fichiers sensibles — NE JAMAIS committer ───────────────────────────
+config.php
+*.env
+.env
+
+# ─── Fichiers de diagnostic temporaires ─────────────────────────────────
+DIAGNOSTIC.php
+test_mail.php
+test_membre.php
+inject_logo.php
+inject_content_*.php
+
+# ─── Logs ────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ─── Médias uploadés (trop lourds pour Git) ─────────────────────────────
+medias/*.jpg
+medias/*.jpeg
+medias/*.gif
+medias/*.webp
+# Le logo est versionné car il fait partie du code
+!medias/logo.png
+
+# ─── OS & éditeurs ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+config.php
+*.log

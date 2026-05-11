@@ -1,0 +1,278 @@
+<?php
+require_once __DIR__ . '/../config.php';
+session_start(); requireAdmin();
+$db = getDB();
+
+$nb_pages    = $db->query("SELECT COUNT(*) FROM pages")->fetchColumn();
+$nb_news     = $db->query("SELECT COUNT(*) FROM news WHERE statut='publie'")->fetchColumn();
+$nb_news_brf = $db->query("SELECT COUNT(*) FROM news WHERE statut='brouillon'")->fetchColumn();
+$nb_sub      = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'")->fetchColumn();
+$nb_membres  = $db->query("SELECT COUNT(*) FROM members WHERE statut='actif'")->fetchColumn();
+$total_dons  = $db->query("SELECT COALESCE(SUM(montant),0) FROM member_dons WHERE statut='confirme'")->fetchColumn();
+$recolte     = floatval(cfg('montant_recolte', 0));
+$objectif    = floatval(cfg('montant_objectif', 15000));
+$pct         = $objectif > 0 ? min(100, round($recolte/$objectif*100)) : 0;
+
+$news_recentes  = $db->query("SELECT titre, statut, date_creation FROM news ORDER BY date_creation DESC LIMIT 6")->fetchAll();
+$membres_recents = $db->query("SELECT prenom, nom, code_membre, date_inscription FROM members ORDER BY date_inscription DESC LIMIT 5")->fetchAll();
+$nb_sub_new  = $db->query("SELECT COUNT(*) FROM subscribers WHERE date_inscription >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn();
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<?php include __DIR__ . '/../includes/admin_pwa_head.php'; ?>
+<title>Dashboard — Admin ça suffit !</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333}
+<?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>
+
+/* ── LAYOUT ── */
+.main { margin-left:240px; padding:24px; min-height:100vh; }
+
+/* ── PAGE HEADER ── */
+.dash-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+.dash-header h1 { font-size:1.3rem; font-weight:800; color:#0e3d6b; }
+.dash-header .date { font-size:.78rem; color:#999; }
+
+/* ── COLLECTE HERO ── */
+.collecte-hero {
+  background: linear-gradient(135deg, #0e3d6b 0%, #1673B2 100%);
+  border-radius: 16px; padding: 24px 28px; margin-bottom: 24px;
+  color: #fff; position: relative; overflow: hidden;
+}
+.collecte-hero::after {
+  content:''; position:absolute; top:-40px; right:-40px;
+  width:180px; height:180px; background:rgba(255,255,255,.05);
+  border-radius:50%;
+}
+.collecte-hero .ch-title { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; opacity:.7; margin-bottom:6px; }
+.collecte-hero .ch-montants { display:flex; align-items:baseline; gap:10px; margin-bottom:16px; }
+.collecte-hero .ch-recolte { font-size:2rem; font-weight:800; color:#FF9900; }
+.collecte-hero .ch-sep { opacity:.5; font-size:1.2rem; }
+.collecte-hero .ch-objectif { font-size:1.1rem; font-weight:600; opacity:.8; }
+.collecte-hero .ch-pct { font-size:.82rem; opacity:.7; margin-top:4px; }
+.ch-bar-wrap { background:rgba(255,255,255,.2); border-radius:8px; height:10px; margin:12px 0 6px; overflow:hidden; }
+.ch-bar-fill { background: linear-gradient(90deg, #FF9900, #ffcc44); height:100%; border-radius:8px; transition:width 1.2s ease; }
+.ch-meta { display:flex; gap:20px; margin-top:8px; }
+.ch-meta span { font-size:.75rem; opacity:.8; }
+.ch-meta strong { color:#FF9900; }
+
+/* ── STATS GRID ── */
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+.stat-card {
+  background:#fff; border-radius:12px; padding:16px 18px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  display:flex; align-items:center; gap:14px;
+  text-decoration:none; color:inherit;
+  transition:all .2s; border:2px solid transparent;
+}
+.stat-card:hover { border-color:#1673B2; transform:translateY(-2px); box-shadow:0 6px 18px rgba(22,115,178,.12); }
+.stat-icon { font-size:1.6rem; flex-shrink:0; }
+.stat-info .val { font-size:1.5rem; font-weight:800; color:#0e3d6b; line-height:1; }
+.stat-info .lbl { font-size:.68rem; color:#999; text-transform:uppercase; letter-spacing:.04em; margin-top:3px; }
+.stat-info .sub { font-size:.7rem; color:#FF9900; font-weight:600; margin-top:2px; }
+
+/* ── ACTIONS RAPIDES ── */
+.actions-title { font-size:.7rem; font-weight:700; color:#999; text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
+.actions-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:24px; }
+.action-btn {
+  background:#fff; border-radius:12px; padding:16px 12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06); text-align:center;
+  text-decoration:none; color:#333; transition:all .2s;
+  border:2px solid transparent; display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.action-btn:hover { border-color:#1673B2; transform:translateY(-2px); box-shadow:0 6px 18px rgba(22,115,178,.12); color:#1673B2; text-decoration:none; }
+.action-btn .ab-icon { font-size:1.8rem; }
+.action-btn .ab-label { font-size:.75rem; font-weight:600; line-height:1.2; }
+.action-btn.primary { background:#1673B2; color:#fff; }
+.action-btn.primary:hover { background:#0e5a8a; border-color:#0e5a8a; color:#fff; }
+
+/* ── CARDS ── */
+.cards-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.card { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.06); overflow:hidden; }
+.card-head { padding:14px 18px; border-bottom:1px solid #eef2f7; display:flex; align-items:center; justify-content:space-between; }
+.card-head h3 { font-size:.88rem; font-weight:700; color:#0e3d6b; }
+.card-head a { font-size:.72rem; color:#1673B2; text-decoration:none; font-weight:500; }
+.card-body { padding:0; }
+.item-row { display:flex; align-items:center; gap:10px; padding:10px 18px; border-bottom:1px solid #f5f5f7; font-size:.8rem; transition:background .1s; }
+.item-row:last-child { border:none; }
+.item-row:hover { background:#f9fbfd; }
+.item-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.dot-green { background:#27ae60; }
+.dot-orange { background:#FF9900; }
+.dot-grey { background:#bbb; }
+.item-name { flex:1; font-weight:500; color:#1a1a2e; }
+.item-meta { font-size:.7rem; color:#999; }
+.badge { display:inline-block; padding:2px 7px; border-radius:10px; font-size:.65rem; font-weight:700; }
+.b-ok { background:#e8f8f0; color:#1e8449; }
+.b-warn { background:#fff3e0; color:#ba7517; }
+.b-grey { background:#f0f0f0; color:#888; }
+.empty-state { padding:30px; text-align:center; color:#bbb; font-size:.82rem; }
+
+/* ── MOBILE ── */
+@media (max-width:768px) {
+  .main { margin-left:0; padding:16px; padding-top:68px; }
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .actions-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
+  .action-btn { padding:12px 8px; }
+  .action-btn .ab-icon { font-size:1.4rem; }
+  .action-btn .ab-label { font-size:.68rem; }
+  .cards-grid { grid-template-columns:1fr; }
+  .collecte-hero { padding:18px; }
+  .collecte-hero .ch-recolte { font-size:1.6rem; }
+}
+@media (max-width:480px) {
+  .stats-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
+  .stat-card { padding:12px; gap:10px; }
+  .stat-icon { font-size:1.3rem; }
+  .stat-info .val { font-size:1.2rem; }
+}
+</style>
+</head>
+<body>
+<?php include __DIR__ . '/../includes/admin_sidebar.php'; ?>
+
+<div class="main">
+
+  <!-- Header -->
+  <div class="dash-header">
+    <h1>📊 Tableau de bord</h1>
+    <span class="date"><?= strftime('%A %d %B %Y') ?: date('d/m/Y') ?></span>
+  </div>
+
+  <!-- Collecte hero -->
+  <div class="collecte-hero">
+    <div class="ch-title">🎯 Objectif — Action en référé contre l'État belge</div>
+    <div class="ch-montants">
+      <span class="ch-recolte"><?= number_format($recolte, 0, ',', ' ') ?> €</span>
+      <span class="ch-sep">/</span>
+      <span class="ch-objectif"><?= number_format($objectif, 0, ',', ' ') ?> €</span>
+    </div>
+    <div class="ch-bar-wrap">
+      <div class="ch-bar-fill" style="width:<?= $pct ?>%"></div>
+    </div>
+    <div class="ch-meta">
+      <span><strong><?= $pct ?>%</strong> atteint</span>
+      <span><strong><?= number_format($objectif - $recolte, 0, ',', ' ') ?> €</strong> restants</span>
+      <span><strong><?= $nb_membres ?></strong> membres actifs</span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <a href="pages.php" class="stat-card">
+      <span class="stat-icon">📄</span>
+      <div class="stat-info">
+        <div class="val"><?= $nb_pages ?></div>
+        <div class="lbl">Pages du site</div>
+      </div>
+    </a>
+    <a href="news.php" class="stat-card">
+      <span class="stat-icon">📰</span>
+      <div class="stat-info">
+        <div class="val"><?= $nb_news ?></div>
+        <div class="lbl">News publiées</div>
+        <?php if ($nb_news_brf > 0): ?>
+          <div class="sub"><?= $nb_news_brf ?> brouillon<?= $nb_news_brf > 1 ? 's' : '' ?></div>
+        <?php endif; ?>
+      </div>
+    </a>
+    <a href="subscribers.php" class="stat-card">
+      <span class="stat-icon">✉️</span>
+      <div class="stat-info">
+        <div class="val"><?= number_format($nb_sub, 0, ',', ' ') ?></div>
+        <div class="lbl">Abonnés newsletter</div>
+        <?php if ($nb_sub_new > 0): ?>
+          <div class="sub">+<?= $nb_sub_new ?> cette semaine</div>
+        <?php endif; ?>
+      </div>
+    </a>
+    <a href="dons_all.php" class="stat-card">
+      <span class="stat-icon">💰</span>
+      <div class="stat-info">
+        <div class="val"><?= number_format($total_dons, 0, ',', ' ') ?> €</div>
+        <div class="lbl">Dons confirmés</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Actions rapides -->
+  <div class="actions-title">Actions rapides</div>
+  <div class="actions-grid">
+    <a href="news.php?new=1" class="action-btn primary">
+      <span class="ab-icon">✍️</span>
+      <span class="ab-label">Nouvelle actualité</span>
+    </a>
+    <a href="pages.php" class="action-btn">
+      <span class="ab-icon">📄</span>
+      <span class="ab-label">Modifier une page</span>
+    </a>
+    <a href="compose.php" class="action-btn">
+      <span class="ab-icon">📤</span>
+      <span class="ab-label">Envoyer newsletter</span>
+    </a>
+    <a href="subscribers.php" class="action-btn">
+      <span class="ab-icon">👥</span>
+      <span class="ab-label">Voir les abonnés</span>
+    </a>
+    <a href="coda.php" class="action-btn">
+      <span class="ab-icon">🏦</span>
+      <span class="ab-label">Import CODA</span>
+    </a>
+    <a href="site_config.php" class="action-btn">
+      <span class="ab-icon">⚙️</span>
+      <span class="ab-label">Paramètres</span>
+    </a>
+  </div>
+
+  <!-- News + Membres -->
+  <div class="cards-grid">
+
+    <div class="card">
+      <div class="card-head">
+        <h3>📰 Actualités récentes</h3>
+        <a href="news.php">Gérer →</a>
+      </div>
+      <div class="card-body">
+        <?php if (empty($news_recentes)): ?>
+          <div class="empty-state">Aucune actualité.</div>
+        <?php else: ?>
+          <?php foreach ($news_recentes as $n): ?>
+          <div class="item-row">
+            <span class="item-dot <?= $n['statut']==='publie' ? 'dot-green' : ($n['statut']==='brouillon' ? 'dot-orange' : 'dot-grey') ?>"></span>
+            <span class="item-name"><?= htmlspecialchars(mb_strimwidth($n['titre'],0,40,'…')) ?></span>
+            <span class="badge <?= $n['statut']==='publie' ? 'b-ok' : ($n['statut']==='brouillon' ? 'b-warn' : 'b-grey') ?>"><?= $n['statut'] ?></span>
+          </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>👤 Membres récents</h3>
+        <a href="members.php">Gérer →</a>
+      </div>
+      <div class="card-body">
+        <?php if (empty($membres_recents)): ?>
+          <div class="empty-state">Aucun membre.</div>
+        <?php else: ?>
+          <?php foreach ($membres_recents as $m): ?>
+          <div class="item-row">
+            <span class="item-dot dot-green"></span>
+            <span class="item-name"><?= htmlspecialchars($m['prenom'].' '.$m['nom']) ?></span>
+            <span class="item-meta"><?= htmlspecialchars($m['code_membre']) ?></span>
+          </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>
