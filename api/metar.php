@@ -47,7 +47,7 @@ if (!$DEBUG_TRAP && file_exists($CACHE_FILE) && (time() - filemtime($CACHE_FILE)
 header('Cache-Control: no-store');
 
 $ctx = stream_context_create([
-    'http' => ['timeout' => 10, 'user_agent' => 'piste01casuffit.be/meteo-widget'],
+    'http' => ['timeout' => 10, 'user_agent' => 'casuffit.be/meteo-widget'],
     'ssl'  => ['verify_peer' => false],
 ]);
 

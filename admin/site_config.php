@@ -186,7 +186,7 @@ foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; }
     <div class="card">
       <h3>📱 Réseaux sociaux</h3>
       <label>URL page Facebook</label>
-      <input type="text" name="facebook_url" value="<?= htmlspecialchars($c['facebook_url'] ?? 'https://www.facebook.com/piste01casuffit') ?>" placeholder="https://www.facebook.com/votrepage">
+      <input type="text" name="facebook_url" value="<?= htmlspecialchars($c['facebook_url'] ?? 'https://www.facebook.com/casuffit') ?>" placeholder="https://www.facebook.com/votrepage">
       <label>URL Instagram</label>
       <input type="text" name="instagram_url" value="<?= htmlspecialchars($c['instagram_url'] ?? '') ?>" placeholder="https://www.instagram.com/votrecompte">
       <label>Lien WhatsApp</label>

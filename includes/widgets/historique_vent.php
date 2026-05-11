@@ -43,7 +43,35 @@
     </div>
 
     <!-- Résultats -->
-    <div id="pmh-results" style="display:none">
+    <!-- Graphique BATC mouvements par piste -->
+  <div id="pmh-batc-chart" style="display:none;margin-top:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div style="font-weight:800;font-size:.9rem;color:#0e3d6b" id="pmh-batc-chart-title">📊 Mouvements par piste</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="pmh-batc-aggregate" onchange="pmhLoadBatcChart()"
+          style="padding:5px 8px;border:1.5px solid #dde6f0;border-radius:7px;font-size:.78rem;background:#f7fafd;color:#333">
+          <option value="day">Par jour</option>
+          <option value="week">Par semaine</option>
+          <option value="month">Par mois</option>
+        </select>
+        <select id="pmh-batc-filter" onchange="pmhDrawBatcChart()"
+          style="padding:5px 8px;border:1.5px solid #dde6f0;border-radius:7px;font-size:.78rem;background:#f7fafd;color:#333">
+          <option value="all">Toutes pistes</option>
+          <option value="25">Pistes 25</option>
+          <option value="07">Pistes 07</option>
+          <option value="01">Piste 01</option>
+          <option value="19">Piste 19</option>
+        </select>
+      </div>
+    </div>
+    <div id="pmh-batc-chart-status" style="font-size:.78rem;color:#888;margin-bottom:6px"></div>
+    <div style="overflow-x:auto">
+      <canvas id="pmh-batc-canvas" style="width:100%;min-height:280px"></canvas>
+    </div>
+    <div id="pmh-batc-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:.72rem"></div>
+  </div>
+
+  <div id="pmh-results" style="display:none">
 
       <div class="pmh-summary" id="pmh-summary"></div>
 
@@ -214,6 +242,29 @@ function dirText(d){if(!d||d===0)return'Variable';return['N','NNE','NE','ENE','E
 function rwyBadge(r){var c=r.indexOf('25')>-1?'pmh-r25':r.indexOf('07')>-1?'pmh-r07':r.indexOf('19')>-1?'pmh-r19':'pmh-r01';return'<span class="pmh-rwy-badge '+c+'">'+r+'</span>';}
 
 // ── Chargement ──────────────────────────────────────────────────────────
+// Initialiser les selects d'heures dès le chargement (avant interaction)
+(function initHourSelectsEarly() {
+  function doInit() {
+    ['pmh-start-hour','pmh-end-hour'].forEach(function(id) {
+      var sel = document.getElementById(id);
+      if (!sel || sel.options.length) return;
+      for (var h = 0; h < 24; h++) {
+        for (var m = 0; m < 60; m += 30) {
+          var val = (h < 10 ? '0' : '') + h + ':' + (m === 0 ? '00' : '30');
+          var opt = document.createElement('option');
+          opt.value = opt.textContent = val;
+          sel.appendChild(opt);
+        }
+      }
+      // Valeur par défaut : 06:00 pour start, 12:00 pour end
+      sel.value = (id === 'pmh-start-hour') ? '06:00' : '12:00';
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', doInit);
+  } else { doInit(); }
+})();
+
 window.pmhLoad = function(){
   var startDate=document.getElementById('pmh-start-date').value;
   var startHour=document.getElementById('pmh-start-hour').value;
@@ -525,7 +576,7 @@ window.pmhExport = function(){
     +'<th>Note / Analyse</th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table>'
     +'<div class="footer">'
-    +'<span>Document généré le '+new Date().toLocaleString('fr-BE',{timeZone:'Europe/Brussels',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' · ça suffit ! ASBL — piste01casuffit.be</span>'
+    +'<span>Document généré le '+new Date().toLocaleString('fr-BE',{timeZone:'Europe/Brussels',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' · ça suffit ! ASBL — casuffit.be</span>'
     +'<span>Données : IRM Institut Royal Météorologique de Belgique — Station synoptique 6451 Zaventem/EBBR (mesures officielles)</span>'
     +'</div>'
     +'</body></html>';
@@ -549,24 +600,27 @@ window.addEventListener('DOMContentLoaded',function(){
   var e=new Date(d);e.setUTCHours(12,0,0,0);
   function fmtDate(dt){return dt.toISOString().slice(0,10);}
   function fmtHour(dt){return dt.toISOString().slice(11,16);}
-  // Remplir les selects d'heures (pas à pas 30min)
-  ['pmh-start-hour','pmh-end-hour'].forEach(function(id){
-    var sel=document.getElementById(id);
-    if(!sel.options.length){
-      for(var h=0;h<24;h++){
-        for(var m=0;m<60;m+=30){
-          var val=(h<10?'0':'')+h+':'+(m===0?'00':'30');
-          var opt=document.createElement('option');
-          opt.value=opt.textContent=val;
-          sel.appendChild(opt);
-        }
+
+  // Remplir un select d'heures (pas 30min)
+  function fillHourSelect(id, selectedVal) {
+    var sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '';
+    for (var h = 0; h < 24; h++) {
+      for (var m = 0; m < 60; m += 30) {
+        var val = (h < 10 ? '0' : '') + h + ':' + (m === 0 ? '00' : '30');
+        var opt = document.createElement('option');
+        opt.value = opt.textContent = val;
+        if (val === selectedVal) opt.selected = true;
+        sel.appendChild(opt);
       }
     }
-  });
-  document.getElementById('pmh-start-date').value=fmtDate(d);
-  document.getElementById('pmh-start-hour').value=fmtHour(d).slice(0,5);
-  document.getElementById('pmh-end-date').value=fmtDate(e);
-  document.getElementById('pmh-end-hour').value=fmtHour(e).slice(0,5);
+  }
+
+  fillHourSelect('pmh-start-hour', fmtHour(d).slice(0,5));
+  fillHourSelect('pmh-end-hour',   fmtHour(e).slice(0,5));
+  document.getElementById('pmh-start-date').value = fmtDate(d);
+  document.getElementById('pmh-end-date').value   = fmtDate(e);
 });
 
 })();

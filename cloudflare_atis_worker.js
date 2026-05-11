@@ -14,7 +14,7 @@
 export default {
   async fetch(request) {
 
-    // Headers CORS pour autoriser piste01casuffit.be
+    // Headers CORS pour autoriser casuffit.be
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -31,7 +31,7 @@ export default {
       // Fetch la page atis.guru
       const resp = await fetch('https://atis.guru/atis/EBBR', {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; piste01casuffit.be/meteo)',
+          'User-Agent': 'Mozilla/5.0 (compatible; casuffit.be/meteo)',
           'Accept': 'text/html',
         },
         cf: { cacheTtl: 300 } // cache Cloudflare 5 min

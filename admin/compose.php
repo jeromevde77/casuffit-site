@@ -285,9 +285,9 @@ var T = {
     orange: '<div style="padding:14px 18px;background:#FF9900;color:#fff;margin:14px 0;font-weight:200">\n  <strong>Message important</strong><br>\n  Contenu ici...\n</div>\n',
     bleu:   '<div style="padding:14px 18px;background:#e6f1fb;border-left:4px solid #1673B2;color:#1673B2;margin:14px 0">\n  Information importante.\n</div>\n',
     alerte: '<div style="padding:14px 18px;border:2px solid #FF9900;border-left:5px solid #FF9900;background:#fff8ee;margin:14px 0">\n  <strong style="color:#a05000;font-size:.8rem;text-transform:uppercase">⚠ Attention</strong><br>\n  <span style="color:#7a4500">Message d\'alerte ici.</span>\n</div>\n',
-    bouton: '<div style="text-align:center;margin:20px 0">\n  <a href="https://new.piste01casuffit.be" style="display:inline-block;padding:12px 28px;background:#1673B2;color:#fff;text-decoration:none;font-weight:700;border-radius:6px">Voir le site →</a>\n</div>\n',
+    bouton: '<div style="text-align:center;margin:20px 0">\n  <a href="<?= SITE_URL ?>" style="display:inline-block;padding:12px 28px;background:#1673B2;color:#fff;text-decoration:none;font-weight:700;border-radius:6px">Voir le site →</a>\n</div>\n',
     sep:    '<hr style="border:none;border-top:2px solid #e0e8f0;margin:20px 0">\n',
-    sign:   '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e0e8f0;font-size:.82rem;color:#555">\n  <strong style="color:#0e3d6b">L\'équipe ça suffit ! ASBL</strong><br>\n  Piste 01 · UBCNA · Union citoyenne<br>\n  <a href="https://new.piste01casuffit.be" style="color:#1673B2">new.piste01casuffit.be</a>\n</div>\n',
+    sign:   '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e0e8f0;font-size:.82rem;color:#555">\n  <strong style="color:#0e3d6b">L\'équipe ça suffit ! ASBL</strong><br>\n  Piste 01 · UBCNA · Union citoyenne<br>\n  <a href="<?= SITE_URL ?>" style="color:#1673B2"><?= str_replace("https://","",SITE_URL) ?></a>\n</div>\n',
 };
 
 function ins(k) {
@@ -318,7 +318,7 @@ var WD = {
     iban     : <?= json_encode($iban_email) ?>,
     bic      : <?= json_encode($bic_email) ?>,
     news     : <?= json_encode($news_email_list) ?>,
-    site_url : 'https://new.piste01casuffit.be'
+    site_url : '<?= SITE_URL ?>'
 };
 
 // Templates email des widgets

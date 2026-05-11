@@ -19,9 +19,9 @@ define('BREVO_API_KEY', '');    // ex: xkeysib-abc123...
 // Option B : SMTP OVH
 define('SMTP_HOST',      'ssl0.ovh.net');
 define('SMTP_PORT',      465);
-define('SMTP_USER',      'info@piste01casuffit.be');
+define('SMTP_USER',      'info@casuffit.be');
 define('SMTP_PASS',      'votre_mot_de_passe_email');
-define('SMTP_FROM',      'info@piste01casuffit.be');
+define('SMTP_FROM',      'info@casuffit.be');
 define('SMTP_FROM_NAME', 'ça suffit ! ASBL');
 
 // ── ADMIN ────────────────────────────────────────────────────────────────
@@ -29,9 +29,9 @@ define('ADMIN_USER', 'admin');
 define('ADMIN_PASS', password_hash('VotreMotDePasse!', PASSWORD_DEFAULT));
 
 // ── SITE ─────────────────────────────────────────────────────────────────
-define('SITE_URL',   'https://www.piste01casuffit.be');
+define('SITE_URL',   'https://www.casuffit.be');
 define('SITE_NAME',  'ça suffit ! ASBL');
-define('ADMIN_EMAIL','info@piste01casuffit.be');
+define('ADMIN_EMAIL','info@casuffit.be');
 
 // ── MEDIAS ───────────────────────────────────────────────────────────────
 define('MEDIAS_DIR', __DIR__ . '/medias/');

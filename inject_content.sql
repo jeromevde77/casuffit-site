@@ -270,9 +270,9 @@ INSERT INTO pages (slug, titre, icone, ordre, visible, dans_menu, contenu) VALUE
         <p class="content-text">Fondée en 2014 à Waterloo et Braine-l\'Alleud, l\'ASBL regroupe toutes les personnes survolées par les atterrissages en piste 01, de Waterloo jusqu\'à Kraainem, en passant par Hoeilaart ou La Hulpe. Elle mène des actions judiciaires contre l\'utilisation abusive de la piste 01 et défend une correction des normes de vent comme solution structurelle.</p>
         <p class="content-text"><strong>Actions judiciaires en cours :</strong> recours en référé contre l\'instruction illégale du 16 décembre 2013 et ses effets persistants. Le juge a reconnu l\'illégalité — la bataille continue sur les normes de vent.</p>
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
-          <a href="https://www.piste01casuffit.be" target="_blank" style="background:var(--bleu-hex);color:#fff;padding:7px 16px;font-size:80%;font-weight:600;text-decoration:none;">🌐 Site web</a>
+          <a href="https://www.casuffit.be" target="_blank" style="background:var(--bleu-hex);color:#fff;padding:7px 16px;font-size:80%;font-weight:600;text-decoration:none;">🌐 Site web</a>
           <a href="https://www.facebook.com/Piste01casuffit" target="_blank" style="background:#1877f2;color:#fff;padding:7px 16px;font-size:80%;font-weight:600;text-decoration:none;">Facebook</a>
-          <a href="mailto:info@piste01casuffit.be" style="background:var(--orange-hex);color:#fff;padding:7px 16px;font-size:80%;font-weight:600;text-decoration:none;">✉ Contact</a>
+          <a href="mailto:info@casuffit.be" style="background:var(--orange-hex);color:#fff;padding:7px 16px;font-size:80%;font-weight:600;text-decoration:none;">✉ Contact</a>
         </div>
       </div>
 
@@ -355,7 +355,7 @@ INSERT INTO site_config (cle, valeur, label, groupe) VALUES
 ('beneficiaire', 'ça suffit ! ASBL', 'Bénéficiaire', 'dons'),
 ('site_nom', 'ça suffit ! ASBL', 'Nom du site', 'general'),
 ('site_slogan', 'Piste 01 · UBCNA — Stop aux nuisances !', 'Slogan', 'general'),
-('site_email', 'info@piste01casuffit.be', 'Email', 'general'),
+('site_email', 'info@casuffit.be', 'Email', 'general'),
 ('site_facebook', 'https://www.facebook.com/casuffit', 'Facebook', 'general')
 ON DUPLICATE KEY UPDATE valeur=VALUES(valeur);
 

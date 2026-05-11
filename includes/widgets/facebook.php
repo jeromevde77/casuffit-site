@@ -1,5 +1,5 @@
 <?php // Widget : Page Facebook
-$fb_url  = cfg('facebook_url', 'https://www.facebook.com/piste01casuffit');
+$fb_url  = cfg('facebook_url', 'https://www.facebook.com/casuffit');
 ?>
 <div class="facebook-widget" style="width:100%">
   <div class="orange section-title" style="margin-bottom:16px">📘 Suivez-nous sur Facebook</div>

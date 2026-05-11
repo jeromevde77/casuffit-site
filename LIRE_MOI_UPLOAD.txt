@@ -29,7 +29,7 @@ SQL À EXÉCUTER (seulement ce qui manque)
 RÉSEAUX SOCIAUX (phpMyAdmin)
 ────────────────────────────
   INSERT IGNORE INTO site_config (cle, valeur) 
-    VALUES ('facebook_url', 'https://www.facebook.com/piste01casuffit');
+    VALUES ('facebook_url', 'https://www.facebook.com/casuffit');
   INSERT IGNORE INTO site_config (cle, valeur) 
     VALUES ('instagram_url', '');
   INSERT IGNORE INTO site_config (cle, valeur) 

@@ -107,5 +107,5 @@ Exécuter dans phpMyAdmin :
 
 ## 📬 Contact
 
-info@piste01casuffit.be  
-https://www.piste01casuffit.be
+info@casuffit.be  
+https://www.casuffit.be

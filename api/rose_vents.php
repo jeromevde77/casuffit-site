@@ -33,7 +33,7 @@ $from = gmdate('Y-m-d\TH:i:s\Z', $ts_start);
 $to   = gmdate('Y-m-d\TH:i:s\Z', $ts_end);
 
 $ctx = stream_context_create([
-    'http' => ['timeout' => 30, 'user_agent' => 'piste01casuffit.be/rose-vents'],
+    'http' => ['timeout' => 30, 'user_agent' => 'casuffit.be/rose-vents'],
     'ssl'  => ['verify_peer' => false],
 ]);
 

@@ -198,3 +198,146 @@ class CodaParser {
         });
     }
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// CSV Belfius Parser — Export CSV depuis Belfius Direct Net
+// Format : Date;Numéro d'extrait;Numéro de transaction;Compte;Nom du compte;
+//          Contrepartie;Nom de la contrepartie;Rue et numéro;Code postal et localité;
+//          Transaction;Date valeur;Montant;Devise;BIC;Code pays;Communications
+// ════════════════════════════════════════════════════════════════════════════
+class BelfiusCsvParser {
+
+    private $transactions = array();
+    private $errors       = array();
+
+    public function parse($content) {
+        $this->transactions = array();
+        $this->errors       = array();
+
+        // Détecter le séparateur (Belfius utilise ; ou ,)
+        $firstLine = strtok($content, "\n");
+        $sep = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
+
+        // Supprimer BOM UTF-8 si présent
+        $content = ltrim($content, "\xEF\xBB\xBF");
+
+        $lines = explode("\n", str_replace("\r", "", $content));
+
+        // Trouver la ligne d'en-tête
+        $headers = array();
+        $dataStart = 0;
+        foreach ($lines as $i => $line) {
+            if (empty(trim($line))) continue;
+            $cols = str_getcsv($line, $sep, '"');
+            // Détecter la ligne d'en-tête (contient "Date" ou "Montant")
+            $lineStr = strtolower($line);
+            if (strpos($lineStr, 'montant') !== false || strpos($lineStr, 'amount') !== false ||
+                strpos($lineStr, 'date') !== false) {
+                $headers   = array_map('trim', $cols);
+                $dataStart = $i + 1;
+                break;
+            }
+        }
+
+        if (empty($headers)) {
+            $this->errors[] = 'Impossible de trouver les en-têtes CSV Belfius.';
+            return $this->transactions;
+        }
+
+        // Mapper les colonnes (Belfius FR et EN)
+        $colMap = array(
+            'date'          => ['Date', 'Date de comptabilisation', 'Booking date'],
+            'valeur'        => ['Date valeur', 'Value date', 'Date de valeur'],
+            'montant'       => ['Montant', 'Amount'],
+            'devise'        => ['Devise', 'Currency'],
+            'contrepartie'  => ['Contrepartie', 'Counterpart', 'Contre-partie'],
+            'nom_contre'    => ['Nom de la contrepartie', 'Name of the counterpart', 'Nom contrepartie'],
+            'communication' => ['Communications', 'Communication', 'Motif'],
+            'type'          => ['Transaction', 'Type'],
+            'extrait'       => ["Numéro d'extrait", 'Statement number'],
+        );
+
+        $idx = array();
+        foreach ($colMap as $key => $candidates) {
+            foreach ($candidates as $candidate) {
+                $pos = array_search($candidate, $headers);
+                if ($pos !== false) { $idx[$key] = $pos; break; }
+            }
+        }
+
+        // Parser chaque ligne de données
+        for ($i = $dataStart; $i < count($lines); $i++) {
+            $line = trim($lines[$i]);
+            if (empty($line)) continue;
+
+            $cols = str_getcsv($line, $sep, '"');
+            if (count($cols) < 3) continue;
+
+            $get = function($key) use ($cols, $idx) {
+                return isset($idx[$key]) && isset($cols[$idx[$key]])
+                    ? trim($cols[$idx[$key]]) : '';
+            };
+
+            // Montant
+            $montantRaw = $get('montant');
+            $montantRaw = str_replace(' ', '', $montantRaw);   // espaces milliers
+            $montantRaw = str_replace(',', '.', $montantRaw);  // virgule → point
+            $amount = floatval($montantRaw);
+
+            if ($amount == 0) continue; // ignorer les lignes vides
+
+            // Communication
+            $comm = $get('communication');
+
+            // Extraire OGM de la communication
+            $ogm = null;
+            if (preg_match('/\+{3}\s*(\d{3})\s*\/\s*(\d{4})\s*\/\s*(\d{5})\s*\+{3}/', $comm, $m)) {
+                $ogm = '+++' . $m[1] . '/' . $m[2] . '/' . $m[3] . '+++';
+            } elseif (preg_match('/(\d{3})\/?(\d{4})\/?(\d{5})/', $comm, $m)) {
+                // OGM sans les +++ (12 chiffres consécutifs)
+                $raw12 = $m[1] . $m[2] . $m[3];
+                if (strlen($raw12) === 12) {
+                    $ogm = '+++' . $m[1] . '/' . $m[2] . '/' . $m[3] . '+++';
+                }
+            }
+
+            // Date
+            $dateRaw = $get('date');
+            $date = null;
+            // Formats Belfius : DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD
+            if (preg_match('/(\d{2})[\/\-](\d{2})[\/\-](\d{4})/', $dateRaw, $m)) {
+                $date = $m[3] . '-' . $m[2] . '-' . $m[1];
+            } elseif (preg_match('/(\d{4})-(\d{2})-(\d{2})/', $dateRaw, $m)) {
+                $date = $dateRaw;
+            }
+
+            // IBAN contrepartie
+            $contre = strtoupper(preg_replace('/\s+/', '', $get('contrepartie')));
+            $ibanContre = preg_match('/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/', $contre) ? $contre : null;
+
+            $this->transactions[] = array(
+                'date'           => $date,
+                'date_valeur'    => $get('valeur'),
+                'amount'         => $amount,
+                'credit'         => $amount > 0,
+                'communication'  => $comm,
+                'ogm'            => $ogm,
+                'counterpart'    => $ibanContre,
+                'nom_contre'     => $get('nom_contre'),
+                'type'           => $get('type'),
+                'source'         => 'csv_belfius',
+            );
+        }
+
+        return $this->transactions;
+    }
+
+    public function getCredits() {
+        return array_values(array_filter($this->transactions, function($tx) {
+            return $tx['credit'] && $tx['amount'] > 0;
+        }));
+    }
+
+    public function getTransactions() { return $this->transactions; }
+    public function getErrors()       { return $this->errors; }
+}

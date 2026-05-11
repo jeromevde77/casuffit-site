@@ -1211,7 +1211,7 @@ window.pmwOpenPlainte = function() {
     'Une capture d\'écran du tableau de bord est jointe à ce message.\n\n' +
     'Dans l\'attente de votre réponse,\n' +
     'Veuillez agréer mes salutations distinguées.\n\n' +
-    '— Via ça suffit ! ASBL — piste01casuffit.be';
+    '— Via ça suffit ! ASBL — casuffit.be';
 
   document.getElementById('pmw-plainte-mail').textContent = pmwMailBody;
 

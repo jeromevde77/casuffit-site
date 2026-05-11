@@ -34,26 +34,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['coda_file'])) {
         $error = 'Fichier trop volumineux (max 5 MB).';
     } else {
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, array('cod', 'coda', 'txt', 'dat'))) {
-            $error = 'Extension non autorisée. Accepté : .cod, .coda, .txt, .dat';
+        if (!in_array($ext, array('cod', 'coda', 'txt', 'dat', 'csv'))) {
+            $error = 'Extension non autorisée. Accepté : .cod, .coda, .txt, .dat, .csv';
         } else {
             $content = file_get_contents($file['tmp_name']);
             if ($content === false) {
                 $error = 'Impossible de lire le fichier.';
             } else {
-                // Parser le CODA
-                $parser = new CodaParser();
+                // Détecter le format et choisir le bon parser
+                $format = 'coda';
+                if ($ext === 'csv') {
+                    $format = 'csv_belfius';
+                } elseif (substr(trim($content), 0, 1) !== '0') {
+                    // Pas un fichier CODA valide (ne commence pas par record type 0)
+                    // Tenter CSV
+                    $format = 'csv_belfius';
+                }
+
+                if ($format === 'csv_belfius') {
+                    $parser = new BelfiusCsvParser();
+                } else {
+                    $parser = new CodaParser();
+                }
                 $transactions = $parser->parse($content);
                 $credits = array_values($parser->getCredits());
 
                 if (empty($credits)) {
-                    $error = 'Aucune transaction crédit trouvée dans ce fichier CODA. Vérifiez le format.';
+                    $formatLabel = $format === 'csv_belfius' ? 'CSV Belfius' : 'CODA';
+                    $error = "Aucune transaction crédit trouvée dans ce fichier $formatLabel. Vérifiez le format.";
                 } else {
                     // Matcher avec les membres via OGM
                     $matches   = array();
                     $inconnus  = array();
                     $confirmes = 0;
                     $total_montant = 0;
+
+                    // Charger les IBAN membres pour matching
+                    $stmt_ibans = $db->query("SELECT id, iban_membre FROM members WHERE iban_membre IS NOT NULL AND statut='actif'");
+                    $iban_map = array(); // IBAN => member_id
+                    foreach ($stmt_ibans->fetchAll() as $row) {
+                        $iban_clean = strtoupper(preg_replace('/\s+/', '', $row['iban_membre']));
+                        if ($iban_clean) $iban_map[$iban_clean] = $row['id'];
+                    }
 
                     foreach ($credits as &$tx) {
                         $total_montant += $tx['amount'];
@@ -102,9 +124,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['coda_file'])) {
                                 $inconnus[] = $tx;
                             }
                         } else {
-                            // Pas d'OGM détecté
-                            $tx['action'] = 'sans_ogm';
-                            $inconnus[] = $tx;
+                            // Pas d'OGM — tenter matching par IBAN contrepartie
+                            $contre_iban = strtoupper(preg_replace('/\s+/', '', $tx['counterpart'] ?? ''));
+                            if ($contre_iban && isset($iban_map[$contre_iban])) {
+                                $tx['action']    = 'match_iban';
+                                $tx['member_id'] = $iban_map[$contre_iban];
+                                $stmt_m = $db->prepare("SELECT * FROM members WHERE id=?");
+                                $stmt_m->execute([$iban_map[$contre_iban]]);
+                                $tx['membre'] = $stmt_m->fetch();
+                                $matches[] = $tx;
+                            } else {
+                                $tx['action'] = 'sans_ogm';
+                                $inconnus[] = $tx;
+                            }
                         }
                     }
                     unset($tx);

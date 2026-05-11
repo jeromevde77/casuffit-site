@@ -272,7 +272,7 @@ ON DUPLICATE KEY UPDATE ordre=VALUES(ordre);
 -- ── Config GA4 (ajout post-session) ───────────────────────────────────────
 INSERT INTO `site_config` (`cle`, `valeur`, `label`, `groupe`) VALUES
 ('ga_id',          'G-7LKP0KC1SD',  'ID Google Analytics 4', 'general'),
-('facebook_url',   'https://www.facebook.com/piste01casuffit', 'URL Facebook', 'general'),
+('facebook_url',   'https://www.facebook.com/casuffit', 'URL Facebook', 'general'),
 ('instagram_url',  '', 'URL Instagram', 'general'),
 ('whatsapp_url',   '', 'URL WhatsApp',  'general')
 ON DUPLICATE KEY UPDATE valeur = VALUES(valeur);
@@ -296,3 +296,15 @@ INSERT INTO `page_widgets` (`page_slug`, `widget_slug`, `ordre`) VALUES
 ('conditions-vent', 'historique_vent', 2),
 ('conditions-vent', 'rose_vents',      3)
 ON DUPLICATE KEY UPDATE ordre=VALUES(ordre);
+
+-- ── Colonnes membres v2 ───────────────────────────────────────────────────
+ALTER TABLE `members` ADD COLUMN IF NOT EXISTS `rgpd_date`            DATETIME     DEFAULT NULL AFTER `rgpd_accepte`;
+ALTER TABLE `members` ADD COLUMN IF NOT EXISTS `donnees_verifiees_at` DATETIME     DEFAULT NULL AFTER `rgpd_date`;
+ALTER TABLE `members` ADD COLUMN IF NOT EXISTS `compte_supprime`      TINYINT(1)   DEFAULT 0    AFTER `donnees_verifiees_at`;
+ALTER TABLE `members` ADD COLUMN IF NOT EXISTS `rue`                  VARCHAR(200) DEFAULT NULL AFTER `adresse`;
+ALTER TABLE `members` ADD COLUMN IF NOT EXISTS `numero`               VARCHAR(20)  DEFAULT NULL AFTER `rue`;
+ALTER TABLE `members` ADD COLUMN IF NOT EXISTS `boite`                VARCHAR(20)  DEFAULT NULL AFTER `numero`;
+ALTER TABLE `members` ADD COLUMN IF NOT EXISTS `code_postal`          VARCHAR(10)  DEFAULT NULL AFTER `boite`;
+ALTER TABLE `members` ADD COLUMN IF NOT EXISTS `iban_membre`          VARCHAR(50)  DEFAULT NULL AFTER `code_membre`;
+ALTER TABLE `members` ADD COLUMN IF NOT EXISTS `email_nouveau`        VARCHAR(255) DEFAULT NULL AFTER `email`;
+ALTER TABLE `members` ADD COLUMN IF NOT EXISTS `token_email_change`   VARCHAR(64)  DEFAULT NULL AFTER `email_nouveau`;

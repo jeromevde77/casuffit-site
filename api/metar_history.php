@@ -1,5 +1,8 @@
 <?php
 // api/metar_history.php — Analyse historique vent EBBR
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
 // Sources (par priorité) :
 //   1. IRM WFS synop:synop_data station 6451 (Zaventem/EBBR) — mesures réelles depuis 1952, horaire
 //   2. NOAA METAR (15 derniers jours) — mesures réelles ICAO
@@ -7,6 +10,18 @@
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    http_response_code(500);
+    echo json_encode(['error' => "PHP $errno: $errstr in $errfile line $errline"]);
+    exit;
+});
+register_shutdown_function(function() {
+    $e = error_get_last();
+    if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR])) {
+        http_response_code(500);
+        echo json_encode(['error' => "Fatal: {$e['message']} in {$e['file']} line {$e['line']}"]);
+    }
+});
 
 $date_start = $_GET['start'] ?? '';
 $date_end   = $_GET['end']   ?? '';
@@ -29,7 +44,7 @@ if (($ts_end - $ts_start) > 8 * 24 * 3600) {
 }
 
 $ctx = stream_context_create([
-    'http' => ['timeout' => 15, 'user_agent' => 'piste01casuffit.be/historique-vent'],
+    'http' => ['timeout' => 15, 'user_agent' => 'casuffit.be/historique-vent'],
     'ssl'  => ['verify_peer' => false],
 ]);
 
@@ -159,6 +174,7 @@ if ($raw !== false) {
         // Si rafales <= vent moyen, pas de rafales
         if ($wgst_kt !== null && $wgst_kt <= $wspd_kt) $wgst_kt = null;
 
+        $t        = isset($p['timestamp']) ? (int)strtotime($p['timestamp']) : 0;
         $pl_irm   = getAipConfig($t);
         $analysis = analyseEntry($wdir, $wspd_kt, $wgst_kt, $pl_irm);
 

@@ -7,7 +7,7 @@
  *   Espace client > Hébergements > votre hébergement > Plus > Tâches planifiées (Cron)
  *   Commande : /usr/local/php8.2/bin/php /home/VOTRE_LOGIN/www/cron/send_queue.php
  *   Fréquence : chaque jour à 09:00
- *   Email rapport : info@piste01casuffit.be
+ *   Email rapport : info@casuffit.be
  */
 if (PHP_SAPI !== 'cli' && ((isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '')) !== '127.0.0.1') {
     http_response_code(403); die('Accès refusé');
