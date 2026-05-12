@@ -992,8 +992,18 @@ function renderBatc(d) {
     return tw_m <= seuilMoy && tw_g <= seuilGust;
   }
 
-  var ok2013 = batcPistes.length > 0 && batcPistes.every(function(r){ return pisteOk(r, 7, 10); });
-  var okNow  = batcPistes.length > 0 && batcPistes.every(function(r){ return pisteOk(r, 7, 7);  });
+  var prsActif2013 = d.aip2013 && d.aip2013.prs_active;
+  var prsActifNow  = d.aip_pratique && d.aip_pratique.prs_active;
+  var configEstPRS = (batcRwy === '25R/25L' || batcRwy === '19/25R');
+  // Si PRS actif, seules les configs PRS (25R/25L, 19/25R) sont autorisées
+  var ok2013 = batcPistes.length > 0
+    && batcPistes.every(function(r){ return pisteOk(r, 7, 10); })
+    && (!prsActif2013 || configEstPRS);
+  var okNow  = batcPistes.length > 0
+    && batcPistes.every(function(r){ return pisteOk(r, 7, 7); })
+    && (!prsActifNow || configEstPRS);
+  var prsViolation2013 = prsActif2013 && !configEstPRS;
+  var prsViolationNow  = prsActifNow  && !configEstPRS;
 
   // Rafales décisives (info complémentaire)
   var comps25 = comps['25R'] || {};
@@ -1010,6 +1020,7 @@ function renderBatc(d) {
     cls = 'pmw-verdict-danger';
     // Détail par piste
     var why = [];
+    if (prsViolation2013 || prsViolationNow) why.push('PRS actif — seules 25R/25L et 19/25R autorisées par règlement');
     batcPistes.forEach(function(rwy){
       var c2 = comps[rwy]; if(!c2) return;
       var m = c2.tw||0, g = (c2.tw_g!==null&&c2.tw_g!==undefined)?c2.tw_g:m;
