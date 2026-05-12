@@ -210,7 +210,7 @@
     <div class="pmw-plainte-actions">
       <button class="pmw-plainte-btn pmw-plainte-btn-dl" onclick="pmwDownloadCapture()">⬇ Télécharger l'image</button>
       <button class="pmw-plainte-btn pmw-plainte-btn-copy" onclick="pmwCopyMail()">📋 Copier le texte</button>
-      <button class="pmw-plainte-btn pmw-plainte-btn-mail" onclick="pmwOpenMailto()">✉ Ouvrir dans Mail</button>
+      <button class="pmw-plainte-btn pmw-plainte-btn-mail" onclick="pmwOpenMailto()">📧 Télécharger .eml (ouvre dans Mail)</button>
       <button class="pmw-plainte-btn pmw-plainte-btn-close" onclick="pmwClosePlainte()">✕ Fermer</button>
     </div>
     <p style="font-size:.68rem;color:#aaa;margin-top:10px;line-height:1.4">
@@ -770,8 +770,9 @@ function renderTaf(forecast, rawTaf){
     ];
     var comps = f.components || {};
 
-    // Une config est impossible si vent arrière moyen > 7kt sur une piste
-    function cfgImpossible(rwys) {
+    // Une config est impossible si vent arrière moyen > 7kt OU si PRS actif et config non-PRS
+    function cfgImpossible(rwys, label) {
+      if (f.prs_active && label !== '25R/25L' && label !== '19/25R') return true;
       return rwys.some(function(rwy){
         var c = comps[rwy]; if(!c) return false;
         return (c.tw||0) > 7;
@@ -786,7 +787,7 @@ function renderTaf(forecast, rawTaf){
 
     var impossible=[], possible=[];
     ALL_CONFIGS.forEach(function(cfg){
-      if(cfgImpossible(cfg.rwys)) impossible.push(cfg.label);
+      if(cfgImpossible(cfg.rwys, cfg.label)) impossible.push(cfg.label);
       else possible.push({label:cfg.label, hw:cfgHw(cfg.rwys)});
     });
     // Trier les possibles par headwind décroissant
@@ -902,7 +903,9 @@ function render3Col(d) {
 
       // Une config est possible si AUCUNE de ses pistes n'a de vent arrière > seuil
       // Pour AIP 2013 : seuil 10 kt rafale arrière, pour AIP actuel : 7 kt rafale arrière
-      function configOk(rwys_list) {
+      function configOk(rwys_list, label) {
+        // Si PRS actif, seules les configs PRS sont utilisables par règlement
+        if (prs_active_local && label !== '25R/25L' && label !== '19/25R') return false;
         return rwys_list.every(function(rwy) {
           var c = comps[rwy];
           if(!c) return true;
@@ -913,7 +916,7 @@ function render3Col(d) {
 
       var html = '';
       CONFIGS.forEach(function(cfg) {
-        var ok = configOk(cfg.rwys);
+        var ok = configOk(cfg.rwys, cfg.label);
         var cls = ok ? 'pmw-cb-ok' : 'pmw-cb-ko';
         html += '<span class="pmw-cfg-badge '+cls+'">'+cfg.label+'</span>';
       });
@@ -1309,8 +1312,122 @@ window.pmwToggleTable = function() {
 
 window.pmwOpenMailto = function() {
   var now = new Date();
-  var dateStr = now.toLocaleDateString('fr-BE', {day:'2-digit',month:'2-digit',year:'numeric'});
-  var subject = 'Plainte nuisance aérienne EBBR — '+window._currentBatcRwy+' — '+dateStr;
-  window.location.href = 'mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(pmwMailBody);
+  var dateStr = now.toLocaleDateString('fr-BE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  var timeStr = now.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'});
+  var subject = 'Plainte nuisance aérienne EBBR — '+window._currentBatcRwy+' — '+dateStr+' '+timeStr;
+
+  // Données météo pour le template
+  var d = window._lastMeteoData || {};
+  var planStr = pmwMailBody.split('=== PLANNING AIP ===')[1]
+    ? pmwMailBody.split('=== PLANNING AIP ===')[1].split('===')[0].trim() : '';
+  var why = pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1]
+    ? pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1].split('•').slice(1).map(function(w){return w.trim().split('
+')[0];}) : [];
+
+  // ── HTML du corps du mail ─────────────────────────────────────────────
+  var captureHtml = pmwCaptureDataUrl
+    ? '<p><img src="'+pmwCaptureDataUrl+'" style="max-width:100%;border:1px solid #ddd;border-radius:8px" alt="Capture conditions EBBR"></p>' : '';
+
+  var htmlBody = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif;color:#333;max-width:700px;margin:0 auto;padding:20px">'
+    // En-tête
+    + '<div style="background:#0e3d6b;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0">'
+    + '<div style="font-size:1.2em;font-weight:bold">✉ Plainte — Nuisance aérienne Brussels Airport</div>'
+    + '<div style="font-size:.85em;opacity:.8;margin-top:4px">'+dateStr+' à '+timeStr+'</div>'
+    + '</div>'
+
+    // Corps
+    + '<div style="border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;padding:24px">'
+    + '<p>Madame, Monsieur,</p>'
+    + '<p>Je vous contacte suite à des nuisances aériennes constatées au-dessus de ma commune. Les conditions météorologiques relevées au moment des survols démontrent une violation du Plan de Répartition du Survol (PRS) en vigueur.</p>'
+
+    // Tableau météo
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px">📊 Conditions météo EBBR</h3>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:.9em">'
+    + '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Date / Heure</td><td style="padding:8px 12px">'+dateStr+' à '+timeStr+' (heure locale)</td></tr>'
+    + '<tr><td style="padding:8px 12px;font-weight:bold">METAR EBBR</td><td style="padding:8px 12px;font-family:monospace;font-size:.85em">'+(d.metar||'—')+'</td></tr>'
+    + '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Vent moyen</td><td style="padding:8px 12px">'+(d.wspd||'—')+' kt — '+(d.wdir||'—')+'°</td></tr>'
+    + '<tr><td style="padding:8px 12px;font-weight:bold">Rafales</td><td style="padding:8px 12px">'+(d.wgst ? d.wgst+' kt' : '—')+(d.wgst_irm?' (IRM: '+d.wgst_irm+' kt)':'')+'</td></tr>'
+    + '</table>'
+
+    // Config BATC
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">✈ Configuration BATC en service</h3>'
+    + '<div style="display:inline-block;background:#fde8e8;border:2px solid #e53e3e;border-radius:8px;padding:10px 20px;font-size:1.1em;font-weight:bold;color:#c0392b">'
+    + window._currentBatcRwy + ' — NON AUTORISÉE</div>'
+
+    // Planning AIP
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">📅 Planning PRS applicable</h3>'
+    + '<div style="background:#f0f4f8;padding:12px;border-radius:6px;font-family:monospace;font-size:.85em;white-space:pre-wrap">'+planStr+'</div>'
+
+    // Comparatif AIP
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">⚖ Analyse réglementaire</h3>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:.85em">'
+    + '<tr style="background:#0e3d6b;color:#fff"><th style="padding:8px 12px;text-align:left">Critère</th><th style="padding:8px 12px;text-align:left">AIP Sept. 2013 (légal)</th><th style="padding:8px 12px;text-align:left">AIP Actuel (skeyes)</th></tr>'
+    + '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent arrière piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (max 10 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (pratique ~6.5 kt)</td></tr>'
+    + '<tr style="background:#f9f9f9"><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent latéral piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">15 kt (max 20 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">20 kt ⚠</td></tr>'
+    + '<tr><td style="padding:8px 12px">Piste 01/07</td><td style="padding:8px 12px">max 5 kt arrière</td><td style="padding:8px 12px">non mentionné ⚠</td></tr>'
+    + '</table>'
+
+    // Violations
+    + '<h3 style="color:#c0392b;border-bottom:2px solid #c0392b;padding-bottom:6px;margin-top:20px">🚨 Violations constatées</h3>'
+    + '<ul style="background:#fde8e8;border-radius:6px;padding:16px 16px 16px 32px">'
+    + why.map(function(w){ return '<li style="margin-bottom:6px">'+w+'</li>'; }).join('')
+    + '</ul>'
+    + '<p style="margin-top:8px;font-size:.85em;color:#666">Selon l'instruction ministérielle du 17/07/2013 (base légale du PRS — AIP EBBR AD 2.21, non modifiable par skeyes sans décision ministérielle).</p>'
+
+    // Capture
+    + (captureHtml ? '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">📸 Capture du tableau de bord</h3>' + captureHtml : '')
+
+    // Formule de politesse
+    + '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #ddd">'
+    + '<p>Dans l'attente de votre réponse, je vous prie d'agréer mes salutations distinguées.</p>'
+    + '<p style="color:#aaa;font-size:.8em;margin-top:16px">— Via <strong>ça suffit ! ASBL</strong> — <a href="https://www.casuffit.be" style="color:#1673B2">casuffit.be</a></p>'
+    + '</div>'
+    + '</div>'
+    + '</body></html>';
+
+  // ── Générer le fichier .eml ───────────────────────────────────────────
+  var boundary = 'CaSuffit' + Date.now();
+  var emlContent = [
+    'From: ',
+    'To: ',
+    'Subject: =?UTF-8?B?' + btoa(unescape(encodeURIComponent(subject))) + '?=',
+    'MIME-Version: 1.0',
+    'Content-Type: multipart/mixed; boundary="' + boundary + '"',
+    '',
+    '--' + boundary,
+    'Content-Type: text/html; charset=UTF-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    btoa(unescape(encodeURIComponent(htmlBody))),
+    '',
+  ];
+
+  // Ajouter la capture en pièce jointe si disponible
+  if (pmwCaptureDataUrl) {
+    var imgData = pmwCaptureDataUrl.split(',')[1];
+    var now2 = new Date();
+    var fname = 'conditions-ebbr-' + now2.toISOString().slice(0,16).replace(/[T:]/g,'-') + '.png';
+    emlContent = emlContent.concat([
+      '--' + boundary,
+      'Content-Type: image/png; name="' + fname + '"',
+      'Content-Transfer-Encoding: base64',
+      'Content-Disposition: attachment; filename="' + fname + '"',
+      '',
+      imgData,
+      '',
+    ]);
+  }
+
+  emlContent.push('--' + boundary + '--');
+
+  var blob = new Blob([emlContent.join('
+')], {type: 'message/rfc822'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  var fn   = 'plainte-ebbr-' + new Date().toISOString().slice(0,16).replace(/[T:]/g,'-') + '.eml';
+  a.download = fn;
+  a.href = url;
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
 };
 </script>
