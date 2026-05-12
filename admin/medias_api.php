@@ -1,9 +1,15 @@
 <?php
 // admin/medias_api.php — API JSON pour la modale médias de l'éditeur de pages
 require_once __DIR__ . '/../config.php';
-session_start(); requireAdmin();
-
+session_start();
 header('Content-Type: application/json; charset=utf-8');
+
+// Vérification auth compatible API (retourne JSON au lieu de rediriger)
+if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
+    http_response_code(401);
+    echo json_encode(['ok' => false, 'error' => 'Non autorisé']);
+    exit;
+}
 $db = getDB();
 $action = $_GET['action'] ?? '';
 
