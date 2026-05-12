@@ -1,8 +1,15 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 // admin/medias_api.php — API JSON pour la modale médias de l'éditeur de pages
 require_once __DIR__ . '/../config.php';
-session_start();
+// session_start() déjà géré par config.php via requireAdmin/requireMembre
+if (session_status() === PHP_SESSION_NONE) session_start();
 header('Content-Type: application/json; charset=utf-8');
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    echo json_encode(['ok' => false, 'error' => "PHP $errno: $errstr line $errline"]);
+    exit;
+});
 
 // Vérification auth compatible API (retourne JSON au lieu de rediriger)
 if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
@@ -15,11 +22,11 @@ $action = $_GET['action'] ?? '';
 
 // ── Lister les médias ─────────────────────────────────────────────────────
 if ($action === 'list') {
-    $medias = $db->query("SELECT filename, original_name FROM medias ORDER BY uploaded_at DESC")->fetchAll();
+    $medias = $db->query("SELECT fichier, nom FROM medias ORDER BY uploaded_at DESC")->fetchAll();
     $result = array_map(function($m) {
         return [
-            'url'  => SITE_URL . '/medias/' . $m['filename'],
-            'name' => $m['original_name'] ?: $m['filename'],
+            'url'  => '/medias/' . $m['fichier'],
+            'name' => $m['nom'] ?: $m['fichier'],
         ];
     }, $medias);
     echo json_encode($result);
@@ -49,8 +56,8 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0755, true);
 
     if (move_uploaded_file($file['tmp_name'], $dest)) {
-        $db->prepare("INSERT INTO medias (filename, original_name, mime_type, taille, alt_text, uploaded_by) VALUES (?,?,?,?,?,?)")
-           ->execute([$filename, $file['name'], $file['type'], $file['size'], '', ADMIN_USER]);
+        $db->prepare("INSERT INTO medias (fichier, nom, type, taille) VALUES (?,?,?,?)")
+           ->execute([$filename, $file['name'], $file['type'], $file['size']]);
         echo json_encode(['ok' => true, 'filename' => $filename, 'url' => SITE_URL . '/medias/' . $filename]);
     } else {
         echo json_encode(['ok' => false, 'error' => 'Impossible de sauvegarder le fichier']);

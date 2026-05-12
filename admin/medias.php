@@ -24,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_FILES['media']['tmp_name']
         $filename = date('Ymd_His') . '_' . preg_replace('/[^a-z0-9]/', '', strtolower(pathinfo($file['name'], PATHINFO_FILENAME))) . '.' . $ext;
         $dest     = MEDIAS_DIR . $filename;
         if (move_uploaded_file($file['tmp_name'], $dest)) {
-            $db->prepare("INSERT INTO medias (filename, original_name, mime_type, taille, alt_text, uploaded_by) VALUES (?,?,?,?,?,?)")
-               ->execute(array($filename, $file['name'], $file['type'], $file['size'], $alt, ADMIN_USER));
+            $db->prepare("INSERT INTO medias (fichier, nom, type, taille) VALUES (?,?,?,?)")
+               ->execute(array($filename, $file['name'], $file['type'], $file['size']));
             $msg = '✅ Image uploadée : '.$filename;
         } else { $error = 'Impossible de déplacer le fichier.'; }
     }
@@ -33,11 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_FILES['media']['tmp_name']
 
 // Supprimer
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $stmt = $db->prepare("SELECT filename FROM medias WHERE id=?");
+    $stmt = $db->prepare("SELECT fichier FROM medias WHERE id=?");
     $stmt->execute(array(intval($_GET['delete'])));
     $media = $stmt->fetch();
     if ($media) {
-        $path = MEDIAS_DIR . $media['filename'];
+        $path = MEDIAS_DIR . $media['fichier'];
         if (file_exists($path)) { unlink($path); }
         $db->prepare("DELETE FROM medias WHERE id=?")->execute(array(intval($_GET['delete'])));
         header('Location: medias.php?msg='.urlencode('Média supprimé.')); exit;
@@ -146,13 +146,13 @@ $medias = $db->query("SELECT * FROM medias ORDER BY uploaded_at DESC")->fetchAll
     <div class="media-grid">
       <?php foreach ($medias as $m): ?>
       <div class="media-item">
-        <img src="<?= htmlspecialchars(MEDIAS_URL . $m['filename']) ?>" alt="<?= htmlspecialchars($m['alt_text'] ?: $m['original_name']) ?>">
+        <img src="<?= htmlspecialchars(MEDIAS_URL . $m['fichier']) ?>" alt="<?= htmlspecialchars($m['nom']) ?>">
         <div class="media-info">
-          <div class="media-name" title="<?= htmlspecialchars($m['original_name']) ?>"><?= htmlspecialchars($m['original_name']) ?></div>
+          <div class="media-name" title="<?= htmlspecialchars($m['nom']) ?>"><?= htmlspecialchars($m['nom']) ?></div>
           <div style="color:#aaa"><?= round($m['taille']/1024) ?> KB — <?= date('d/m/Y', strtotime($m['uploaded_at'])) ?></div>
         </div>
         <div class="media-actions">
-          <button class="media-copy" onclick="copyUrl('<?= htmlspecialchars(MEDIAS_URL . $m['filename']) ?>', this)" title="Copier l'URL">📋 Copier URL</button>
+          <button class="media-copy" onclick="copyUrl('<?= htmlspecialchars(MEDIAS_URL . $m['fichier']) ?>', this)" title="Copier l'URL">📋 Copier URL</button>
           <a href="medias.php?delete=<?= $m['id'] ?>" onclick="return confirm('Supprimer cette image ?')">
             <button class="btn-red">🗑</button>
           </a>
