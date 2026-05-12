@@ -209,6 +209,30 @@ if ($edit_page) {
     .sb-arg{background:#fff3e0;border-color:#ffcc80;color:#e65100}
     .sb-liste{background:#f5f5f5;border-color:#bdbdbd;color:#424242}
     .sb-bq{background:#fce4ec;border-color:#f48fb1;color:#880e4f}
+    .sb-img{background:#e8f5e9;border-color:#66bb6a;color:#1b5e20}
+    /* Modale médias */
+    .media-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center}
+    .media-overlay.open{display:flex}
+    .media-modal{background:#fff;border-radius:14px;width:min(92vw,820px);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.25)}
+    .media-modal-head{padding:14px 20px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .media-modal-head h3{font-size:.9rem;font-weight:700;color:#0e3d6b}
+    .media-modal-body{padding:16px;overflow-y:auto;flex:1}
+    .media-upload-zone{border:2px dashed #bee3f8;border-radius:10px;padding:20px;text-align:center;background:#f0f7ff;cursor:pointer;margin-bottom:16px;transition:all .2s}
+    .media-upload-zone:hover,.media-upload-zone.drag{border-color:#1673B2;background:#e6f1fb}
+    .media-upload-zone input{display:none}
+    .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+    .media-item{border:2px solid #eee;border-radius:8px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
+    .media-item:hover{border-color:#1673B2;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+    .media-item.selected{border-color:#1673B2;box-shadow:0 0 0 3px rgba(22,115,178,.3)}
+    .media-item img{width:100%;height:90px;object-fit:cover;display:block}
+    .media-item-name{font-size:.65rem;color:#666;padding:4px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .media-insert-btn{display:none;width:100%;padding:10px;background:#1673B2;color:#fff;border:none;border-radius:0 0 8px 8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit}
+    .media-insert-btn.visible{display:block}
+    .media-opts{padding:10px 16px;border-top:1px solid #eee;display:none;gap:10px;align-items:center;flex-shrink:0}
+    .media-opts.visible{display:flex;flex-wrap:wrap}
+    .media-opts label{font-size:.75rem;color:#555;font-weight:600}
+    .media-opts input,.media-opts select{padding:5px 8px;border:1.5px solid #dde4ed;border-radius:6px;font-size:.78rem;font-family:inherit;outline:none}
+    .media-opts input:focus{border-color:#1673B2}
 
     .apanel{background:#f5f8fc;display:flex;flex-direction:column;overflow:hidden}
     .apanel-head{padding:10px 16px;background:#fff;border-bottom:1px solid #e0e8f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -444,6 +468,7 @@ if ($edit_page) {
             <button type="button" class="sb sb-arg"      onclick="ins('arg')">💬 Argument</button>
             <button type="button" class="sb sb-liste"    onclick="ins('liste')">• Liste</button>
             <button type="button" class="sb sb-bq"       onclick="ins('bq')">❝ Citation</button>
+            <button type="button" class="sb sb-img"      onclick="ouvrirMedias()">🖼 Image</button>
           </div>
         </div>
 
@@ -596,5 +621,143 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+<!-- ── Modale sélection médias ── -->
+<div class="media-overlay" id="media-overlay" onclick="if(event.target===this)fermerMedias()">
+  <div class="media-modal">
+    <div class="media-modal-head">
+      <h3>🖼 Sélectionner ou uploader une image</h3>
+      <button onclick="fermerMedias()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#888">✕</button>
+    </div>
+    <div class="media-modal-body">
+      <!-- Zone upload -->
+      <div class="media-upload-zone" id="muz" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="mediaDropUpload(event)" onclick="document.getElementById('media-file-input').click()">
+        <input type="file" id="media-file-input" accept="image/*" onchange="mediaUpload(this.files[0])">
+        <div style="font-size:1.5rem">📁</div>
+        <div style="font-size:.82rem;color:#555;margin-top:6px">Glissez une image ici ou <strong>cliquez pour uploader</strong></div>
+        <div id="media-upload-status" style="font-size:.75rem;color:#1673B2;margin-top:4px"></div>
+      </div>
+      <!-- Grille médias -->
+      <div class="media-grid" id="media-grid"></div>
+    </div>
+    <!-- Options d'insertion -->
+    <div class="media-opts" id="media-opts">
+      <div style="flex:0 0 100%;font-size:.75rem;font-weight:700;color:#0e3d6b">Options d'insertion :</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <label>Texte alternatif</label>
+        <input type="text" id="media-alt" placeholder="Description de l'image" style="flex:1;min-width:150px">
+        <label>Largeur</label>
+        <select id="media-width">
+          <option value="">Automatique</option>
+          <option value="100%">100% (pleine largeur)</option>
+          <option value="75%">75%</option>
+          <option value="50%">50%</option>
+          <option value="33%">33%</option>
+          <option value="200px">200px</option>
+          <option value="400px">400px</option>
+        </select>
+        <label>Alignement</label>
+        <select id="media-align">
+          <option value="">Aucun</option>
+          <option value="left">Gauche (texte autour)</option>
+          <option value="center">Centré</option>
+          <option value="right">Droite (texte autour)</option>
+        </select>
+      </div>
+      <button id="media-insert-btn" class="media-insert-btn visible" onclick="insererImage()">✅ Insérer l'image</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var mediaSelected = null;
+
+function ouvrirMedias() {
+  document.getElementById('media-overlay').classList.add('open');
+  chargerMedias();
+}
+function fermerMedias() {
+  document.getElementById('media-overlay').classList.remove('open');
+  mediaSelected = null;
+  document.getElementById('media-opts').classList.remove('visible');
+  document.querySelectorAll('.media-item').forEach(function(i){ i.classList.remove('selected'); });
+}
+
+function chargerMedias() {
+  fetch('medias_api.php?action=list')
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      var grid = document.getElementById('media-grid');
+      if (!data.length) {
+        grid.innerHTML = '<div style="color:#aaa;font-size:.82rem;text-align:center;padding:20px;grid-column:1/-1">Aucun média — uploadez votre première image ci-dessus.</div>';
+        return;
+      }
+      grid.innerHTML = data.map(function(m) {
+        return '<div class="media-item" data-url="'+m.url+'" data-name="'+m.name+'" onclick="selectMedia(this)">'
+          + '<img src="'+m.url+'" alt="'+m.name+'" loading="lazy">'
+          + '<div class="media-item-name">'+m.name+'</div>'
+          + '</div>';
+      }).join('');
+    })
+    .catch(function(){ document.getElementById('media-grid').innerHTML = '<div style="color:#e53e3e;font-size:.82rem;padding:20px">Erreur de chargement des médias.</div>'; });
+}
+
+function selectMedia(el) {
+  document.querySelectorAll('.media-item').forEach(function(i){ i.classList.remove('selected'); });
+  el.classList.add('selected');
+  mediaSelected = {url: el.dataset.url, name: el.dataset.name};
+  document.getElementById('media-alt').value = el.dataset.name.replace(/\.[^.]+$/, '').replace(/[-_]/g,' ');
+  document.getElementById('media-opts').classList.add('visible');
+}
+
+function insererImage() {
+  if (!mediaSelected) return;
+  var alt    = document.getElementById('media-alt').value || '';
+  var width  = document.getElementById('media-width').value;
+  var align  = document.getElementById('media-align').value;
+
+  var style = '';
+  if (width)  style += 'width:'+width+';';
+  if (align === 'center') style += 'display:block;margin:0 auto;';
+  else if (align === 'left')  style += 'float:left;margin:0 12px 8px 0;';
+  else if (align === 'right') style += 'float:right;margin:0 0 8px 12px;';
+
+  var tag = '<img src="'+mediaSelected.url+'" alt="'+alt+'"'+(style?' style="'+style+'"':'')+'>';
+
+  // Insérer dans le textarea à la position du curseur
+  var ta = document.getElementById('f-contenu');
+  var start = ta.selectionStart, end = ta.selectionEnd;
+  ta.value = ta.value.substring(0, start) + tag + ta.value.substring(end);
+  ta.selectionStart = ta.selectionEnd = start + tag.length;
+  ta.dispatchEvent(new Event('input'));
+  fermerMedias();
+}
+
+function mediaDropUpload(event) {
+  event.preventDefault();
+  document.getElementById('muz').classList.remove('drag');
+  var file = event.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) mediaUpload(file);
+}
+
+function mediaUpload(file) {
+  if (!file) return;
+  var status = document.getElementById('media-upload-status');
+  status.textContent = '⏳ Upload en cours...';
+  var fd = new FormData();
+  fd.append('file', file);
+  fetch('medias_api.php?action=upload', {method:'POST', body:fd})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.ok) {
+        status.textContent = '✅ ' + d.filename;
+        chargerMedias();
+      } else {
+        status.textContent = '⚠ ' + (d.error || 'Erreur');
+      }
+    })
+    .catch(function(){ status.textContent = '⚠ Erreur réseau'; });
+}
+</script>
+
 </body>
 </html>
