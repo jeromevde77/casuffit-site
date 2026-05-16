@@ -10,6 +10,23 @@
 
   <div class="pmh-body">
 
+    <!-- ── Stats automatiques depuis BDD ── -->
+    <div class="pmh-stats-auto" id="pmh-stats-auto">
+      <div class="pmh-stats-header">
+        <span class="pmh-stats-title">📊 Statistiques automatiques (depuis base de données)</span>
+        <div class="pmh-stats-tabs">
+          <button class="pmh-stab active" data-period="30d">30 jours</button>
+          <button class="pmh-stab" data-period="90d">90 jours</button>
+          <button class="pmh-stab" data-period="365d">1 an</button>
+        </div>
+      </div>
+      <div id="pmh-stats-content">
+        <div class="pmh-stats-loading">Chargement des statistiques…</div>
+      </div>
+    </div>
+
+    <hr class="pmh-sep">
+
     <p class="pmh-intro">
       Saisissez une période, analysez les données IRM, indiquez la piste réellement utilisée sur chaque ligne, puis exportez en Excel pour vos courriers de plainte.
     </p>
@@ -211,6 +228,25 @@
 .pmh-plan-mixed{background:#fff8ee;border:1px solid #ffd080;color:#c97200}
 .pmh-plan-dep{font-size:.72rem}.pmh-plan-arr{font-size:.72rem}
 .pmh-plan-plage{font-size:.62rem;color:#aaa}
+/* Stats auto BDD */
+.pmh-stats-auto { background: #f0f6fb; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; }
+.pmh-stats-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.pmh-stats-title { font-weight: 700; color: #0e3d6b; font-size: .9rem; }
+.pmh-stats-tabs { display: flex; gap: 6px; }
+.pmh-stab { background: #fff; border: 1px solid #c8dff0; border-radius: 4px; padding: 4px 10px; font-size: .78rem; cursor: pointer; color: #1673B2; }
+.pmh-stab.active { background: #1673B2; color: #fff; border-color: #1673B2; }
+.pmh-stats-loading { text-align: center; color: #888; font-size: .85rem; padding: 12px; }
+.pmh-stats-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.pmh-kpi { background: #fff; border-radius: 6px; padding: 10px 12px; text-align: center; border-top: 3px solid #1673B2; }
+.pmh-kpi.bad { border-top-color: #e53e3e; }
+.pmh-kpi-val { font-size: 1.5rem; font-weight: 800; color: #FF9900; }
+.pmh-kpi.bad .pmh-kpi-val { color: #e53e3e; }
+.pmh-kpi-lab { font-size: .7rem; color: #666; margin-top: 3px; }
+.pmh-stats-chart { width: 100%; height: 120px; }
+.pmh-chart-bar { fill: #1673B2; }
+.pmh-chart-bar.prs { fill: #e53e3e; }
+.pmh-sep { border: none; border-top: 1px solid #dde; margin: 16px 0; }
+.pmh-stats-note { font-size: .72rem; color: #888; margin-top: 8px; text-align: right; }
 </style>
 
 <script>
@@ -624,4 +660,117 @@ window.addEventListener('DOMContentLoaded',function(){
 });
 
 })();
+
+// ── Stats auto depuis BDD ─────────────────────────────────────────────────
+(function() {
+  var currentPeriod = '30d';
+
+  function loadStats(period) {
+    currentPeriod = period;
+    var el = document.getElementById('pmh-stats-content');
+    if (!el) return;
+    el.innerHTML = '<div class="pmh-stats-loading">Chargement…</div>';
+
+    fetch('/api/metar_stats.php?period=' + period + '&view=daily')
+      .then(function(r) { return r.json(); })
+      .then(function(d) { renderStats(d); })
+      .catch(function() {
+        el.innerHTML = '<div class="pmh-stats-loading" style="color:#e53e3e">Données non disponibles — la base historique se remplit progressivement.</div>';
+      });
+  }
+
+  function renderStats(d) {
+    var el = document.getElementById('pmh-stats-content');
+    if (!el) return;
+
+    if (!d.data || d.data.length === 0) {
+      el.innerHTML = '<div class="pmh-stats-loading">Pas encore de données. La base se remplit toutes les 30 min.</div>';
+      return;
+    }
+
+    var totalDays  = d.total_days || 0;
+    var prsDays    = d.prs_days   || 0;
+    var prs13Days  = d.prs13_days || 0;
+    var prsPct     = d.prs_days_pct  || 0;
+    var prs13Pct   = d.prs13_days_pct || 0;
+    var records    = d.data.reduce(function(s, r) { return s + (+r.records); }, 0);
+
+    // KPIs
+    var html = '<div class="pmh-stats-kpis">'
+      + '<div class="pmh-kpi bad"><div class="pmh-kpi-val">' + prsPct + '%</div><div class="pmh-kpi-lab">Jours piste 01<br>(normes actuelles)</div></div>'
+      + '<div class="pmh-kpi bad"><div class="pmh-kpi-val">' + prs13Pct + '%</div><div class="pmh-kpi-lab">Jours piste 01<br>(normes légales 2013)</div></div>'
+      + '<div class="pmh-kpi"><div class="pmh-kpi-val">' + prsDays + '</div><div class="pmh-kpi-lab">Jours en 01<br>sur ' + totalDays + ' analysés</div></div>'
+      + '<div class="pmh-kpi"><div class="pmh-kpi-val">' + (prsDays - prs13Days) + '</div><div class="pmh-kpi-lab">Jours illégaux<br>(01 sans justif.)</div></div>'
+      + '</div>';
+
+    // Mini graphique barres (jours PRS par semaine)
+    html += renderChart(d.data);
+
+    html += '<div class="pmh-stats-note">⚡ ' + records + ' METARs analysés — mise à jour toutes les 30 min</div>';
+
+    el.innerHTML = html;
+  }
+
+  function renderChart(data) {
+    if (data.length < 2) return '';
+
+    // Agréger par semaine
+    var weeks = {};
+    data.forEach(function(r) {
+      var d = new Date(r.day + 'T00:00:00Z');
+      var mon = new Date(d);
+      mon.setUTCDate(d.getUTCDate() - d.getUTCDay() + 1);
+      var key = mon.toISOString().slice(0, 10);
+      if (!weeks[key]) weeks[key] = { total: 0, prs: 0 };
+      weeks[key].total++;
+      if (+r.prs_count > 0) weeks[key].prs++;
+    });
+
+    var keys  = Object.keys(weeks).sort();
+    var maxPct = 100;
+    var w = 100 / keys.length;
+    var bars = '';
+    var labels = '';
+
+    keys.forEach(function(k, i) {
+      var wk    = weeks[k];
+      var pct   = wk.total > 0 ? Math.round(wk.prs / wk.total * 100) : 0;
+      var h     = (pct / maxPct * 80);
+      var x     = i * w + w * 0.15;
+      var bw    = w * 0.7;
+      var cls   = pct >= 30 ? 'pmh-chart-bar prs' : 'pmh-chart-bar';
+      bars += '<rect class="' + cls + '" x="' + x + '%" y="' + (90 - h) + '" width="' + bw + '%" height="' + h + '" rx="2">'
+            + '<title>Semaine du ' + k + ' : ' + pct + '% jours piste 01 (' + wk.prs + '/' + wk.total + ')</title></rect>';
+      // Label semaine (toutes les 4 semaines)
+      if (i % 4 === 0) {
+        var lbl = k.slice(5); // MM-DD
+        labels += '<text x="' + (x + bw/2) + '%" y="100%" text-anchor="middle" style="font-size:8px;fill:#888">' + lbl + '</text>';
+      }
+    });
+
+    return '<svg class="pmh-stats-chart" viewBox="0 0 100 110" preserveAspectRatio="none">'
+         + '<text x="0" y="10" style="font-size:7px;fill:#888">100%</text>'
+         + '<line x1="0" y1="10" x2="100%" y2="10" stroke="#eee" stroke-width="0.5"/>'
+         + '<text x="0" y="50" style="font-size:7px;fill:#888">50%</text>'
+         + '<line x1="0" y1="50" x2="100%" y2="50" stroke="#eee" stroke-width="0.5"/>'
+         + bars + labels
+         + '</svg>';
+  }
+
+  // Init
+  document.addEventListener('DOMContentLoaded', function() {
+    // Boutons de période
+    document.querySelectorAll('.pmh-stab').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.pmh-stab').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        loadStats(btn.dataset.period);
+      });
+    });
+
+    // Chargement initial
+    loadStats('30d');
+  });
+})();
+
 </script>

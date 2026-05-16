@@ -502,7 +502,7 @@ header.site-header {
 .tab-panel { display: none; }
 .tab-panel.active { display: block; padding: 20px 24px; }
 /* Limiter la largeur quand pas de colonne droite */
-#colonne-gauche { min-width: 0; overflow: hidden; }
+#colonne-gauche { min-width: 0; }
 
 .section-title {
   color: var(--orange-hex);
@@ -1819,7 +1819,12 @@ function showSubTab(id, el, noScroll) {
   if (panel) {
     panel.classList.add('active');
     updateColonneDroite(id);
-  setTimeout(updateSansDroiteClass, 100);
+    setTimeout(updateSansDroiteClass, 100);
+  } else {
+    // Page widget-only (pas de tab-panel) — init les widgets
+    updateColonneDroite(id);
+    setTimeout(updateSansDroiteClass, 100);
+    if (typeof window.rvwInitYear === 'function') window.rvwInitYear();
   }
 
   if (!noScroll && window.innerWidth <= 900) {
@@ -1938,6 +1943,10 @@ document.addEventListener('DOMContentLoaded', function() {
   } else {
     updateColonneDroite(firstTabSlug);
   setTimeout(updateSansDroiteClass, 100);
+  // Init widgets sur pages sans tab panel (widget-only)
+  if (!document.getElementById('tab-' + firstTabSlug)) {
+    if (typeof window.rvwInitYear === 'function') window.rvwInitYear();
+  }
   }
 });
 

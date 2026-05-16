@@ -130,6 +130,19 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
   .stat-icon { font-size:1.3rem; }
   .stat-info .val { font-size:1.2rem; }
 }
+
+/* Bloc historique METAR */
+.metar-hist-box { background: #f0f6fb; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.mh-info  { display: flex; align-items: flex-start; gap: 12px; flex: 1; min-width: 220px; }
+.mh-icon  { font-size: 1.8rem; line-height: 1; }
+.mh-info strong { color: #0e3d6b; }
+.mh-info small  { color: #666; font-size: .78rem; }
+.mh-form  { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mh-select { padding: 5px 8px; border: 1px solid #c8dff0; border-radius: 5px; background: #fff; color: #0e3d6b; font-size: .85rem; }
+.mh-btn { padding: 7px 14px; border: none; border-radius: 5px; cursor: pointer; font-size: .82rem; background: #e0ecf8; color: #1673B2; font-weight: 600; }
+.mh-btn.primary { background: #1673B2; color: #fff; }
+.mh-btn:hover { opacity: .88; }
+.mh-stat { width: 100%; font-size: .75rem; color: #888; border-top: 1px solid #dde; padding-top: 8px; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -226,6 +239,51 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
       <span class="ab-icon">⚙️</span>
       <span class="ab-label">Paramètres</span>
     </a>
+    <a href="metar_history.php" class="action-btn">
+      <span class="ab-icon">📋</span>
+      <span class="ab-label">Historique METAR</span>
+    </a>
+    <a href="run_cron.php" class="action-btn">
+      <span class="ab-icon">🌬</span>
+      <span class="ab-label">Forcer METAR</span>
+    </a>
+    <a href="backup.php" class="action-btn">
+      <span class="ab-icon">💾</span>
+      <span class="ab-label">Backup</span>
+    </a>
+  </div>
+
+  <!-- Section METAR historique -->
+  <div class="actions-title">Historique METAR</div>
+  <div class="metar-hist-box">
+    <div class="mh-info">
+      <span class="mh-icon">📊</span>
+      <div>
+        <strong>Backfill historique</strong><br>
+        <small>Remplit la base avec les données METAR + rafales IRM sur la période choisie.</small>
+      </div>
+    </div>
+    <div class="mh-form">
+      <label>Période :
+        <select id="backfill-days" class="mh-select">
+          <option value="7">7 jours</option>
+          <option value="30" selected>30 jours</option>
+          <option value="90">90 jours</option>
+          <option value="180">6 mois</option>
+          <option value="365">1 an</option>
+        </select>
+      </label>
+      <button onclick="var d=document.getElementById('backfill-days').value;window.location='/admin/metar_backfill.php?days='+d" class="mh-btn primary">▶ Lancer</button>
+      <button onclick="var d=document.getElementById('backfill-days').value;window.location='/admin/metar_backfill.php?days='+d+'&amp;dry=1'" class="mh-btn">🔍 Simuler</button>
+    </div>
+    <div id="mh-log-count" class="mh-stat"><?php
+      try {
+        $count = getDB()->query("SELECT COUNT(*) FROM metar_history")->fetchColumn();
+        $last  = getDB()->query("SELECT MAX(obs_time) FROM metar_history")->fetchColumn();
+        echo number_format($count) . ' enregistrements';
+        if ($last) echo ' · dernier : ' . substr($last, 0, 16);
+      } catch(Exception $e) { echo '(table manquante — exécuter migrate_metar_history.sql)'; }
+    ?></div>
   </div>
 
   <!-- News + Membres -->
@@ -274,5 +332,12 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
   </div>
 
 </div>
+<script>
+function launchBackfill(dry) {
+  var days = document.getElementById('backfill-days').value;
+  window.location.href = '/admin/metar_backfill.php?days=' + days + (dry ? '&dry=1' : '');
+}
+</script>
+
 </body>
 </html>
