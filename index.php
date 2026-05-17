@@ -507,28 +507,27 @@ header.site-header {
   align-items: start;
 }
 @media (max-width: 430px) {
-  /* ── iPhone : taille et graisse de police augmentées ── */
-  body {
-    font-size: 122%;
+  /* ── iPhone : agrandir uniquement les zones de contenu texte ── */
+  .tab-panel.active,
+  .tab-panel.active p,
+  .tab-panel.active li,
+  .tab-panel.active div,
+  .tab-panel.active span,
+  .news-contenu,
+  .news-contenu p,
+  .news-contenu li,
+  .apanel-inner,
+  .apanel-inner p,
+  .apanel-inner li {
+    font-size: 112%;
     font-weight: 300;
     line-height: 1.65;
   }
-  /* Widgets qui refusent l'agrandissement */
-  [data-no-scale], [data-no-scale] * {
-    font-size: revert;
-    font-weight: revert;
-  }
-  /* Sécurité : barre de progression toujours en taille normale */
-  .progress-section, .progress-section * {
-    font-size: revert;
-    font-weight: revert;
-  }
-  p, li, .news-contenu, .tab-panel, .apanel-inner {
-    font-weight: 300;
-  }
+  /* Titres et éléments spécifiques */
+  .tab-panel.active h2,
+  .tab-panel.active h3 { font-size: 115%; }
+  .tab-panel.active .section-title { font-size: 19px; }
   .tab-panel.active { padding: 14px 14px; }
-  .section-title { font-size: 19px; }
-  .news-titre { font-size: 1.05rem; }
 }
 
 @media (max-width: 680px) {
