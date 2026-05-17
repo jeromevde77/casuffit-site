@@ -1321,8 +1321,84 @@ window.pmwToggleTable = function() {
 
 window.pmwOpenMailto = function() {
   var now = new Date();
-  var dateStr = now.toLocaleDateString('fr-BE', {day:'2-digit',month:'2-digit',year:'numeric'});
-  var subject = 'Plainte nuisance aérienne EBBR — '+window._currentBatcRwy+' — '+dateStr;
-  window.location.href = 'mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(pmwMailBody);
+  var dateStr = now.toLocaleDateString('fr-BE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  var timeStr = now.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'});
+  var subject = 'Plainte nuisance aérienne EBBR — '+window._currentBatcRwy+' — '+dateStr+' '+timeStr;
+
+  // Données météo
+  var d = window._lastMeteoData || {};
+  var planStr = pmwMailBody.split('=== PLANNING AIP ===')[1]
+    ? pmwMailBody.split('=== PLANNING AIP ===')[1].split('===')[0].trim() : '';
+  var whyArr = pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1]
+    ? pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1].split('\u2022').slice(1).map(function(w){return w.trim().split('\n')[0];}) : [];
+
+  // ── HTML du corps du mail ─────────────────────────────────────────────
+  var captureHtml = pmwCaptureDataUrl
+    ? '<p><img src="'+pmwCaptureDataUrl+'" style="max-width:100%;border:1px solid #ddd;border-radius:8px" alt="Capture conditions EBBR"></p>' : '';
+
+  var htmlBody = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif;color:#333;max-width:700px;margin:0 auto;padding:20px">'
+    + '<div style="background:#0e3d6b;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0">'
+    + '<div style="font-size:1.2em;font-weight:bold">✉ Plainte — Nuisance aérienne Brussels Airport</div>'
+    + '<div style="font-size:.85em;opacity:.8;margin-top:4px">'+dateStr+' à '+timeStr+'</div>'
+    + '</div>'
+    + '<div style="border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;padding:24px">'
+    + '<p>Madame, Monsieur,</p>'
+    + '<p>Je vous contacte suite à des nuisances aériennes constatées au-dessus de ma commune. Les conditions météorologiques relevées démontrent une violation du Plan de Répartition du Survol (PRS).</p>'
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px">📊 Conditions météo EBBR</h3>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:.9em">'
+    + '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Date / Heure</td><td style="padding:8px 12px">'+dateStr+' à '+timeStr+'</td></tr>'
+    + '<tr><td style="padding:8px 12px;font-weight:bold">METAR</td><td style="padding:8px 12px;font-family:monospace;font-size:.85em">'+(d.metar||'—')+'</td></tr>'
+    + '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Vent moyen</td><td style="padding:8px 12px">'+(d.wspd||'—')+' kt — '+(d.wdir||'—')+'°</td></tr>'
+    + '<tr><td style="padding:8px 12px;font-weight:bold">Rafales</td><td style="padding:8px 12px">'+(d.wgst ? d.wgst+' kt' : '—')+(d.wgst_irm?' (IRM: '+d.wgst_irm+' kt)':'')+'</td></tr>'
+    + '</table>'
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">✈ Configuration BATC en service</h3>'
+    + '<div style="display:inline-block;background:#fde8e8;border:2px solid #e53e3e;border-radius:8px;padding:10px 20px;font-size:1.1em;font-weight:bold;color:#c0392b">'+window._currentBatcRwy+' — NON AUTORISÉE</div>'
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">📅 Planning PRS applicable</h3>'
+    + '<div style="background:#f0f4f8;padding:12px;border-radius:6px;font-family:monospace;font-size:.85em;white-space:pre-wrap">'+planStr+'</div>'
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">⚖ Analyse réglementaire</h3>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:.85em">'
+    + '<tr style="background:#0e3d6b;color:#fff"><th style="padding:8px 12px;text-align:left">Critère</th><th style="padding:8px 12px;text-align:left">AIP 2013 (légal)</th><th style="padding:8px 12px;text-align:left">AIP Actuel (skeyes)</th></tr>'
+    + '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent arrière piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (max 10 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (pratique ~6.5 kt)</td></tr>'
+    + '<tr style="background:#f9f9f9"><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent latéral piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">15 kt (max 20 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">20 kt ⚠</td></tr>'
+    + '</table>'
+    + '<h3 style="color:#c0392b;border-bottom:2px solid #c0392b;padding-bottom:6px;margin-top:20px">🚨 Violations constatées</h3>'
+    + '<ul style="background:#fde8e8;border-radius:6px;padding:16px 16px 16px 32px">'
+    + whyArr.map(function(w){return '<li>'+w+'</li>';}).join('')
+    + '</ul>'
+    + captureHtml
+    + '<p style="margin-top:8px;font-size:.85em;color:#666">Selon l'instruction ministérielle du 17/07/2013 (IM 2013) — seule base légale valide.</p>'
+    + '<p style="color:#aaa;font-size:.8em;margin-top:16px">— Via <strong>ça suffit ! ASBL</strong> — casuffit.be</p>'
+    + '</div></body></html>';
+
+  // ── Générer le fichier .eml ───────────────────────────────────────────
+  var boundary = 'boundary_' + Date.now();
+  var emlLines = [
+    'MIME-Version: 1.0',
+    'Content-Type: multipart/alternative; boundary="'+boundary+'"',
+    'Subject: '+subject,
+    'From: plainte@casuffit.be',
+    '',
+    '--'+boundary,
+    'Content-Type: text/plain; charset=UTF-8',
+    'Content-Transfer-Encoding: 8bit',
+    '',
+    pmwMailBody,
+    '--'+boundary,
+    'Content-Type: text/html; charset=UTF-8',
+    'Content-Transfer-Encoding: 8bit',
+    '',
+    htmlBody,
+    '--'+boundary+'--'
+  ];
+
+  var blob = new Blob([emlLines.join('\r\n')], {type: 'message/rfc822'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url;
+  a.download = 'plainte_EBBR_'+now.toISOString().slice(0,10)+'.eml';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);}, 5000);
 };
 </script>
