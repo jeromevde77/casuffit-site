@@ -93,7 +93,8 @@
       </div>
 
       <!-- Tableau -->
-      <div class="pmh-table-wrap">
+      <div class="pmh-scroll-hint">← Faites défiler horizontalement →</div>
+        <div class="pmh-table-wrap">
         <table class="pmh-table" id="pmh-table">
           <thead>
             <tr>
@@ -249,6 +250,28 @@
 .pmh-wmodal-bg.open { display: flex; }
 .pmh-wmodal { background: #fff; border-radius: 12px; width: 520px; max-width: 96vw;
   max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.3); }
+
+/* ── Mobile iPhone ────────────────────────────────────────────── */
+@media (max-width: 500px) {
+  .pmh { font-size: 12px; }
+  .pmh-table-wrap { -webkit-overflow-scrolling: touch; }
+  .pmh-table { font-size: .72rem; min-width: 600px; }
+  .pmh-table th, .pmh-table td { padding: 5px 5px; }
+  /* Cacher colonnes secondaires sur iPhone */
+  .pmh-table th:nth-child(9), .pmh-table td:nth-child(9),
+  .pmh-table th:nth-child(3), .pmh-table td:nth-child(3) { display: none; }
+  /* Modale plein écran sur mobile */
+  .pmh-wmodal-bg { align-items: flex-end; }
+  .pmh-wmodal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0;
+    max-height: 85vh; }
+  .pmh-widget-btn { padding: 4px 8px; font-size: .7rem; }
+  .pmh-row-btns { flex-wrap: wrap; gap: 2px; }
+  .pmh-row-btn { font-size: .62rem; padding: 2px 4px; }
+  /* Barre de scroll visible */
+  .pmh-scroll-hint { display: block; }
+}
+.pmh-scroll-hint { display: none; text-align: center; font-size: .7rem; color: #aaa;
+  padding: 4px; }
 .pmh-wmodal-head { padding: 12px 18px; border-bottom: 1px solid #eee;
   display: flex; align-items: center; justify-content: space-between; background: #0e3d6b; border-radius: 12px 12px 0 0; }
 .pmh-wmodal-head h3 { margin: 0; color: #fff; font-size: .95rem; }
@@ -846,7 +869,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 function pmhRenderWidgetModal(wrap, d) {
-  var wd = d.wdir, ws = d.wspd, wg = d.wgst, prs = d.prs_active, p13 = d.aip2013?.prs_active;
+  var wd = d.wdir, ws = d.wspd, wg = d.wgst, prs = d.prs_active, p13 = (d.aip2013 && d.aip2013.prs_active);
   var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
   var dirTxt = wd !== null ? dirs[Math.round(wd/22.5)%16] : '—';
 
