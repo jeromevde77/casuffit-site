@@ -211,6 +211,55 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
   .apercu-close-btn{background:#f0f0f0;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:.9rem}
   .apercu-sheet-body{flex:1;overflow-y:auto;padding:16px}
 }
+
+/* ── Palette de styles flottante ──────────────────────────────────── */
+#style-palette {
+  display: none; position: fixed; z-index: 9999;
+  background: #fff; border: 1px solid #c8dff0; border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 14px;
+  width: 560px; max-width: 96vw; max-height: 80vh; overflow-y: auto;
+}
+#style-palette.open { display: block; }
+#style-palette h4 { font-size: .72rem; font-weight: 700; color: #888;
+  text-transform: uppercase; letter-spacing: .06em; margin: 0 0 10px; }
+.sp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sp-item { border: 1.5px solid #e0e8f0; border-radius: 7px; padding: 10px 12px;
+  cursor: pointer; transition: border-color .15s, box-shadow .15s; background: #fff; }
+.sp-item:hover { border-color: #1673B2; box-shadow: 0 2px 8px rgba(22,115,178,.15); }
+.sp-item-label { font-size: .65rem; font-weight: 700; color: #888;
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+/* Previews */
+.sp-prev-cadreB { background: #e8f3fb; border-left: 4px solid #1673B2;
+  color: #1673B2; padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-cadreO { background: #FF9900; color: #fff;
+  padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-cadreV { background: #e8f5e9; border-left: 4px solid #2e7d32;
+  padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-alerte { background: #fff8ee; border: 2px solid #FF9900;
+  padding: 6px 10px; border-radius: 4px; font-size: .78rem; color: #7a4400; }
+.sp-prev-lettre { background: #0e3d6b; color: #fff;
+  padding: 7px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-citation { background: #f5f5f5; border-left: 4px solid #1673B2;
+  padding: 6px 10px; border-radius: 0 3px 3px 0; font-size: .78rem; font-style: italic; color: #1673B2; }
+.sp-prev-bq { border-left: 4px solid #FF9900; background: #fff8ee;
+  padding: 6px 10px; font-size: .78rem; color: #7a4400; }
+.sp-prev-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+.sp-prev-grid-item { background: #e8f3fb; border-top: 2px solid #1673B2;
+  padding: 4px 6px; font-size: .65rem; color: #0e3d6b; }
+.sp-prev-liste { font-size: .78rem; color: #333; padding: 4px 10px; }
+.sp-prev-titre { color: #FF9900; font-weight: 700; font-size: .9rem;
+  border-bottom: 1px solid #c8dff0; padding-bottom: 3px; }
+.sp-prev-texteB { color: #1673B2; font-size: .78rem; }
+.sp-prev-chiffre { display: flex; gap: 6px; align-items: center; }
+.sp-prev-chiffre-val { font-size: 1.2rem; font-weight: 700; color: #1673B2; }
+.sp-prev-chiffre-lbl { font-size: .65rem; color: #888; }
+.sp-prev-sign { background: #e8f3fb; border-left: 3px solid #1673B2;
+  padding: 5px 10px; font-size: .75rem; color: #1673B2; }
+.sp-close { position: absolute; top: 10px; right: 12px; background: none;
+  border: none; font-size: 1.1rem; cursor: pointer; color: #aaa; line-height: 1; }
+.sp-close:hover { color: #333; }
+.sp-section { margin-top: 12px; }
+
 </style>
 </head>
 <body>
@@ -321,20 +370,8 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
 
         <div class="code-wrap">
           <label>Contenu PHP/HTML du widget</label>
-          <div class="palette">
-            <div class="palette-title">Insérer un bloc stylisé</div>
-            <div class="palette-grid">
-              <button type="button" class="sb sb-titre"   onclick="wIns('titre')">📌 Titre section</button>
-              <button type="button" class="sb sb-texte"   onclick="wIns('texte')">📝 Texte bleu</button>
-              <button type="button" class="sb sb-cadreO"  onclick="wIns('cadreO')">🟠 Cadre orange</button>
-              <button type="button" class="sb sb-cadreB"  onclick="wIns('cadreB')">🔵 Cadre bleu</button>
-              <button type="button" class="sb sb-cadreV"  onclick="wIns('cadreV')">🟢 Cadre vert</button>
-              <button type="button" class="sb sb-alerte"  onclick="wIns('alerte')">⚠ Alerte</button>
-              <button type="button" class="sb sb-chiffre" onclick="wIns('chiffre')">🔢 Grand chiffre</button>
-              <button type="button" class="sb sb-arg"     onclick="wIns('arg')">💬 Argument</button>
-              <button type="button" class="sb sb-liste"   onclick="wIns('liste')">• Liste</button>
-              <button type="button" class="sb sb-bq"      onclick="wIns('bq')">❝ Citation</button>
-            </div>
+          <div style="margin-bottom:6px">
+            <button type="button" onclick="openWPalette(this)" style="background:#1673B2;color:#fff;border:none;border-radius:5px;padding:5px 14px;font-size:.78rem;font-weight:700;cursor:pointer">＋ Insérer un style</button>
           </div>
           <textarea name="contenu_php" id="w-contenu" class="code" spellcheck="false" oninput="syncApercu()"><?= htmlspecialchars($widget_php_content) ?></textarea>
         </div>
@@ -533,6 +570,140 @@ document.addEventListener('DOMContentLoaded', function() {
   // Lancer l'aperçu initial
   syncApercu();
 });
+
+var WBLOCS = {
+  cadreB:    '<div class="cadre-bleu">Information en bleu.</div>\n',
+  cadreO:    '<div class="cadre-orange"><strong>Message important</strong></div>\n',
+  cadreV:    '<div class="cadre-vert"><div class="cv-titre">Points positifs</div><ul><li>Point 1</li></ul></div>\n',
+  alerte:    '<div class="alerte"><div class="al-titre">⚠ Attention</div><p>Description...</p></div>\n',
+  lettre:    '<div class="lettre-intro"><p>Chers membres, ...</p></div>\n',
+  citation:  '<div class="citation-box"><p>« Votre citation »</p></div>\n',
+  bq:        '<blockquote>Citation mise en valeur.</blockquote>\n',
+  signature: '<div class="signature">Cordialement,<strong>L\'équipe ça suffit !</strong></div>\n',
+  grid:      '<div class="actions-grid"><div class="action-card"><div class="ac-num">01</div><div class="ac-titre">Titre</div><div class="ac-text">Description.</div></div></div>\n',
+  liste:     '<ul><li>Élément 1</li><li>Élément 2</li></ul>\n',
+  chiffre:   '<div style="display:inline-block;text-align:center;margin:8px 16px 8px 0"><span class="chiffre-val">320</span><span class="chiffre-label">avions/jour</span></div>\n',
+  titre:     '<h3 class="orange section-title">Votre titre</h3>\n',
+  texte:     '<p class="content-text">Texte informatif...</p>\n',
+};
+function wInsBloc(k) {
+  if (!k || !WBLOCS[k]) return;
+  var ta = document.getElementById('w-contenu');
+  if (!ta) return;
+  var s = ta.selectionStart || ta.value.length;
+  ta.value = ta.value.substring(0,s) + WBLOCS[k] + ta.value.substring(s);
+  ta.selectionStart = ta.selectionEnd = s + WBLOCS[k].length;
+  ta.focus();
+  if (typeof syncApercu === 'function') syncApercu();
+  closeWPalette();
+}
+function openWPalette(btn) {
+  var p = document.getElementById('w-style-palette');
+  if (!p) return;
+  if (p.classList.contains('open')) { p.classList.remove('open'); return; }
+  var r = btn.getBoundingClientRect();
+  var maxH = Math.round(window.innerHeight * 0.75);
+  p.style.maxHeight = maxH + 'px';
+  p.style.overflowY = 'auto';
+  var left = Math.min(Math.max(10, r.left + window.scrollX), window.innerWidth - 570);
+  var top = (r.bottom + 4 + window.scrollY);
+  if (r.bottom + maxH + 10 > window.innerHeight) top = Math.max(60, r.top - maxH - 6 + window.scrollY);
+  p.style.top = top + 'px';
+  p.style.left = left + 'px';
+  p.classList.add('open');
+}
+function closeWPalette() {
+  var p = document.getElementById('w-style-palette');
+  if (p) p.classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  var p = document.getElementById('w-style-palette');
+  if (!p || !p.classList.contains('open')) return;
+  if (!p.contains(e.target) && !e.target.closest('[onclick*="openWPalette"]')) p.classList.remove('open');
+});
+
 </script>
+
+<div id="w-style-palette">
+  <button class="sp-close" onclick="closeWPalette()">✕</button>
+  <h4>Choisir un style</h4>
+
+  <div class="sp-grid">
+
+    <div class="sp-item" onclick="wInsBloc('cadreB'); closeWPalette()">
+      <div class="sp-item-label">Cadre bleu</div>
+      <div class="sp-prev-cadreB">Information mise en avant</div>
+    </div>
+
+    <div class="sp-item" onclick="wInsBloc('cadreO'); closeWPalette()">
+      <div class="sp-item-label">Cadre orange</div>
+      <div class="sp-prev-cadreO">Message important</div>
+    </div>
+
+    <div class="sp-item" onclick="wInsBloc('cadreV'); closeWPalette()">
+      <div class="sp-item-label">Cadre vert</div>
+      <div class="sp-prev-cadreV">Points positifs</div>
+    </div>
+
+    <div class="sp-item" onclick="wInsBloc('alerte'); closeWPalette()">
+      <div class="sp-item-label">⚠ Alerte</div>
+      <div class="sp-prev-alerte"><strong>Attention</strong> — Description</div>
+    </div>
+
+    <div class="sp-item" onclick="wInsBloc('lettre'); closeWPalette()">
+      <div class="sp-item-label">Lettre intro</div>
+      <div class="sp-prev-lettre">Chers membres, ...</div>
+    </div>
+
+    <div class="sp-item" onclick="wInsBloc('citation'); closeWPalette()">
+      <div class="sp-item-label">Citation</div>
+      <div class="sp-prev-citation">« Citation mise en valeur »</div>
+    </div>
+
+    <div class="sp-item" onclick="wInsBloc('bq'); closeWPalette()">
+      <div class="sp-item-label">Blockquote</div>
+      <div class="sp-prev-bq">Citation courte</div>
+    </div>
+
+    <div class="sp-item" onclick="wInsBloc('signature'); closeWPalette()">
+      <div class="sp-item-label">Signature</div>
+      <div class="sp-prev-sign">L'équipe ça suffit !<br><small>Contact : ...</small></div>
+    </div>
+
+    <div class="sp-item" style="grid-column:1/-1" onclick="wInsBloc('grid'); closeWPalette()">
+      <div class="sp-item-label">Grille d'actions (3 colonnes)</div>
+      <div class="sp-prev-grid">
+        <div class="sp-prev-grid-item"><strong>01</strong><br>Titre</div>
+        <div class="sp-prev-grid-item"><strong>02</strong><br>Titre</div>
+        <div class="sp-prev-grid-item"><strong>03</strong><br>Titre</div>
+      </div>
+    </div>
+
+    <div class="sp-item" onclick="wInsBloc('liste'); closeWPalette()">
+      <div class="sp-item-label">Liste à puces</div>
+      <div class="sp-prev-liste">• Élément 1<br>• Élément 2</div>
+    </div>
+
+    <div class="sp-item" onclick="wInsBloc('chiffre'); closeWPalette()">
+      <div class="sp-item-label">Chiffre clé</div>
+      <div class="sp-prev-chiffre">
+        <span class="sp-prev-chiffre-val">320</span>
+        <span class="sp-prev-chiffre-lbl">avions/jour</span>
+      </div>
+    </div>
+
+    <div class="sp-item" onclick="wInsBloc('titre'); closeWPalette()">
+      <div class="sp-item-label">Titre de section</div>
+      <div class="sp-prev-titre">Votre titre</div>
+    </div>
+
+    <div class="sp-item" onclick="wInsBloc('texte'); closeWPalette()">
+      <div class="sp-item-label">Texte bleu</div>
+      <div class="sp-prev-texteB">Texte informatif en bleu</div>
+    </div>
+
+  </div>
+</div>
+
 </body>
 </html>
