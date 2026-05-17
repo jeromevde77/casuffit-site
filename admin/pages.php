@@ -341,6 +341,54 @@ if ($edit_page) {
 #wysiwyg-editor .ac-text       { font-size: .78rem; color: #555; }
 #wysiwyg-editor .cadre-vert .cv-titre { font-weight: 600; color: #1b5e20; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; display: block; }
 #wysiwyg-editor .signature     { background: #e8f3fb; border-left: 3px solid #1673B2; padding: 12px 16px; margin-top: 16px; font-size: .88rem; color: #1673B2; display: block; }
+/* ── Palette de styles flottante ──────────────────────────────────── */
+#style-palette {
+  display: none; position: fixed; z-index: 9999;
+  background: #fff; border: 1px solid #c8dff0; border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 14px;
+  width: 560px; max-width: 96vw; max-height: 80vh; overflow-y: auto;
+}
+#style-palette.open { display: block; }
+#style-palette h4 { font-size: .72rem; font-weight: 700; color: #888;
+  text-transform: uppercase; letter-spacing: .06em; margin: 0 0 10px; }
+.sp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sp-item { border: 1.5px solid #e0e8f0; border-radius: 7px; padding: 10px 12px;
+  cursor: pointer; transition: border-color .15s, box-shadow .15s; background: #fff; }
+.sp-item:hover { border-color: #1673B2; box-shadow: 0 2px 8px rgba(22,115,178,.15); }
+.sp-item-label { font-size: .65rem; font-weight: 700; color: #888;
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+/* Previews */
+.sp-prev-cadreB { background: #e8f3fb; border-left: 4px solid #1673B2;
+  color: #1673B2; padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-cadreO { background: #FF9900; color: #fff;
+  padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-cadreV { background: #e8f5e9; border-left: 4px solid #2e7d32;
+  padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-alerte { background: #fff8ee; border: 2px solid #FF9900;
+  padding: 6px 10px; border-radius: 4px; font-size: .78rem; color: #7a4400; }
+.sp-prev-lettre { background: #0e3d6b; color: #fff;
+  padding: 7px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-citation { background: #f5f5f5; border-left: 4px solid #1673B2;
+  padding: 6px 10px; border-radius: 0 3px 3px 0; font-size: .78rem; font-style: italic; color: #1673B2; }
+.sp-prev-bq { border-left: 4px solid #FF9900; background: #fff8ee;
+  padding: 6px 10px; font-size: .78rem; color: #7a4400; }
+.sp-prev-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+.sp-prev-grid-item { background: #e8f3fb; border-top: 2px solid #1673B2;
+  padding: 4px 6px; font-size: .65rem; color: #0e3d6b; }
+.sp-prev-liste { font-size: .78rem; color: #333; padding: 4px 10px; }
+.sp-prev-titre { color: #FF9900; font-weight: 700; font-size: .9rem;
+  border-bottom: 1px solid #c8dff0; padding-bottom: 3px; }
+.sp-prev-texteB { color: #1673B2; font-size: .78rem; }
+.sp-prev-chiffre { display: flex; gap: 6px; align-items: center; }
+.sp-prev-chiffre-val { font-size: 1.2rem; font-weight: 700; color: #1673B2; }
+.sp-prev-chiffre-lbl { font-size: .65rem; color: #888; }
+.sp-prev-sign { background: #e8f3fb; border-left: 3px solid #1673B2;
+  padding: 5px 10px; font-size: .75rem; color: #1673B2; }
+.sp-close { position: absolute; top: 10px; right: 12px; background: none;
+  border: none; font-size: 1.1rem; cursor: pointer; color: #aaa; line-height: 1; }
+.sp-close:hover { color: #333; }
+.sp-section { margin-top: 12px; }
+
 </style>
 </head>
 <body>
@@ -1643,54 +1691,6 @@ blockquote {
   line-height: 1.6;
 }
 .news-contenu p { margin-bottom: 6px; }
-
-/* ── Palette de styles flottante ──────────────────────────────────── */
-#style-palette {
-  display: none; position: fixed; z-index: 9999;
-  background: #fff; border: 1px solid #c8dff0; border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 14px;
-  width: 560px; max-width: 96vw; max-height: 80vh; overflow-y: auto;
-}
-#style-palette.open { display: block; }
-#style-palette h4 { font-size: .72rem; font-weight: 700; color: #888;
-  text-transform: uppercase; letter-spacing: .06em; margin: 0 0 10px; }
-.sp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.sp-item { border: 1.5px solid #e0e8f0; border-radius: 7px; padding: 10px 12px;
-  cursor: pointer; transition: border-color .15s, box-shadow .15s; background: #fff; }
-.sp-item:hover { border-color: #1673B2; box-shadow: 0 2px 8px rgba(22,115,178,.15); }
-.sp-item-label { font-size: .65rem; font-weight: 700; color: #888;
-  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
-/* Previews */
-.sp-prev-cadreB { background: #e8f3fb; border-left: 4px solid #1673B2;
-  color: #1673B2; padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
-.sp-prev-cadreO { background: #FF9900; color: #fff;
-  padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
-.sp-prev-cadreV { background: #e8f5e9; border-left: 4px solid #2e7d32;
-  padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
-.sp-prev-alerte { background: #fff8ee; border: 2px solid #FF9900;
-  padding: 6px 10px; border-radius: 4px; font-size: .78rem; color: #7a4400; }
-.sp-prev-lettre { background: #0e3d6b; color: #fff;
-  padding: 7px 10px; border-radius: 3px; font-size: .78rem; }
-.sp-prev-citation { background: #f5f5f5; border-left: 4px solid #1673B2;
-  padding: 6px 10px; border-radius: 0 3px 3px 0; font-size: .78rem; font-style: italic; color: #1673B2; }
-.sp-prev-bq { border-left: 4px solid #FF9900; background: #fff8ee;
-  padding: 6px 10px; font-size: .78rem; color: #7a4400; }
-.sp-prev-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
-.sp-prev-grid-item { background: #e8f3fb; border-top: 2px solid #1673B2;
-  padding: 4px 6px; font-size: .65rem; color: #0e3d6b; }
-.sp-prev-liste { font-size: .78rem; color: #333; padding: 4px 10px; }
-.sp-prev-titre { color: #FF9900; font-weight: 700; font-size: .9rem;
-  border-bottom: 1px solid #c8dff0; padding-bottom: 3px; }
-.sp-prev-texteB { color: #1673B2; font-size: .78rem; }
-.sp-prev-chiffre { display: flex; gap: 6px; align-items: center; }
-.sp-prev-chiffre-val { font-size: 1.2rem; font-weight: 700; color: #1673B2; }
-.sp-prev-chiffre-lbl { font-size: .65rem; color: #888; }
-.sp-prev-sign { background: #e8f3fb; border-left: 3px solid #1673B2;
-  padding: 5px 10px; font-size: .75rem; color: #1673B2; }
-.sp-close { position: absolute; top: 10px; right: 12px; background: none;
-  border: none; font-size: 1.1rem; cursor: pointer; color: #aaa; line-height: 1; }
-.sp-close:hover { color: #333; }
-.sp-section { margin-top: 12px; }
 
 </style>
 </head>
