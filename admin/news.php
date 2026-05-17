@@ -309,7 +309,12 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
             <button type="button" class="sb sb-arg"      onclick="ins('arg')">💡 Argument</button>
           </div>
         </div>
-        <textarea name="contenu" id="f-contenu" class="contenu-area" oninput="maj()" placeholder="Contenu HTML de l'actualité..."><?= $edit ? htmlspecialchars($edit['contenu']) : '' ?></textarea>
+        <!-- Éditeur WYSIWYG Quill -->
+        <div id="quill-wrap">
+          <div id="quill-editor"></div>
+        </div>
+        <!-- Textarea caché pour la soumission du formulaire -->
+        <textarea name="contenu" id="f-contenu" style="display:none"><?= $edit ? htmlspecialchars($edit['contenu']) : '' ?></textarea>
       </div>
 
       <div class="meta-row">
