@@ -372,7 +372,6 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
 
       <div class="frow">
         <label>Contenu complet</label>
-        <div class="palette">
         <!-- Toolbar WYSIWYG -->
         <div id="wysiwyg-toolbar">
           <button type="button" class="wt-btn" onclick="fmt('bold')" title="Gras"><b>G</b></button>
@@ -396,7 +395,7 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
              oninput="syncEditor()"><?= $edit ? $edit['contenu'] : '' ?></div>
         <!-- Textarea caché pour soumission -->
         <textarea name="contenu" id="f-contenu" style="display:none"><?= $edit ? htmlspecialchars($edit['contenu']) : '' ?></textarea>
-      </div>
+      </div><!-- /frow -->
 
       <div class="meta-row">
         <div class="frow">
