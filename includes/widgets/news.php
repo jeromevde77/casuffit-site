@@ -14,7 +14,7 @@
             <div style="font-weight:700;color:var(--bleu-hex);font-size:.88rem;margin-bottom:3px"><?= htmlspecialchars($n['titre']) ?></div>
             <div style="font-size:.7rem;color:#999"><?= date('d/m/Y', strtotime($n['date_creation'])) ?></div>
           </div>
-          <span class="news-chevron" id="chev-<?= $ni ?>" style="color:var(--bleu-hex);font-size:.8rem;flex-shrink:0;transition:transform .2s">▼</span>
+          <span class="news-chevron" id="chev-<?= $ni ?>" style="color:var(--bleu-hex);font-size:.8rem;flex-shrink:0;transition:transform .2s;transform:<?= $n['epingle'] ? 'rotate(180deg)' : 'none' ?>">▼</span>
         </div>
         <?php if (!empty($n['accroche'])): ?>
           <div style="font-size:.8rem;color:#555;line-height:1.5;margin-top:6px"><?= htmlspecialchars($n['accroche']) ?></div>
@@ -24,7 +24,7 @@
       </div>
 
       <!-- Contenu complet dépliable -->
-      <div class="news-full" id="news-full-<?= $ni ?>" style="display:none;padding:0 12px 12px;border-top:1px solid var(--bleu-ciel)">
+      <div class="news-full" id="news-full-<?= $ni ?>" style="display:<?= $n['epingle'] ? 'block' : 'none' ?>;padding:0 12px 12px;border-top:1px solid var(--bleu-ciel)">
         <div class="apanel-inner" style="padding:12px 0;box-shadow:none">
           <?= $n['contenu'] ?>
         </div>
