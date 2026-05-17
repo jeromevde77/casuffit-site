@@ -2,6 +2,24 @@
 // index.php — Site ça suffit ! ASBL (v2 - look ancien site)
 require_once __DIR__ . '/config.php';
 
+// ── Mode maintenance ──────────────────────────────────────────────────────
+(function() {
+    try {
+        $pdo  = getDB();
+        $mode = $pdo->query("SELECT valeur FROM site_config WHERE cle='maintenance_mode'")->fetchColumn();
+        if (!$mode || $mode === '0') return;
+        $code = $pdo->query("SELECT valeur FROM site_config WHERE cle='maintenance_code'")->fetchColumn();
+        if (!empty($_COOKIE['maintenance_bypass']) && $_COOKIE['maintenance_bypass'] === $code) return;
+        if (isset($_GET['bypass']) && $_GET['bypass'] === $code) {
+            setcookie('maintenance_bypass', $code, time() + 86400 * 30, '/', '', true, true);
+            return;
+        }
+        if (!session_id()) session_start();
+        if (!empty($_SESSION['admin'])) return;
+        header('Location: /maintenance.php'); exit;
+    } catch (Exception $e) {}
+})();
+
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

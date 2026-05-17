@@ -14,6 +14,30 @@ $objectif    = floatval(cfg('montant_objectif', 15000));
 $pct         = $objectif > 0 ? min(100, round($recolte/$objectif*100)) : 0;
 
 $news_recentes  = $db->query("SELECT titre, statut, date_creation FROM news ORDER BY date_creation DESC LIMIT 6")->fetchAll();
+// Config maintenance
+$maint_mode = $db->query("SELECT valeur FROM site_config WHERE cle='maintenance_mode'")->fetchColumn() ?? '0';
+$maint_code = $db->query("SELECT valeur FROM site_config WHERE cle='maintenance_code'")->fetchColumn() ?? '';
+$maint_titre = $db->query("SELECT valeur FROM site_config WHERE cle='maintenance_titre'")->fetchColumn() ?? '';
+$maint_msg   = $db->query("SELECT valeur FROM site_config WHERE cle='maintenance_message'")->fetchColumn() ?? '';
+
+// Traitement toggle maintenance
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['maintenance_action'])) {
+    if ($_POST['maintenance_action'] === 'toggle') {
+        $new = $maint_mode === '1' ? '0' : '1';
+        $db->prepare("UPDATE site_config SET valeur=? WHERE cle='maintenance_mode'")->execute([$new]);
+        $maint_mode = $new;
+    } elseif ($_POST['maintenance_action'] === 'save') {
+        foreach (['maintenance_code','maintenance_titre','maintenance_message'] as $k) {
+            if (isset($_POST[$k])) {
+                $db->prepare("UPDATE site_config SET valeur=? WHERE cle=?")->execute([$_POST[$k], $k]);
+            }
+        }
+        $maint_code  = $_POST['maintenance_code']    ?? $maint_code;
+        $maint_titre = $_POST['maintenance_titre']   ?? $maint_titre;
+        $maint_msg   = $_POST['maintenance_message'] ?? $maint_msg;
+    }
+}
+
 $membres_recents = $db->query("SELECT prenom, nom, code_membre, date_inscription FROM members ORDER BY date_inscription DESC LIMIT 5")->fetchAll();
 $nb_sub_new  = $db->query("SELECT COUNT(*) FROM subscribers WHERE date_inscription >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn();
 ?>
@@ -131,6 +155,23 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
   .stat-info .val { font-size:1.2rem; }
 }
 
+/* Mode maintenance */
+.maint-box { background: #f0f6fb; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; border: 2px solid #c8dff0; }
+.maint-box.maint-active { background: #fff8ee; border-color: #FF9900; }
+.maint-status { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.maint-dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+.maint-dot.on { background: #e53e3e; box-shadow: 0 0 6px #e53e3e; animation: blink 1.2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.4} }
+.maint-toggle-btn { padding: 7px 14px; border: none; border-radius: 5px; font-size: .82rem; font-weight: 700; cursor: pointer; }
+.maint-toggle-btn.on { background: #e53e3e; color: #fff; }
+.maint-toggle-btn.off { background: #27ae60; color: #fff; }
+.maint-form { }
+.maint-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.maint-field { display: flex; flex-direction: column; gap: 4px; }
+.maint-field label { font-size: .75rem; font-weight: 700; color: #0e3d6b; }
+.maint-input { padding: 7px 10px; border: 1px solid #c8dff0; border-radius: 5px; font-size: .83rem; background: #fff; }
+.maint-field small { font-size: .68rem; color: #888; margin-top: 2px; }
+.maint-field small code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
 /* Bloc historique METAR */
 .metar-hist-box { background: #f0f6fb; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
 .mh-info  { display: flex; align-items: flex-start; gap: 12px; flex: 1; min-width: 220px; }
@@ -332,6 +373,46 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
   </div>
 
 </div>
+<!-- Section Maintenance -->
+  <div class="actions-title" style="margin-top:24px">🚧 Mode maintenance</div>
+  <div class="maint-box<?= $maint_mode==='1' ? ' maint-active' : '' ?>" id="maint-box">
+
+    <div class="maint-status">
+      <div class="maint-dot<?= $maint_mode==='1' ? ' on' : '' ?>"></div>
+      <span><?= $maint_mode==='1' ? 'ACTIF — Le site affiche la page de maintenance' : 'Inactif — Le site est accessible normalement' ?></span>
+      <form method="post" style="margin-left:auto">
+        <input type="hidden" name="maintenance_action" value="toggle">
+        <button type="submit" class="maint-toggle-btn<?= $maint_mode==='1' ? ' off' : ' on' ?>">
+          <?= $maint_mode==='1' ? '⏹ Désactiver' : '▶ Activer le mode maintenance' ?>
+        </button>
+      </form>
+    </div>
+
+    <form method="post" class="maint-form">
+      <input type="hidden" name="maintenance_action" value="save">
+      <div class="maint-fields">
+        <div class="maint-field">
+          <label>Titre</label>
+          <input type="text" name="maintenance_titre" value="<?= htmlspecialchars($maint_titre) ?>" class="maint-input">
+        </div>
+        <div class="maint-field">
+          <label>Code de bypass secret</label>
+          <input type="text" name="maintenance_code" value="<?= htmlspecialchars($maint_code) ?>" class="maint-input" style="font-family:monospace">
+          <small>URL de bypass : <code><?= htmlspecialchars((defined('SITE_URL')?SITE_URL:'https://www.casuffit.be')) ?>/?bypass=<?= htmlspecialchars($maint_code) ?></code></small>
+        </div>
+        <div class="maint-field" style="grid-column:1/-1">
+          <label>Message</label>
+          <textarea name="maintenance_message" class="maint-input" rows="3"><?= htmlspecialchars($maint_msg) ?></textarea>
+        </div>
+      </div>
+      <button type="submit" class="mh-btn primary" style="margin-top:10px">💾 Enregistrer</button>
+      <?php if ($maint_mode==='1'): ?>
+        <a href="/maintenance.php" target="_blank" class="mh-btn" style="text-decoration:none;margin-left:8px">👁 Voir la page →</a>
+      <?php endif; ?>
+    </form>
+
+  </div>
+
 <script>
 function launchBackfill(dry) {
   var days = document.getElementById('backfill-days').value;
