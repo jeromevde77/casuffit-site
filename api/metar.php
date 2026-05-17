@@ -46,13 +46,33 @@ if (!$DEBUG_TRAP && file_exists($CACHE_FILE) && (time() - filemtime($CACHE_FILE)
 }
 header('Cache-Control: no-store');
 
+// ── Fetch HTTP avec fallback cURL (si allow_url_fopen désactivé) ────────
+function fetch_url(string $url, int $timeout = 10): string|false {
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => $timeout,
+            CURLOPT_USERAGENT      => 'casuffit.be/meteo-widget',
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_FOLLOWLOCATION => true,
+        ]);
+        $result = curl_exec($ch);
+        curl_close($ch);
+        return $result;
+    }
+    // Fallback file_get_contents
+    $ctx = stream_context_create(['http' => ['timeout' => $timeout, 'user_agent' => 'casuffit.be/meteo-widget'], 'ssl' => ['verify_peer' => false]]);
+    return @file_get_contents($url, false, $ctx);
+}
+
 $ctx = stream_context_create([
     'http' => ['timeout' => 10, 'user_agent' => 'casuffit.be/meteo-widget'],
     'ssl'  => ['verify_peer' => false],
 ]);
 
-$metar_raw = @file_get_contents('https://aviationweather.gov/api/data/metar?ids=EBBR&format=json&taf=false', false, $ctx);
-$taf_raw   = @file_get_contents('https://aviationweather.gov/api/data/taf?ids=EBBR&format=json', false, $ctx);
+$metar_raw = fetch_url('https://aviationweather.gov/api/data/metar?ids=EBBR&format=json&taf=false');
+$taf_raw   = fetch_url('https://aviationweather.gov/api/data/taf?ids=EBBR&format=json');
 
 if ($metar_raw === false) {
     if (file_exists($CACHE_FILE)) { echo file_get_contents($CACHE_FILE); }
@@ -366,7 +386,7 @@ if ($obs_time) {
                  . '&typeName=synop:synop_data&outputFormat=application/json&count=1&sortBy=timestamp+D'
                  . '&CQL_FILTER=' . urlencode("code=6451 AND timestamp >= '$irm_from' AND timestamp <= '$irm_to'");
 
-        $irm_raw = @file_get_contents($irm_url, false, $ctx);
+        $irm_raw = fetch_url($irm_url);
         if ($irm_raw !== false) {
             $irm_json = json_decode($irm_raw, true);
             $irm_feat = $irm_json['features'][0]['properties'] ?? null;
