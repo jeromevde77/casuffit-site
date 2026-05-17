@@ -467,10 +467,18 @@ function openPalette(btn) {
   var p = document.getElementById('style-palette');
   if (!p) return;
   if (p.classList.contains('open')) { p.classList.remove('open'); return; }
-  // Positionner sous le bouton
   var r = btn.getBoundingClientRect();
-  p.style.top  = (r.bottom + 6 + window.scrollY) + 'px';
-  p.style.left = Math.min(r.left, window.innerWidth - 580) + 'px';
+  var pH = Math.min(window.innerHeight * 0.7, 500);
+  var top, left;
+  // Ouvrir vers le haut si pas assez de place en bas
+  if (r.bottom + pH + 10 > window.innerHeight) {
+    top = (r.top + window.scrollY - pH - 6);
+  } else {
+    top = (r.bottom + 6 + window.scrollY);
+  }
+  left = Math.min(Math.max(10, r.left + window.scrollX), window.innerWidth - 580);
+  p.style.top  = top + 'px';
+  p.style.left = left + 'px';
   p.classList.add('open');
 }
 
