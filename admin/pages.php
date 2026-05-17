@@ -327,6 +327,18 @@ if ($edit_page) {
 #wysiwyg-editor .ac-item      { background: #f0f6fb; border-left: 3px solid #1673B2; padding: 10px 14px; margin: 8px 0; }
 #wysiwyg-editor ul, #wysiwyg-editor ol { padding-left: 20px; }
 #wysiwyg-editor blockquote    { border-left: 4px solid #FF9900; padding: 8px 14px; background: #fff8ee; margin: 10px 0; }
+/* Styles manquants */
+#wysiwyg-editor .lettre-intro  { background: #0e3d6b; color: #fff; padding: 16px 20px; margin-bottom: 16px; display: block; }
+#wysiwyg-editor .lettre-intro p { color: #fff; margin: 0; line-height: 1.55; }
+#wysiwyg-editor .citation-box  { background: #f5f5f5; border-left: 4px solid #1673B2; padding: 12px 16px; margin: 10px 0; display: block; }
+#wysiwyg-editor .citation-box p { font-style: italic; color: #1673B2; margin: 0 0 4px; }
+#wysiwyg-editor .actions-grid  { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 10px; margin: 10px 0; }
+#wysiwyg-editor .action-card   { background: #e8f3fb; border-top: 3px solid #1673B2; padding: 12px 10px; }
+#wysiwyg-editor .ac-num        { font-size: 1.3rem; font-weight: 700; color: #7ec8e3; }
+#wysiwyg-editor .ac-titre      { font-weight: 600; color: #0e3d6b; font-size: .88rem; }
+#wysiwyg-editor .ac-text       { font-size: .78rem; color: #555; }
+#wysiwyg-editor .cadre-vert .cv-titre { font-weight: 600; color: #1b5e20; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; display: block; }
+#wysiwyg-editor .signature     { background: #e8f3fb; border-left: 3px solid #1673B2; padding: 12px 16px; margin-top: 16px; font-size: .88rem; color: #1673B2; display: block; }
 </style>
 </head>
 <body>
@@ -1910,6 +1922,15 @@ function syncEditor() {
   var ed = document.getElementById('wysiwyg-editor');
   var ta = document.getElementById('f-contenu');
   if (ed && ta) ta.value = ed.innerHTML;
+}
+function openApercu() {
+  syncEditor(); maj();
+  var d = document.querySelector('.apercu-drawer');
+  if (d) d.classList.add('open');
+}
+function closeApercu() {
+  var d = document.querySelector('.apercu-drawer');
+  if (d) d.classList.remove('open');
 }
 </script>
 
