@@ -10,23 +10,6 @@
 
   <div class="pmh-body">
 
-    <!-- ── Stats automatiques depuis BDD ── -->
-    <div class="pmh-stats-auto" id="pmh-stats-auto">
-      <div class="pmh-stats-header">
-        <span class="pmh-stats-title">📊 Statistiques automatiques (depuis base de données)</span>
-        <div class="pmh-stats-tabs">
-          <button class="pmh-stab active" data-period="30d">30 jours</button>
-          <button class="pmh-stab" data-period="90d">90 jours</button>
-          <button class="pmh-stab" data-period="365d">1 an</button>
-        </div>
-      </div>
-      <div id="pmh-stats-content">
-        <div class="pmh-stats-loading">Chargement des statistiques…</div>
-      </div>
-    </div>
-
-    <hr class="pmh-sep">
-
     <p class="pmh-intro">
       Saisissez une période, analysez les données IRM, indiquez la piste réellement utilisée sur chaque ligne, puis exportez en Excel pour vos courriers de plainte.
     </p>
@@ -140,6 +123,17 @@
   </div>
 </div>
 
+<!-- Modale widget piste météo -->
+<div class="pmh-wmodal-bg" id="pmh-wmodal-bg" onclick="if(event.target===this)pmhCloseWidget()">
+  <div class="pmh-wmodal">
+    <div class="pmh-wmodal-head">
+      <h3 id="pmh-wmodal-title">🌬 Conditions de vent</h3>
+      <button class="pmh-wmodal-close" onclick="pmhCloseWidget()">✕</button>
+    </div>
+    <div class="pmh-wmodal-body" id="pmh-wmodal-body">Chargement…</div>
+  </div>
+</div>
+
 <style>
 .pmh{font-family:"Helvetica Neue",Arial,sans-serif;background:#fff;border-radius:12px;border:1.5px solid #dde6f0;overflow:hidden;max-width:1100px;margin:0 auto;font-size:13px}
 .pmh-header{background:#0e3d6b;color:#fff;padding:12px 18px;display:flex;align-items:center;gap:8px}
@@ -246,6 +240,20 @@
 .pmh-chart-bar { fill: #1673B2; }
 .pmh-chart-bar.prs { fill: #e53e3e; }
 .pmh-sep { border: none; border-top: 1px solid #dde; margin: 16px 0; }
+.pmh-widget-btn { background: #1673B2; color: #fff; border: none; border-radius: 5px;
+  padding: 4px 9px; font-size: .72rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.pmh-widget-btn:hover { background: #0e5a96; }
+/* Modale widget */
+.pmh-wmodal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55);
+  z-index: 9999; align-items: center; justify-content: center; }
+.pmh-wmodal-bg.open { display: flex; }
+.pmh-wmodal { background: #fff; border-radius: 12px; width: 520px; max-width: 96vw;
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.3); }
+.pmh-wmodal-head { padding: 12px 18px; border-bottom: 1px solid #eee;
+  display: flex; align-items: center; justify-content: space-between; background: #0e3d6b; border-radius: 12px 12px 0 0; }
+.pmh-wmodal-head h3 { margin: 0; color: #fff; font-size: .95rem; }
+.pmh-wmodal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #fff; line-height: 1; }
+.pmh-wmodal-body { padding: 18px; }
 .pmh-stats-note { font-size: .72rem; color: #888; margin-top: 8px; text-align: right; }
 </style>
 
@@ -485,6 +493,7 @@ function pmhRender(d){
       +'<td>'+cellNow+'</td>'
       +'<td>'+btns+'</td>'
       +'<td id="pmh-conf-'+idx+'"><span class="pmh-nd-cell">—</span></td>'
+      +'<td style="text-align:center;white-space:nowrap"><button class="pmh-widget-btn" onclick="pmhOpenWidget('+idx+')">▶ Widget</button></td>'
       +'<td id="pmh-verdict-'+idx+'" style="font-size:.65rem;color:#555;line-height:1.4;max-width:180px">'+noteInput+'</td>';
     tbody.appendChild(tr);
   });
@@ -772,5 +781,138 @@ window.addEventListener('DOMContentLoaded',function(){
     loadStats('30d');
   });
 })();
+
+// ── Widget replay par heure ───────────────────────────────────────────────
+window.pmhOpenWidget = function(idx) {
+  var m = pmhData[idx];
+  if (!m) return;
+
+  var t = new Date(m.time);
+  var timeUTC = isNaN(t) ? m.time :
+    t.toLocaleTimeString('fr-BE', {hour:'2-digit', minute:'2-digit', timeZone:'UTC'}) + ' UTC';
+  var dateStr = isNaN(t) ? '' :
+    t.toLocaleDateString('fr-BE', {day:'2-digit', month:'2-digit', year:'numeric', timeZone:'UTC'});
+
+  document.getElementById('pmh-wmodal-title').textContent = '🌬 ' + dateStr + ' — ' + timeUTC;
+  document.getElementById('pmh-wmodal-bg').classList.add('open');
+
+  // Construire le JSON compatible metar_replay
+  var wd   = (m.wdir === 'VRB' || !m.wdir) ? null : (int = parseInt(m.wdir), isNaN(int) ? null : int);
+  var ws   = m.wspd_kt || m.wspd || 0;
+  var wg   = m.wgst_kt || null;
+  var wgm  = m.wgst_metar || null;
+  var wgi  = m.wgst_irm  || null;
+
+  // Composantes pour chaque piste
+  function calcComp(qfu) {
+    if (wd === null) return {tw_moy:0, tw_gst:0, xw_moy:0, xw_gst:0};
+    var d = (wd - qfu) * Math.PI / 180;
+    var tw = Math.round(ws * Math.cos(d) * 10) / 10;
+    var tg = wg ? Math.round(wg * Math.cos(d) * 10) / 10 : tw;
+    var xw = Math.round(Math.abs(ws * Math.sin(d)) * 10) / 10;
+    var xg = wg ? Math.round(Math.abs(wg * Math.sin(d)) * 10) / 10 : xw;
+    return {tw_moy: tw, tw_gst: tg, xw_moy: xw, xw_gst: xg};
+  }
+
+  var d = {
+    replay: true,
+    obs_time: m.time,
+    metar: m.metar || ('IRM — ' + m.time),
+    wdir: wd, wspd: ws, wspd_eff: Math.max(ws, wg||0),
+    wgst: wg, wgst_metar: wgm, wgst_irm: wgi,
+    variable: (m.wdir === 'VRB' || !m.wdir),
+    temp: m.temp || null, qnh: m.qnh || null,
+    prs_active: m.aip_now ? m.aip_now.prs : true,
+    aip2013: { prs_active: m.aip2013 ? m.aip2013.prs : true },
+    tw_25_max: m.aip_now ? m.aip_now.tw : null,
+    xw_25_max: m.aip_now ? m.aip_now.xw : null,
+    runways: m.aip_now ? m.aip_now.runways : [],
+    components: {
+      '25L': calcComp(251), '25R': calcComp(246),
+      '07R': calcComp(71),  '07L': calcComp(66),
+      '01':  calcComp(14),  '19':  calcComp(194)
+    }
+  };
+
+  pmhRenderWidgetModal(document.getElementById('pmh-wmodal-body'), d);
+};
+
+window.pmhCloseWidget = function() {
+  document.getElementById('pmh-wmodal-bg').classList.remove('open');
+};
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') pmhCloseWidget();
+});
+
+function pmhRenderWidgetModal(wrap, d) {
+  var wd = d.wdir, ws = d.wspd, wg = d.wgst, prs = d.prs_active, p13 = d.aip2013?.prs_active;
+  var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+  var dirTxt = wd !== null ? dirs[Math.round(wd/22.5)%16] : '—';
+
+  var gstTxt = '';
+  if (d.wgst_metar !== null && d.wgst_metar !== undefined) gstTxt += 'METAR: '+d.wgst_metar+' kt  ';
+  if (d.wgst_irm   !== null && d.wgst_irm   !== undefined) gstTxt += 'IRM: '+d.wgst_irm+' kt';
+  if (!gstTxt && wg) gstTxt = wg + ' kt';
+
+  function twRow(rwy, comp) {
+    if (!comp) return '';
+    var tw = comp.tw_gst !== undefined ? comp.tw_gst : comp.tw_moy;
+    var xw = comp.xw_gst !== undefined ? comp.xw_gst : comp.xw_moy;
+    var col = tw > 7 ? '#c00' : '#080';
+    return '<tr>'
+      + '<td style="padding:5px 10px;font-weight:700;color:#0e3d6b">'+rwy+'</td>'
+      + '<td style="padding:5px 10px;color:'+col+';font-weight:'+(Math.abs(tw)>7?'700':'400')+'">Arrière: '+tw+' kt</td>'
+      + '<td style="padding:5px 10px;color:'+(xw>15?'#c00':'#555')+'">Traversier: '+xw+' kt</td>'
+      + '</tr>';
+  }
+
+  var illegal = !prs && p13;
+
+  wrap.innerHTML =
+    '<div style="background:#0e3d6b;color:#fff;margin:-18px -18px 14px;padding:12px 18px;font-size:.82rem">'
+    + '📡 Source : ' + (d.metar||'IRM synop') + '</div>'
+
+    + '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px">'
+      + '<div>'
+        + '<div style="font-size:1.8rem;font-weight:800;color:#0e3d6b">'+(wd!==null?wd+'° '+dirTxt:'Variable')+'</div>'
+        + '<div style="color:#1673B2;font-weight:700;font-size:1.1rem">'+ws+' kt <span style="font-size:.75rem;font-weight:400">(moy)</span></div>'
+        + (gstTxt?'<div style="color:#e07000;font-size:.82rem">💨 Rafales: '+gstTxt+'</div>':'')
+      + '</div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        + '<div style="background:'+(prs?'#e8f5e9':'#fde8e8')+';border-radius:7px;padding:10px 14px;text-align:center;border-top:3px solid '+(prs?'#27ae60':'#e53e3e')+'">'
+          + '<div style="font-size:.65rem;color:#777;margin-bottom:4px">Normes skeyes</div>'
+          + '<div style="font-weight:800;color:'+(prs?'#166534':'#b91c1c')+'">'+( prs?'✓ Piste 25':'⚠ Piste 01')+'</div>'
+        + '</div>'
+        + '<div style="background:'+(p13?'#e8f5e9':'#fde8e8')+';border-radius:7px;padding:10px 14px;text-align:center;border-top:3px solid '+(p13?'#27ae60':'#e53e3e')+'">'
+          + '<div style="font-size:.65rem;color:#777;margin-bottom:4px">Normes légales 2013</div>'
+          + '<div style="font-weight:800;color:'+(p13?'#166534':'#b91c1c')+'">'+(p13?'✓ Piste 25':'⚠ Piste 01')+'</div>'
+        + '</div>'
+      + '</div>'
+    + '</div>'
+
+    + (illegal
+      ? '<div style="background:#fff8ee;border:2px solid #FF9900;border-radius:7px;padding:10px 14px;margin-bottom:14px;color:#7a4400;font-size:.83rem">'
+        + '⚖ <strong>Utilisation potentiellement illégale de la piste 01</strong> — Les normes de vent légales (AIP 2013) permettraient d'utiliser la piste 25.</div>'
+      : '')
+
+    + '<table style="width:100%;border-collapse:collapse;background:#f8fafc;border-radius:7px;overflow:hidden;font-size:.82rem;margin-bottom:10px">'
+      + '<thead><tr style="background:#e8f0f8">'
+        + '<th style="padding:6px 10px;text-align:left;color:#0e3d6b">Piste</th>'
+        + '<th style="padding:6px 10px;text-align:left;color:#0e3d6b">Vent arrière</th>'
+        + '<th style="padding:6px 10px;text-align:left;color:#0e3d6b">Vent traversier</th>'
+      + '</tr></thead><tbody>'
+      + twRow('25L', d.components?.['25L'])
+      + twRow('25R', d.components?.['25R'])
+      + twRow('01',  d.components?.['01'])
+      + twRow('19',  d.components?.['19'])
+      + '</tbody></table>'
+
+    + (d.temp !== null && d.temp !== undefined
+      ? '<div style="font-size:.75rem;color:#888">🌡 Température: '+d.temp+'°C'
+        + (d.qnh ? ' · QNH: '+d.qnh+' hPa' : '') + '</div>'
+      : '');
+}
+
 
 </script>
