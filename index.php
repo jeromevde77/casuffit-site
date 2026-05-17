@@ -506,6 +506,13 @@ header.site-header {
   gap: 28px;
   align-items: start;
 }
+@media (max-width: 430px) {
+  /* ── iPhone : augmenter la taille de police de base ── */
+  body { font-size: 100%; }
+  .tab-panel.active { padding: 16px 16px; }
+  .section-title { font-size: 18px; }
+}
+
 @media (max-width: 680px) {
   .main-wrap { grid-template-columns: 1fr; }
   .donation-card {
