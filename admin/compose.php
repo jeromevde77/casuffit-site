@@ -149,6 +149,29 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
 .act-btn.del:hover{background:#fee2e2;border-color:#fc8181;text-decoration:none}
 .act-btn.view{color:#38a169;border-color:#c6f6d5;background:#f0fff4}
 .act-btn.view:hover{background:#dcfce7;text-decoration:none}
+/* Éditeur WYSIWYG contenteditable */
+#wysiwyg-editor {
+  min-height: 320px; padding: 14px; border: 1px solid #c8dff0; border-radius: 0 0 6px 6px;
+  background: #fff; font-family: "Helvetica Neue",Arial,sans-serif; font-size: .88rem;
+  line-height: 1.7; color: #333; outline: none; cursor: text;
+}
+#wysiwyg-editor:focus { border-color: #1673B2; }
+#wysiwyg-toolbar { background: #f8fafc; border: 1px solid #c8dff0; border-bottom: none;
+  border-radius: 6px 6px 0 0; padding: 6px 10px; display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.wt-btn { background: #fff; border: 1px solid #dde; border-radius: 4px; padding: 3px 8px;
+  cursor: pointer; font-size: .82rem; color: #333; min-width: 28px; text-align: center; }
+.wt-btn:hover { background: #e8f3fb; border-color: #1673B2; }
+.wt-sep { width: 1px; background: #dde; margin: 0 4px; align-self: stretch; }
+#wysiwyg-editor .cadre-bleu   { padding: 12px 16px; background: #e8f3fb; border-left: 4px solid #1673B2; color: #1673B2; margin: 10px 0; border-radius: 4px; display: block; }
+#wysiwyg-editor .cadre-orange { padding: 12px 16px; background: #FF9900; color: #fff; margin: 10px 0; border-radius: 4px; display: block; }
+#wysiwyg-editor .cadre-vert   { padding: 12px 16px; background: #e8f5e9; border-left: 4px solid #2e7d32; margin: 10px 0; border-radius: 4px; display: block; }
+#wysiwyg-editor .alerte       { background: #fff8ee; border: 2px solid #FF9900; padding: 12px 16px; border-radius: 6px; margin: 10px 0; display: block; }
+#wysiwyg-editor .al-titre     { font-weight: 700; color: #FF9900; margin-bottom: 6px; display: block; }
+#wysiwyg-editor h2, #wysiwyg-editor h3 { color: #FF9900; font-weight: 600; border-bottom: 1px solid #c8dff0; padding-bottom: 4px; margin: 16px 0 8px; }
+#wysiwyg-editor .content-text { color: #1673B2; }
+#wysiwyg-editor .ac-item      { background: #f0f6fb; border-left: 3px solid #1673B2; padding: 10px 14px; margin: 8px 0; }
+#wysiwyg-editor ul, #wysiwyg-editor ol { padding-left: 20px; }
+#wysiwyg-editor blockquote    { border-left: 4px solid #FF9900; padding: 8px 14px; background: #fff8ee; margin: 10px 0; }
 </style>
 </head>
 <body>
@@ -198,8 +221,31 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
         </div>
 
         <label>Contenu HTML</label>
-        <textarea name="contenu_html" id="f-contenu" class="code-editor"
-                  rows="20" oninput="majApercu()" spellcheck="false"><?= htmlspecialchars($nl ? $nl['contenu_html'] : '') ?></textarea>
+        <div id="wysiwyg-toolbar">
+          <button type="button" class="wt-btn" onclick="fmt('bold')"><b>G</b></button>
+          <button type="button" class="wt-btn" onclick="fmt('italic')"><i>I</i></button>
+          <button type="button" class="wt-btn" onclick="fmt('underline')"><u>S</u></button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="fmtBlock('h2')">H2</button>
+          <button type="button" class="wt-btn" onclick="fmtBlock('h3')">H3</button>
+          <button type="button" class="wt-btn" onclick="fmtBlock('p')">¶</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="fmt('insertUnorderedList')">• —</button>
+          <button type="button" class="wt-btn" onclick="fmt('insertOrderedList')">1.</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="insertLink()">🔗</button>
+          <button type="button" class="wt-btn" onclick="fmt('removeFormat')">Tx</button>
+          <div class="wt-sep"></div>
+          <select onchange="insBloc(this.value); this.value=''" style="font-size:.78rem;padding:3px 6px;border:1px solid #dde;border-radius:4px">
+            <option value="">+ Insérer un bloc</option>
+            <option value="cadreB">🔵 Cadre bleu</option>
+            <option value="alerte">⚠️ Alerte</option>
+            <option value="bq">💬 Citation</option>
+            <option value="liste">📋 Liste</option>
+          </select>
+        </div>
+        <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor(); majApercu()"><?= $nl ? $nl['contenu_html'] : '' ?></div>
+        <textarea name="contenu_html" id="f-contenu" style="display:none"><?= htmlspecialchars($nl ? $nl['contenu_html'] : '') ?></textarea>
       </form>
     </div>
     <div class="editor-foot">
@@ -383,6 +429,41 @@ function getWidgetNewsletter() {
          + '  <div style="font-size:.8rem;color:#555;margin-bottom:12px">Inscrivez vos proches à notre newsletter</div>\n'
          + '  <a href="' + WD.site_url + '/#newsletter" style="display:inline-block;padding:10px 24px;background:#1673B2;color:#fff;text-decoration:none;font-weight:700;border-radius:6px">S\'inscrire →</a>\n'
          + '</div>\n';
+}
+</script>
+<script>
+function fmt(cmd, val) {
+  document.getElementById('wysiwyg-editor').focus();
+  document.execCommand(cmd, false, val || null);
+  syncEditor();
+}
+function fmtBlock(tag) {
+  document.getElementById('wysiwyg-editor').focus();
+  document.execCommand('formatBlock', false, tag);
+  syncEditor();
+}
+function insertLink() {
+  var url = prompt('URL du lien :');
+  if (url) fmt('createLink', url);
+}
+var BLOCS = {
+  cadreO: '<div class="cadre-orange"><strong>Message important</strong></div>',
+  cadreB: '<div class="cadre-bleu">Information en bleu.</div>',
+  cadreV: '<div class="cadre-vert">Information positive.</div>',
+  alerte: '<div class="alerte"><div class="al-titre">⚠ Attention</div><p>Description...</p></div>',
+  bq:     '<blockquote>Citation mise en valeur.</blockquote>',
+  liste:  '<ul><li>Élément 1</li><li>Élément 2</li></ul>',
+};
+function insBloc(k) {
+  if (!k || !BLOCS[k]) return;
+  document.getElementById('wysiwyg-editor').focus();
+  document.execCommand('insertHTML', false, BLOCS[k]);
+  syncEditor();
+}
+function syncEditor() {
+  var ed = document.getElementById('wysiwyg-editor');
+  var ta = document.getElementById('f-contenu');
+  if (ed && ta) ta.value = ed.innerHTML;
 }
 </script>
 </body>
