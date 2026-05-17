@@ -156,21 +156,22 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 }
 
 /* Mode maintenance */
-.maint-box { background: #f0f6fb; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; border: 2px solid #c8dff0; }
+.maint-box { background: #f0f6fb; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; border: 2px solid #c8dff0; width: 100%; box-sizing: border-box; }
 .maint-box.maint-active { background: #fff8ee; border-color: #FF9900; }
 .maint-status { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
 .maint-dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
 .maint-dot.on { background: #e53e3e; box-shadow: 0 0 6px #e53e3e; animation: blink 1.2s ease-in-out infinite; }
 @keyframes blink { 0%,100%{opacity:1}50%{opacity:.4} }
-.maint-toggle-btn { padding: 7px 14px; border: none; border-radius: 5px; font-size: .82rem; font-weight: 700; cursor: pointer; }
+.maint-toggle-btn { padding: 7px 14px; border: none; border-radius: 5px; font-size: .82rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
 .maint-toggle-btn.on { background: #e53e3e; color: #fff; }
 .maint-toggle-btn.off { background: #27ae60; color: #fff; }
-.maint-form { }
-.maint-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.maint-field { display: flex; flex-direction: column; gap: 4px; }
+.maint-form { width: 100%; }
+.maint-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+@media (max-width: 700px) { .maint-fields { grid-template-columns: 1fr; } }
+.maint-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .maint-field label { font-size: .75rem; font-weight: 700; color: #0e3d6b; }
-.maint-input { padding: 7px 10px; border: 1px solid #c8dff0; border-radius: 5px; font-size: .83rem; background: #fff; }
-.maint-field small { font-size: .68rem; color: #888; margin-top: 2px; }
+.maint-input { padding: 7px 10px; border: 1px solid #c8dff0; border-radius: 5px; font-size: .83rem; background: #fff; width: 100%; box-sizing: border-box; }
+.maint-field small { font-size: .68rem; color: #888; margin-top: 2px; overflow-wrap: break-word; word-break: break-all; }
 .maint-field small code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
 /* Bloc historique METAR */
 .metar-hist-box { background: #f0f6fb; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
@@ -372,8 +373,7 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 
   </div>
 
-</div>
-<!-- Section Maintenance -->
+  <!-- Section Maintenance -->
   <div class="actions-title" style="margin-top:24px">🚧 Mode maintenance</div>
   <div class="maint-box<?= $maint_mode==='1' ? ' maint-active' : '' ?>" id="maint-box">
 
@@ -413,6 +413,8 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 
   </div>
 
+
+</div>
 <script>
 function launchBackfill(dry) {
   var days = document.getElementById('backfill-days').value;
