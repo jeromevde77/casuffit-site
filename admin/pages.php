@@ -1980,31 +1980,54 @@ function insBloc(k) {
   if (!k || !BLOCS[k]) return;
   var ed = document.getElementById('wysiwyg-editor');
   if (!ed) return;
-  // Si curseur/sélection dans un bloc stylé -> remplacer sa classe
-  var styled = null;
-  var SCLASSES = ['cadre-bleu','cadre-orange','cadre-vert','alerte','lettre-intro','citation-box','signature','actions-grid','ac-item','content-text'];
+  ed.focus();
+
   var sel = window.getSelection();
+  var SCLASSES = ['cadre-bleu','cadre-orange','cadre-vert','alerte','lettre-intro',
+    'citation-box','signature','actions-grid','ac-item','content-text'];
+
+  // ── Cas 1 : texte sélectionné → envelopper dans le style ─────────────
+  if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+    var range = sel.getRangeAt(0);
+    if (ed.contains(range.commonAncestorContainer)) {
+      var frag = range.extractContents();
+      var tmp = document.createElement('div');
+      tmp.appendChild(frag);
+      var selectedHTML = tmp.innerHTML;
+      var wrapper = document.createElement('div');
+      wrapper.innerHTML = BLOCS[k];
+      var newEl = wrapper.firstElementChild;
+      if (newEl) {
+        newEl.innerHTML = selectedHTML;
+        range.insertNode(newEl);
+        sel.removeAllRanges();
+        syncEditor();
+        if (typeof closePalette === 'function') closePalette();
+        return;
+      }
+    }
+  }
+
+  // ── Cas 2 : curseur dans un bloc stylé → remplacer sa classe ─────────
   if (sel && sel.rangeCount > 0) {
     var node = sel.getRangeAt(0).commonAncestorContainer;
     if (node.nodeType === 3) node = node.parentNode;
     while (node && node !== ed) {
       if (node.nodeType === 1) {
         for (var i = 0; i < SCLASSES.length; i++) {
-          if (node.classList && node.classList.contains(SCLASSES[i])) { styled = node; break; }
+          if (node.classList && node.classList.contains(SCLASSES[i])) {
+            var t2 = document.createElement('div');
+            t2.innerHTML = BLOCS[k];
+            var n2 = t2.firstElementChild;
+            if (n2) { node.className = n2.className; syncEditor(); if (typeof closePalette==='function') closePalette(); return; }
+          }
         }
       }
-      if (styled) break;
       node = node.parentNode;
     }
   }
-  if (styled) {
-    var tmp = document.createElement('div');
-    tmp.innerHTML = BLOCS[k];
-    var newEl = tmp.firstElementChild;
-    if (newEl) { styled.className = newEl.className; syncEditor(); if (typeof closePalette==='function') closePalette(); return; }
-  }
-  // Sinon insérer un nouveau bloc
-  ed.focus();
+
+  // ── Cas 3 : curseur libre → insérer un bloc vide ─────────────────────
   document.execCommand('insertHTML', false, BLOCS[k]);
   syncEditor();
 }
