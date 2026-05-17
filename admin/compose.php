@@ -172,6 +172,55 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
 #wysiwyg-editor .ac-item      { background: #f0f6fb; border-left: 3px solid #1673B2; padding: 10px 14px; margin: 8px 0; }
 #wysiwyg-editor ul, #wysiwyg-editor ol { padding-left: 20px; }
 #wysiwyg-editor blockquote    { border-left: 4px solid #FF9900; padding: 8px 14px; background: #fff8ee; margin: 10px 0; }
+
+/* ── Palette de styles flottante ──────────────────────────────────── */
+#style-palette {
+  display: none; position: fixed; z-index: 9999;
+  background: #fff; border: 1px solid #c8dff0; border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 14px;
+  width: 560px; max-width: 96vw; max-height: 80vh; overflow-y: auto;
+}
+#style-palette.open { display: block; }
+#style-palette h4 { font-size: .72rem; font-weight: 700; color: #888;
+  text-transform: uppercase; letter-spacing: .06em; margin: 0 0 10px; }
+.sp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sp-item { border: 1.5px solid #e0e8f0; border-radius: 7px; padding: 10px 12px;
+  cursor: pointer; transition: border-color .15s, box-shadow .15s; background: #fff; }
+.sp-item:hover { border-color: #1673B2; box-shadow: 0 2px 8px rgba(22,115,178,.15); }
+.sp-item-label { font-size: .65rem; font-weight: 700; color: #888;
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+/* Previews */
+.sp-prev-cadreB { background: #e8f3fb; border-left: 4px solid #1673B2;
+  color: #1673B2; padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-cadreO { background: #FF9900; color: #fff;
+  padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-cadreV { background: #e8f5e9; border-left: 4px solid #2e7d32;
+  padding: 6px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-alerte { background: #fff8ee; border: 2px solid #FF9900;
+  padding: 6px 10px; border-radius: 4px; font-size: .78rem; color: #7a4400; }
+.sp-prev-lettre { background: #0e3d6b; color: #fff;
+  padding: 7px 10px; border-radius: 3px; font-size: .78rem; }
+.sp-prev-citation { background: #f5f5f5; border-left: 4px solid #1673B2;
+  padding: 6px 10px; border-radius: 0 3px 3px 0; font-size: .78rem; font-style: italic; color: #1673B2; }
+.sp-prev-bq { border-left: 4px solid #FF9900; background: #fff8ee;
+  padding: 6px 10px; font-size: .78rem; color: #7a4400; }
+.sp-prev-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+.sp-prev-grid-item { background: #e8f3fb; border-top: 2px solid #1673B2;
+  padding: 4px 6px; font-size: .65rem; color: #0e3d6b; }
+.sp-prev-liste { font-size: .78rem; color: #333; padding: 4px 10px; }
+.sp-prev-titre { color: #FF9900; font-weight: 700; font-size: .9rem;
+  border-bottom: 1px solid #c8dff0; padding-bottom: 3px; }
+.sp-prev-texteB { color: #1673B2; font-size: .78rem; }
+.sp-prev-chiffre { display: flex; gap: 6px; align-items: center; }
+.sp-prev-chiffre-val { font-size: 1.2rem; font-weight: 700; color: #1673B2; }
+.sp-prev-chiffre-lbl { font-size: .65rem; color: #888; }
+.sp-prev-sign { background: #e8f3fb; border-left: 3px solid #1673B2;
+  padding: 5px 10px; font-size: .75rem; color: #1673B2; }
+.sp-close { position: absolute; top: 10px; right: 12px; background: none;
+  border: none; font-size: 1.1rem; cursor: pointer; color: #aaa; line-height: 1; }
+.sp-close:hover { color: #333; }
+.sp-section { margin-top: 12px; }
+
 </style>
 </head>
 <body>
@@ -235,14 +284,7 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
           <div class="wt-sep"></div>
           <button type="button" class="wt-btn" onclick="insertLink()">🔗</button>
           <button type="button" class="wt-btn" onclick="fmt('removeFormat')">Tx</button>
-          <div class="wt-sep"></div>
-          <select onchange="insBloc(this.value); this.value=''" style="font-size:.78rem;padding:3px 6px;border:1px solid #dde;border-radius:4px">
-            <option value="">+ Insérer un bloc</option>
-            <option value="cadreB">🔵 Cadre bleu</option>
-            <option value="alerte">⚠️ Alerte</option>
-            <option value="bq">💬 Citation</option>
-            <option value="liste">📋 Liste</option>
-          </select>
+          <div class="wt-sep"></div><button type="button" class="wt-btn" onclick="openPalette(this)" style="background:#1673B2;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
         </div>
         <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor(); majApercu()"><?= $nl ? $nl['contenu_html'] : '' ?></div>
         <textarea name="contenu_html" id="f-contenu" style="display:none"><?= htmlspecialchars($nl ? $nl['contenu_html'] : '') ?></textarea>
@@ -446,25 +488,148 @@ function insertLink() {
   var url = prompt('URL du lien :');
   if (url) fmt('createLink', url);
 }
-var BLOCS = {
-  cadreO: '<div class="cadre-orange"><strong>Message important</strong></div>',
-  cadreB: '<div class="cadre-bleu">Information en bleu.</div>',
-  cadreV: '<div class="cadre-vert">Information positive.</div>',
-  alerte: '<div class="alerte"><div class="al-titre">⚠ Attention</div><p>Description...</p></div>',
-  bq:     '<blockquote>Citation mise en valeur.</blockquote>',
-  liste:  '<ul><li>Élément 1</li><li>Élément 2</li></ul>',
-};
-function insBloc(k) {
-  if (!k || !BLOCS[k]) return;
-  document.getElementById('wysiwyg-editor').focus();
-  document.execCommand('insertHTML', false, BLOCS[k]);
-  syncEditor();
-}
 function syncEditor() {
   var ed = document.getElementById('wysiwyg-editor');
   var ta = document.getElementById('f-contenu');
   if (ed && ta) ta.value = ed.innerHTML;
 }
+
+
+// ── Palette flottante ─────────────────────────────────────────────────
+var BLOCS = {
+  cadreB:    '<div class="cadre-bleu">Information en bleu.</div>',
+  cadreO:    '<div class="cadre-orange"><strong>Message important</strong></div>',
+  cadreV:    '<div class="cadre-vert"><div class="cv-titre">Points positifs</div><ul><li>Point 1</li><li>Point 2</li></ul></div>',
+  alerte:    '<div class="alerte"><div class="al-titre">⚠ Attention</div><p>Description...</p></div>',
+  lettre:    '<div class="lettre-intro"><p>Chers membres,<br>votre message ici.</p></div>',
+  citation:  '<div class="citation-box"><p>« Votre citation »</p><a href="#">— Source</a></div>',
+  bq:        '<blockquote>Citation mise en valeur.</blockquote>',
+  signature: '<div class="signature">Cordialement,<strong>L'équipe ça suffit ! ASBL</strong></div>',
+  grid:      '<div class="actions-grid"><div class="action-card"><div class="ac-num">01</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div><div class="action-card"><div class="ac-num">02</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div><div class="action-card"><div class="ac-num">03</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div></div>',
+  liste:     '<ul><li>Élément 1</li><li>Élément 2</li><li>Élément 3</li></ul>',
+  chiffre:   '<div style="display:inline-block;text-align:center;margin:8px 16px 8px 0"><span class="chiffre-val">320</span><span class="chiffre-label">avions/jour</span></div>',
+  titre:     '<h3 class="orange section-title">Votre titre de section</h3>',
+  texte:     '<p class="content-text">Texte informatif...</p>',
+};
+
+function insBloc(k) {
+  if (!k || !BLOCS[k]) return;
+  var ed = document.getElementById('wysiwyg-editor');
+  if (!ed) return;
+  ed.focus();
+  document.execCommand('insertHTML', false, BLOCS[k]);
+  syncEditor();
+}
+
+function openPalette(btn) {
+  var p = document.getElementById('style-palette');
+  if (!p) return;
+  if (p.classList.contains('open')) { p.classList.remove('open'); return; }
+  // Positionner sous le bouton
+  var r = btn.getBoundingClientRect();
+  p.style.top  = (r.bottom + 6 + window.scrollY) + 'px';
+  p.style.left = Math.min(r.left, window.innerWidth - 580) + 'px';
+  p.classList.add('open');
+}
+
+function closePalette() {
+  var p = document.getElementById('style-palette');
+  if (p) p.classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+  var p = document.getElementById('style-palette');
+  if (!p || !p.classList.contains('open')) return;
+  if (!p.contains(e.target) && !e.target.closest('[onclick*="openPalette"]')) {
+    p.classList.remove('open');
+  }
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closePalette();
+});
+
 </script>
+
+<div id="style-palette">
+  <button class="sp-close" onclick="closePalette()">✕</button>
+  <h4>Choisir un style</h4>
+
+  <div class="sp-grid">
+
+    <div class="sp-item" onclick="insBloc('cadreB'); closePalette()">
+      <div class="sp-item-label">Cadre bleu</div>
+      <div class="sp-prev-cadreB">Information mise en avant</div>
+    </div>
+
+    <div class="sp-item" onclick="insBloc('cadreO'); closePalette()">
+      <div class="sp-item-label">Cadre orange</div>
+      <div class="sp-prev-cadreO">Message important</div>
+    </div>
+
+    <div class="sp-item" onclick="insBloc('cadreV'); closePalette()">
+      <div class="sp-item-label">Cadre vert</div>
+      <div class="sp-prev-cadreV">Points positifs</div>
+    </div>
+
+    <div class="sp-item" onclick="insBloc('alerte'); closePalette()">
+      <div class="sp-item-label">⚠ Alerte</div>
+      <div class="sp-prev-alerte"><strong>Attention</strong> — Description</div>
+    </div>
+
+    <div class="sp-item" onclick="insBloc('lettre'); closePalette()">
+      <div class="sp-item-label">Lettre intro</div>
+      <div class="sp-prev-lettre">Chers membres, ...</div>
+    </div>
+
+    <div class="sp-item" onclick="insBloc('citation'); closePalette()">
+      <div class="sp-item-label">Citation</div>
+      <div class="sp-prev-citation">« Citation mise en valeur »</div>
+    </div>
+
+    <div class="sp-item" onclick="insBloc('bq'); closePalette()">
+      <div class="sp-item-label">Blockquote</div>
+      <div class="sp-prev-bq">Citation courte</div>
+    </div>
+
+    <div class="sp-item" onclick="insBloc('signature'); closePalette()">
+      <div class="sp-item-label">Signature</div>
+      <div class="sp-prev-sign">L'équipe ça suffit !<br><small>Contact : ...</small></div>
+    </div>
+
+    <div class="sp-item" style="grid-column:1/-1" onclick="insBloc('grid'); closePalette()">
+      <div class="sp-item-label">Grille d'actions (3 colonnes)</div>
+      <div class="sp-prev-grid">
+        <div class="sp-prev-grid-item"><strong>01</strong><br>Titre</div>
+        <div class="sp-prev-grid-item"><strong>02</strong><br>Titre</div>
+        <div class="sp-prev-grid-item"><strong>03</strong><br>Titre</div>
+      </div>
+    </div>
+
+    <div class="sp-item" onclick="insBloc('liste'); closePalette()">
+      <div class="sp-item-label">Liste à puces</div>
+      <div class="sp-prev-liste">• Élément 1<br>• Élément 2</div>
+    </div>
+
+    <div class="sp-item" onclick="insBloc('chiffre'); closePalette()">
+      <div class="sp-item-label">Chiffre clé</div>
+      <div class="sp-prev-chiffre">
+        <span class="sp-prev-chiffre-val">320</span>
+        <span class="sp-prev-chiffre-lbl">avions/jour</span>
+      </div>
+    </div>
+
+    <div class="sp-item" onclick="insBloc('titre'); closePalette()">
+      <div class="sp-item-label">Titre de section</div>
+      <div class="sp-prev-titre">Votre titre</div>
+    </div>
+
+    <div class="sp-item" onclick="insBloc('texte'); closePalette()">
+      <div class="sp-item-label">Texte bleu</div>
+      <div class="sp-prev-texteB">Texte informatif en bleu</div>
+    </div>
+
+  </div>
+</div>
+
 </body>
 </html>
