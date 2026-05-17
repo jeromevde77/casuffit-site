@@ -237,6 +237,14 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
 .btn-retour-mobile{display:none;font-size:.78rem;color:rgba(255,255,255,.85);text-decoration:none;font-weight:600;margin-bottom:8px;align-items:center;gap:4px}
 .eform-foot,.pedit-foot,.save-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 16px;border-top:1px solid #eee;background:#fafbfc;flex-shrink:0}
 .ql-editor { min-height: 220px; font-family: "Helvetica Neue",Arial,sans-serif; font-size: .88rem; line-height: 1.7; color: #333; }
+.ql-editor .cadre-bleu   { padding: 12px 16px; background: #e8f3fb; border-left: 4px solid #1673B2; color: #1673B2; margin: 10px 0; border-radius: 4px; }
+.ql-editor .cadre-orange { padding: 12px 16px; background: #FF9900; color: #fff; margin: 10px 0; border-radius: 4px; }
+.ql-editor .cadre-vert   { padding: 12px 16px; background: #e8f5e9; border-left: 4px solid #2e7d32; margin: 10px 0; border-radius: 4px; }
+.ql-editor .alerte       { background: #fff8ee; border: 2px solid #FF9900; padding: 12px 16px; border-radius: 6px; margin: 10px 0; }
+.ql-editor .al-titre     { font-weight: 700; color: #FF9900; margin-bottom: 6px; }
+.ql-editor .orange.section-title, .ql-editor h3 { color: #FF9900; font-weight: 600; font-size: 1rem; border-bottom: 1px solid #c8dff0; padding-bottom: 4px; margin: 16px 0 8px; }
+.ql-editor .content-text { color: #1673B2; }
+.ql-editor .ac-item      { background: #f0f6fb; border-left: 3px solid #1673B2; padding: 10px 14px; margin: 8px 0; border-radius: 0 4px 4px 0; }
 .ql-toolbar.ql-snow { border: 1px solid #c8dff0; border-radius: 6px 6px 0 0; background: #f8fafc; }
 .ql-container.ql-snow { border: 1px solid #c8dff0; border-radius: 0 0 6px 6px; }
 </style>
@@ -455,12 +463,22 @@ var T = {
 };
 
 function ins(k) {
-  var ta = document.getElementById('f-contenu');
-  if (!ta) return;
-  var s = ta.selectionStart, e = ta.selectionEnd;
-  ta.value = ta.value.substring(0,s) + T[k] + ta.value.substring(e);
-  ta.selectionStart = ta.selectionEnd = s + T[k].length;
-  ta.focus(); maj();
+  if (typeof quill !== 'undefined') {
+    // Insérer dans Quill à la position du curseur
+    var range = quill.getSelection(true);
+    var idx   = range ? range.index : quill.getLength();
+    quill.clipboard.dangerouslyPasteHTML(idx, T[k]);
+    quill.setSelection(idx + 1);
+    quill.focus();
+  } else {
+    // Fallback textarea
+    var ta = document.getElementById('f-contenu');
+    if (!ta) return;
+    var s = ta.selectionStart, e = ta.selectionEnd;
+    ta.value = ta.value.substring(0,s) + T[k] + ta.value.substring(e);
+    ta.selectionStart = ta.selectionEnd = s + T[k].length;
+    ta.focus(); maj();
+  }
 }
 
 function maj() {
