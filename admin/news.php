@@ -236,7 +236,11 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
 .btn-apercu-mobile{display:none}
 .btn-retour-mobile{display:none;font-size:.78rem;color:rgba(255,255,255,.85);text-decoration:none;font-weight:600;margin-bottom:8px;align-items:center;gap:4px}
 .eform-foot,.pedit-foot,.save-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 16px;border-top:1px solid #eee;background:#fafbfc;flex-shrink:0}
+.ql-editor { min-height: 220px; font-family: "Helvetica Neue",Arial,sans-serif; font-size: .88rem; line-height: 1.7; color: #333; }
+.ql-toolbar.ql-snow { border: 1px solid #c8dff0; border-radius: 6px 6px 0 0; background: #f8fafc; }
+.ql-container.ql-snow { border: 1px solid #c8dff0; border-radius: 0 0 6px 6px; }
 </style>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
 </head>
 <body>
 <?php include __DIR__ . '/../includes/admin_sidebar.php'; ?>
@@ -508,5 +512,28 @@ function syncApercu() {
   var dest = document.getElementById('apercu-sheet-body');
   if (src && dest) dest.innerHTML = src.innerHTML;
 }
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+<script>
+var quill = new Quill('#quill-editor', {
+  theme: 'snow',
+  modules: { toolbar: [
+    [{ header: [2, 3, false] }],
+    ['bold','italic','underline','strike'],
+    [{ color: [] }, { list: 'ordered' }, { list: 'bullet' }],
+    ['blockquote','link','clean']
+  ]},
+  placeholder: 'Rédigez votre actualité ici...'
+});
+var existing = document.getElementById('f-contenu').value;
+if (existing) quill.clipboard.dangerouslyPasteHTML(existing);
+document.getElementById('news-form').addEventListener('submit', function() {
+  document.getElementById('f-contenu').value = quill.root.innerHTML;
+});
+quill.on('text-change', function() {
+  document.getElementById('f-contenu').value = quill.root.innerHTML;
+  if (typeof maj === 'function') maj();
+});
 </script>
 </body>
