@@ -30,6 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_widget'])) {
                ->execute(array($slug,$titre,$description,$icone,$actif));
             $id = $db->lastInsertId();
         }
+        // Gérer l'option no-scale mobile
+        $no_scale = isset($_POST['no_scale']) ? 1 : 0;
+        $no_scale_line = "\$widget_no_scale = true; // Bloquer l'agrandissement mobile\n";
+        // Retirer toute ligne no_scale existante du contenu
+        $contenu_php = preg_replace('/\$widget_no_scale\s*=\s*true;[^\n]*\n?/', '', $contenu_php);
+        // Ajouter si coché (après <?php ou en début)
+        if ($no_scale) {
+            if (strpos($contenu_php, '<?php') !== false) {
+                $contenu_php = preg_replace('/<\?php\s*\n?/', "<?php\n" . $no_scale_line, $contenu_php, 1);
+            } else {
+                $contenu_php = $no_scale_line . $contenu_php;
+            }
+        }
         // Sauvegarder le fichier PHP du widget
         $widget_file = $widgets_dir . $slug . '.php';
         file_put_contents($widget_file, $contenu_php);
@@ -65,6 +78,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : $error;
 $widgets = $db->query("SELECT w.*, COUNT(pw.page_slug) as nb_pages FROM widgets w LEFT JOIN page_widgets pw ON pw.widget_slug=w.slug GROUP BY w.id ORDER BY w.id ASC")->fetchAll();
 
 // Lire le contenu du fichier PHP du widget en cours d'édition
+// et détecter l'option no_scale
 $widget_php_content = '';
 if ($edit_widget) {
     $wfile = $widgets_dir . $edit_widget['slug'] . '.php';
@@ -369,7 +383,13 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
         </div>
 
         <div class="code-wrap">
-          <label>Contenu PHP/HTML du widget</label>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <label>Contenu PHP/HTML du widget</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:<?= isset($widget_is_no_scale) && $widget_is_no_scale ? '#fff8ee' : '#f0f8ff' ?>;border:1px solid <?= isset($widget_is_no_scale) && $widget_is_no_scale ? '#FF9900' : '#c8dff0' ?>;border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600;color:<?= isset($widget_is_no_scale) && $widget_is_no_scale ? '#c07000' : '#1673B2' ?>">
+              <input type="checkbox" name="no_scale" <?= isset($widget_is_no_scale) && $widget_is_no_scale ? 'checked' : '' ?> style="width:14px;height:14px;cursor:pointer">
+              📵 Bloquer agrandissement mobile
+            </label>
+          </div>
           <div style="margin-bottom:6px">
             <button type="button" onclick="openWPalette(this)" style="background:#1673B2;color:#fff;border:none;border-radius:5px;padding:5px 14px;font-size:.78rem;font-weight:700;cursor:pointer">＋ Insérer un style</button>
           </div>
