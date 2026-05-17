@@ -245,7 +245,7 @@
   padding: 4px 9px; font-size: .72rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .pmh-widget-btn:hover { background: #0e5a96; }
 /* Modale widget */
-.pmh-wmodal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55);
+.pmh-wmodal-bg { display: none; position: fixed; top:0;right:0;bottom:0;left:0; background: rgba(0,0,0,.55);
   z-index: 9999; align-items: center; justify-content: center; }
 .pmh-wmodal-bg.open { display: flex; }
 .pmh-wmodal { background: #fff; border-radius: 12px; width: 520px; max-width: 96vw;
@@ -272,6 +272,26 @@
 }
 .pmh-scroll-hint { display: none; text-align: center; font-size: .7rem; color: #aaa;
   padding: 4px; }
+@media (max-width: 600px) {
+  .pmh-table-wrap, .pmh-scroll-hint { display: none !important; }
+  #pmh-cards { display: block !important; }
+  .pmh-card { background:#fff; border:1.5px solid #e0e8f0; border-radius:10px;
+    margin-bottom:10px; overflow:hidden; }
+  .pmh-card-head { background:#0e3d6b; color:#fff; padding:8px 12px;
+    display:flex; justify-content:space-between; align-items:center; }
+  .pmh-card-time { font-weight:700; font-size:.9rem; }
+  .pmh-card-date { font-size:.72rem; opacity:.75; }
+  .pmh-card-body { padding:10px 12px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .pmh-card-wind { grid-column:1/-1; font-size:1.1rem; font-weight:700; color:#0e3d6b; }
+  .pmh-card-aip { background:#f5f9ff; border-radius:6px; padding:6px 8px; font-size:.78rem; }
+  .pmh-card-aip-label { font-size:.62rem; color:#888; font-weight:700; text-transform:uppercase; margin-bottom:2px; }
+  .pmh-card-verdict { grid-column:1/-1; padding:6px 8px; border-radius:6px;
+    font-size:.8rem; font-weight:600; text-align:center; }
+  .pmh-card-btn-row { grid-column:1/-1; display:flex; gap:8px; }
+  .pmh-card-widget-btn { flex:1; background:#1673B2; color:#fff; border:none;
+    border-radius:7px; padding:9px; font-size:.85rem; font-weight:700; cursor:pointer; }
+  .pmh-card-widget-btn:active { background:#0e5a96; }
+}
 .pmh-wmodal-head { padding: 12px 18px; border-bottom: 1px solid #eee;
   display: flex; align-items: center; justify-content: space-between; background: #0e3d6b; border-radius: 12px 12px 0 0; }
 .pmh-wmodal-head h3 { margin: 0; color: #fff; font-size: .95rem; }
@@ -522,6 +542,35 @@ function pmhRender(d){
   });
   document.getElementById('pmh-source-note').textContent=
     'Source : '+(d.source||'IRM')+' — '+d.count+' entrée(s). '+(d.note||'');
+  // Générer les cartes mobile
+  pmhRenderCards();
+}
+
+function pmhRenderCards() {
+  var wrap = document.getElementById('pmh-cards');
+  if (!wrap) return;
+  if (!pmhData.length) { wrap.innerHTML=''; return; }
+  var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+  wrap.innerHTML = pmhData.map(function(m, idx) {
+    var t = new Date(m.time);
+    var timeUTC = isNaN(t) ? m.time : t.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC';
+    var timeBE  = isNaN(t) ? '' : t.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Brussels'})+' (BE)';
+    var dateStr = isNaN(t) ? '' : t.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'});
+    var wd = (m.wdir==='VRB'||!m.wdir) ? null : parseInt(m.wdir);
+    var wdTxt = wd!==null ? wd+'° '+dirs[Math.round(wd/22.5)%16] : 'Variable';
+    var ws = m.wspd_kt||m.wspd||0;
+    var wg = m.wgst_kt||m.wgst_metar||m.wgst_irm||null;
+    var windTxt = wdTxt+' — '+ws+' kt'+(wg?' 💨'+wg+' kt':'');
+    var s13 = m.aip2013||{};
+    var snow = m.aip_now||{};
+    var aip13Txt = (s13.prs?'PRS':'Hors PRS')+' · '+(s13.runways||[]).join('/');
+    var aipNowTxt = (snow.prs?'PRS':'Hors PRS')+' · '+(snow.runways||[]).join('/');
+    var viol = m.divergence;
+    var verdictBg = viol ? '#fff0f0' : '#f0fff4';
+    var verdictColor = viol ? '#c00' : '#080';
+    var verdictTxt = viol ? '⚡ Divergence AIP 2013 / Actuel' : '✓ Cohérent';
+    return '<div class="pmh-card">'      +'<div class="pmh-card-head">'        +'<div><div class="pmh-card-time">'+timeUTC+'</div>'        +'<div class="pmh-card-date">'+timeBE+' · '+dateStr+'</div></div>'      +'</div>'      +'<div class="pmh-card-body">'        +'<div class="pmh-card-wind">🌬 '+windTxt+'</div>'        +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP 2013 (légal)</div>'+aip13Txt+'</div>'        +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP actuel</div>'+aipNowTxt+'</div>'        +(viol?'<div class="pmh-card-verdict" style="background:'+verdictBg+';color:'+verdictColor+'">'+verdictTxt+'</div>':'')        +'<div class="pmh-card-btn-row">'          +'<button class="pmh-card-widget-btn" onclick="pmhOpenWidget('+idx+')">▶ Voir widget</button>'        +'</div>'      +'</div>'    +'</div>';
+  }).join('');
 }
 
 // ── Export PDF ────────────────────────────────────────────────────────────
