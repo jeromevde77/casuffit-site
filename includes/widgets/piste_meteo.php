@@ -1430,8 +1430,7 @@ window.pmwOpenMailto = function() {
 
   emlContent.push('--' + boundary + '--');
 
-  var blob = new Blob([emlContent.join('
-')], {type: 'message/rfc822'});
+  var blob = new Blob([emlContent.join('\r\n')], {type: 'message/rfc822'});
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
   var fn   = 'plainte-ebbr-' + new Date().toISOString().slice(0,16).replace(/[T:]/g,'-') + '.eml';
