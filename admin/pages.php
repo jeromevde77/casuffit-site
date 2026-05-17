@@ -564,6 +564,7 @@ if ($edit_page) {
           <div class="wt-sep"></div>
           <button type="button" class="wt-btn" onclick="insertLink()" title="Lien">🔗</button>
           <button type="button" class="wt-btn" onclick="fmt('removeFormat')" title="Effacer style">Tx</button>
+          <button type="button" class="wt-btn" onclick="removeBloc()" title="Supprimer le style du bloc" style="color:#c0392b;font-weight:700">✕ Bloc</button>
           <div class="wt-sep"></div><button type="button" class="wt-btn" onclick="openPalette(this)" style="background:#1673B2;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
         </div>
         <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor()"><?= $edit_page ? ($edit_page['contenu'] ?? '') : '' ?></div>
@@ -2045,6 +2046,37 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closePalette();
 });
 
+
+function removeBloc() {
+  var ed = document.getElementById('wysiwyg-editor');
+  if (!ed) return;
+  var SCLASSES = ['cadre-bleu','cadre-orange','cadre-vert','alerte','lettre-intro',
+    'citation-box','signature','actions-grid','ac-item','content-text','orange','section-title'];
+  var sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  var node = sel.getRangeAt(0).commonAncestorContainer;
+  if (node.nodeType === 3) node = node.parentNode;
+  while (node && node !== ed) {
+    if (node.nodeType === 1) {
+      for (var i = 0; i < SCLASSES.length; i++) {
+        if (node.classList && node.classList.contains(SCLASSES[i])) {
+          // Déballer : remplacer l'élément par ses enfants
+          var frag = document.createDocumentFragment();
+          while (node.firstChild) frag.appendChild(node.firstChild);
+          node.parentNode.replaceChild(frag, node);
+          syncEditor();
+          if (typeof closePalette === 'function') closePalette();
+          return;
+        }
+      }
+    }
+    node = node.parentNode;
+  }
+  // Pas de bloc stylé — effacer le formatage inline
+  document.execCommand('removeFormat');
+  syncEditor();
+}
+
 </script>
 
 
@@ -2053,6 +2085,10 @@ document.addEventListener('keydown', function(e) {
   <h4>Choisir un style</h4>
 
   <div class="sp-grid">
+    <div class="sp-item" onclick="removeBloc()" style="grid-column:1/-1;border-color:#e74c3c;background:#fff5f5">
+      <div class="sp-item-label" style="color:#c0392b">✕ Supprimer le style du bloc</div>
+      <div style="font-size:.75rem;color:#888">Déballe le bloc et garde le contenu brut</div>
+    </div>
 
     <div class="sp-item" onclick="insBloc('cadreB'); closePalette()">
       <div class="sp-item-label">Cadre bleu</div>
