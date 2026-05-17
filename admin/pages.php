@@ -583,7 +583,7 @@ function setView(mode) {
 }
 
 function maj() {
-  syncEditor(); var v = document.getElementById('f-contenu').value;
+  if (typeof syncEditor === 'function') syncEditor(); var v = document.getElementById('f-contenu').value;
   var frame = document.getElementById('preview-frame');
   if (!frame) return;
   var doc = frame.contentDocument || frame.contentWindow.document;
