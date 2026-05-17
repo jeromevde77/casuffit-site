@@ -507,10 +507,18 @@ header.site-header {
   align-items: start;
 }
 @media (max-width: 430px) {
-  /* ── iPhone : augmenter la taille de police de base ── */
-  body { font-size: 100%; }
-  .tab-panel.active { padding: 16px 16px; }
-  .section-title { font-size: 18px; }
+  /* ── iPhone : taille et graisse de police augmentées ── */
+  body {
+    font-size: 106%;
+    font-weight: 300;
+    line-height: 1.65;
+  }
+  p, li, .news-contenu, .tab-panel, .apanel-inner {
+    font-weight: 300;
+  }
+  .tab-panel.active { padding: 14px 14px; }
+  .section-title { font-size: 19px; }
+  .news-titre { font-size: 1.05rem; }
 }
 
 @media (max-width: 680px) {
