@@ -521,7 +521,7 @@ if ($edit_page) {
             <option value="liste">📋 Liste</option>
           </select>
         </div>
-        <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor()"><?= $edit_page ? ($edit_page['contenu'] ?? '') : '') ?></div>
+        <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor()"><?= $edit_page ? ($edit_page['contenu'] ?? '') : '' ?></div>
         <textarea name="contenu" id="f-contenu" style="display:none"><?= htmlspecialchars($edit_page ? ($edit_page['contenu'] ?? '') : '') ?></textarea>
         <div style="font-size:.63rem;color:#aaa;margin-top:2px">Aperçu → en temps réel</div>
       </form>
@@ -594,7 +594,7 @@ function setView(mode) {
 }
 
 function maj() {
-  var v = document.getElementById('f-contenu').value;
+  syncEditor(); var v = document.getElementById('f-contenu').value;
   var frame = document.getElementById('preview-frame');
   if (!frame) return;
   var doc = frame.contentDocument || frame.contentWindow.document;
@@ -1655,39 +1655,6 @@ blockquote {
 </style>
 </head>
 <body>${v || '<p style="color:#aaa;text-align:center;padding:40px">Aperçu...</p>'}<script>
-function fmt(cmd, val) {
-  document.getElementById('wysiwyg-editor').focus();
-  document.execCommand(cmd, false, val || null);
-  syncEditor();
-}
-function fmtBlock(tag) {
-  document.getElementById('wysiwyg-editor').focus();
-  document.execCommand('formatBlock', false, tag);
-  syncEditor();
-}
-function insertLink() {
-  var url = prompt('URL du lien :');
-  if (url) fmt('createLink', url);
-}
-var BLOCS = {
-  cadreO: '<div class="cadre-orange"><strong>Message important</strong></div>',
-  cadreB: '<div class="cadre-bleu">Information en bleu.</div>',
-  cadreV: '<div class="cadre-vert">Information positive.</div>',
-  alerte: '<div class="alerte"><div class="al-titre">⚠ Attention</div><p>Description...</p></div>',
-  bq:     '<blockquote>Citation mise en valeur.</blockquote>',
-  liste:  '<ul><li>Élément 1</li><li>Élément 2</li></ul>',
-};
-function insBloc(k) {
-  if (!k || !BLOCS[k]) return;
-  document.getElementById('wysiwyg-editor').focus();
-  document.execCommand('insertHTML', false, BLOCS[k]);
-  syncEditor();
-}
-function syncEditor() {
-  var ed = document.getElementById('wysiwyg-editor');
-  var ta = document.getElementById('f-contenu');
-  if (ed && ta) ta.value = ed.innerHTML;
-}
 </script>
 </body>
 </html>`);
@@ -1909,6 +1876,40 @@ function mediaUpload(file) {
       }
     })
     .catch(function(){ status.textContent = '⚠ Erreur réseau'; });
+}
+
+function fmt(cmd, val) {
+  document.getElementById('wysiwyg-editor').focus();
+  document.execCommand(cmd, false, val || null);
+  syncEditor();
+}
+function fmtBlock(tag) {
+  document.getElementById('wysiwyg-editor').focus();
+  document.execCommand('formatBlock', false, tag);
+  syncEditor();
+}
+function insertLink() {
+  var url = prompt('URL du lien :');
+  if (url) fmt('createLink', url);
+}
+var BLOCS = {
+  cadreO: '<div class="cadre-orange"><strong>Message important</strong></div>',
+  cadreB: '<div class="cadre-bleu">Information en bleu.</div>',
+  cadreV: '<div class="cadre-vert">Information positive.</div>',
+  alerte: '<div class="alerte"><div class="al-titre">⚠ Attention</div><p>Description...</p></div>',
+  bq:     '<blockquote>Citation mise en valeur.</blockquote>',
+  liste:  '<ul><li>Élément 1</li><li>Élément 2</li></ul>',
+};
+function insBloc(k) {
+  if (!k || !BLOCS[k]) return;
+  document.getElementById('wysiwyg-editor').focus();
+  document.execCommand('insertHTML', false, BLOCS[k]);
+  syncEditor();
+}
+function syncEditor() {
+  var ed = document.getElementById('wysiwyg-editor');
+  var ta = document.getElementById('f-contenu');
+  if (ed && ta) ta.value = ed.innerHTML;
 }
 </script>
 
