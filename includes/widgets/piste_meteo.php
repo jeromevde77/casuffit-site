@@ -1326,7 +1326,8 @@ window.pmwOpenMailto = function() {
   var subject = 'Plainte nuisance aérienne EBBR — '+window._currentBatcRwy+' — '+dateStr+' '+timeStr;
 
   // Données météo
-  var d = window._lastMeteoData || {};
+  var pmwState = window._pmwData ? window._pmwData() : {};
+  var d = pmwState.data || {};
   var planStr = pmwMailBody.split('=== PLANNING AIP ===')[1]
     ? pmwMailBody.split('=== PLANNING AIP ===')[1].split('===')[0].trim() : '';
   var whyArr = pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1]
