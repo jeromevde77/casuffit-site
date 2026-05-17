@@ -1332,8 +1332,7 @@ window.pmwOpenMailto = function() {
   var planStr = pmwMailBody.split('=== PLANNING AIP ===')[1]
     ? pmwMailBody.split('=== PLANNING AIP ===')[1].split('===')[0].trim() : '';
   var why = pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1]
-    ? pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1].split('•').slice(1).map(function(w){return w.trim().split('
-')[0];}) : [];
+    ? pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1].split('•').slice(1).map(function(w){return w.trim().split('\n')[0];}) : [];
 
   // ── HTML du corps du mail ─────────────────────────────────────────────
   var captureHtml = pmwCaptureDataUrl
