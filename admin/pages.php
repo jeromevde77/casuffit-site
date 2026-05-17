@@ -559,6 +559,11 @@ if ($edit_page) {
 </div>
 
 <script>
+function syncEditor() {
+  var ed = document.getElementById('wysiwyg-editor');
+  var ta = document.getElementById('f-contenu');
+  if (ed && ta) ta.value = ed.innerHTML;
+}
 function setView(mode) {
   var wrap = document.querySelector('.wrap');
   if (!wrap) return;
