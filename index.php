@@ -513,6 +513,11 @@ header.site-header {
     font-weight: 300;
     line-height: 1.65;
   }
+  /* Widgets qui refusent l'agrandissement */
+  [data-no-scale] {
+    font-size: calc(100% / 1.22);
+    font-weight: 200;
+  }
   p, li, .news-contenu, .tab-panel, .apanel-inner {
     font-weight: 300;
   }
@@ -1574,8 +1579,9 @@ foreach ($header_widgets as $w_slug) {
         $w_file = __DIR__ . '/includes/widgets/' . $w_slug . '.php';
         if (!file_exists($w_file)) continue;
     ?>
-    <div data-widget="<?= $w_slug ?>" style="display:none">
-      <?php include $w_file; ?>
+    <?php $widget_no_scale = false; ob_start(); include $w_file; $w_html = ob_get_clean(); ?>
+    <div data-widget="<?= $w_slug ?>" <?= $widget_no_scale ? 'data-no-scale="1"' : '' ?> style="display:none">
+      <?= $w_html ?>
     </div>
     <?php endforeach; ?>
   </div><!-- /colonne droite -->

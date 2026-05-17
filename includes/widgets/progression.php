@@ -1,4 +1,6 @@
-<?php // Widget : Barre de progression
+<?php
+$widget_no_scale = true; // Ne pas agrandir la police sur mobile
+ // Widget : Barre de progression
 // $recolte, $objectif, $pct, $don_texte sont définis dans index.php
 ?>
 <section class="progress-section">
