@@ -402,6 +402,8 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
           <div class="wt-sep"></div>
           <button type="button" class="wt-btn" onclick="insertLink()" title="Lien">🔗</button>
           <button type="button" class="wt-btn" onclick="fmt('removeFormat')" title="Effacer style">Tx</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="openPalette(this)" style="background:#1673B2;color:#fff;padding:3px 12px;font-weight:700;min-width:auto" title="Insérer un style">＋ Style</button>
         </div>
         <!-- Éditeur contenteditable — préserve toutes les classes CSS -->
         <div id="wysiwyg-editor" contenteditable="true"
