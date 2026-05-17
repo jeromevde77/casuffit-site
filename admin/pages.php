@@ -1666,8 +1666,7 @@ blockquote {
 .news-contenu p { margin-bottom: 6px; }
 </style>
 </head>
-<body>${v || '<p style="color:#aaa;text-align:center;padding:40px">Aperçu...</p>'}<script>
-</script>
+<body>${v || '<p style="color:#aaa;text-align:center;padding:40px">Aperçu...</p>'}
 </body>
 </html>`);
   doc.close();
