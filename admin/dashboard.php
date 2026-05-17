@@ -22,7 +22,10 @@ $maint_msg   = $db->query("SELECT valeur FROM site_config WHERE cle='maintenance
 
 // Traitement toggle maintenance
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['maintenance_action'])) {
-    if ($_POST['maintenance_action'] === 'toggle') {
+    if ($_POST['maintenance_action'] === 'reset_bypass') {
+        setcookie('maintenance_bypass', '', time() - 3600, '/', '', true, true);
+        header('Location: dashboard.php?msg=bypass_reset'); exit;
+    } elseif ($_POST['maintenance_action'] === 'toggle') {
         $new = $maint_mode === '1' ? '0' : '1';
         $db->prepare("UPDATE site_config SET valeur=? WHERE cle='maintenance_mode'")->execute([$new]);
         $maint_mode = $new;
@@ -374,18 +377,32 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
   </div>
 
   <!-- Section Maintenance -->
+  <?php if (isset($_GET['msg']) && $_GET['msg'] === 'bypass_reset'): ?>
+    <div style="background:#e8f5e9;border:1px solid #27ae60;border-radius:6px;padding:8px 14px;margin-bottom:12px;color:#166534;font-size:.82rem">
+      ✅ Cookie de bypass réinitialisé — les visiteurs avec l'ancien cookie devront retaper le code.
+    </div>
+  <?php endif; ?>
   <div class="actions-title" style="margin-top:24px">🚧 Mode maintenance</div>
   <div class="maint-box<?= $maint_mode==='1' ? ' maint-active' : '' ?>" id="maint-box">
 
     <div class="maint-status">
       <div class="maint-dot<?= $maint_mode==='1' ? ' on' : '' ?>"></div>
       <span><?= $maint_mode==='1' ? 'ACTIF — Le site affiche la page de maintenance' : 'Inactif — Le site est accessible normalement' ?></span>
-      <form method="post" style="margin-left:auto">
-        <input type="hidden" name="maintenance_action" value="toggle">
-        <button type="submit" class="maint-toggle-btn<?= $maint_mode==='1' ? ' off' : ' on' ?>">
-          <?= $maint_mode==='1' ? '⏹ Désactiver' : '▶ Activer le mode maintenance' ?>
-        </button>
-      </form>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <form method="post">
+          <input type="hidden" name="maintenance_action" value="reset_bypass">
+          <button type="submit" class="maint-toggle-btn" style="background:#6b7280;color:#fff"
+            title="Expire le cookie de bypass sur ce navigateur">
+            🍪 Réinitialiser bypass
+          </button>
+        </form>
+        <form method="post">
+          <input type="hidden" name="maintenance_action" value="toggle">
+          <button type="submit" class="maint-toggle-btn<?= $maint_mode==='1' ? ' off' : ' on' ?>">
+            <?= $maint_mode==='1' ? '⏹ Désactiver' : '▶ Activer le mode maintenance' ?>
+          </button>
+        </form>
+      </div>
     </div>
 
     <form method="post" class="maint-form">
