@@ -514,9 +514,14 @@ header.site-header {
     line-height: 1.65;
   }
   /* Widgets qui refusent l'agrandissement */
-  [data-no-scale] {
-    font-size: calc(100% / 1.22);
-    font-weight: 200;
+  [data-no-scale], [data-no-scale] * {
+    font-size: revert;
+    font-weight: revert;
+  }
+  /* Sécurité : barre de progression toujours en taille normale */
+  .progress-section, .progress-section * {
+    font-size: revert;
+    font-weight: revert;
   }
   p, li, .news-contenu, .tab-panel, .apanel-inner {
     font-weight: 300;
@@ -1426,7 +1431,14 @@ function navBtnClass($p) {
 $header_widgets = isset($page_widgets['__header__']) ? $page_widgets['__header__'] : array();
 foreach ($header_widgets as $w_slug) {
     $w_file = __DIR__ . '/includes/widgets/' . $w_slug . '.php';
-    if (file_exists($w_file)) include $w_file;
+    if (!file_exists($w_file)) continue;
+    $widget_no_scale = false;
+    ob_start(); include $w_file; $w_html = ob_get_clean();
+    if ($widget_no_scale) {
+        echo '<div data-no-scale="1">' . $w_html . '</div>';
+    } else {
+        echo $w_html;
+    }
 }
 ?>
 <!-- TABS -->
