@@ -316,6 +316,8 @@ function switchView(view) {
     window.rvwInitYear();
   }
   // Scroll en haut
+  var body = document.querySelector('.app-body');
+  if (body) body.scrollTop = 0;
   window.scrollTo(0, 0);
 }
 
