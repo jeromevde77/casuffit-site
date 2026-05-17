@@ -509,7 +509,7 @@ header.site-header {
 @media (max-width: 430px) {
   /* ── iPhone : taille et graisse de police augmentées ── */
   body {
-    font-size: 106%;
+    font-size: 114%;
     font-weight: 300;
     line-height: 1.65;
   }
