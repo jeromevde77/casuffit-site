@@ -191,7 +191,8 @@
 
     /* ── Vues ── */
     .app-view { display: none; }
-    .app-view.active { display: block; min-height: 100%; }
+    .app-view.active { display: block; min-height: 100%; padding: 12px; }
+    #view-historique.active { padding: 0; } /* le widget .pmh gère son propre padding */
 
 
     /* Footer liens discrets */
@@ -304,13 +305,19 @@
 <script>
 function switchView(view) {
   ['meteo','historique','rose'].forEach(function(v) {
-    document.getElementById('view-' + v).classList.toggle('active', v === view);
+    var el = document.getElementById('view-' + v);
+    if (v === view) {
+      el.style.display = 'block';
+      el.classList.add('active');
+    } else {
+      el.style.display = 'none';
+      el.classList.remove('active');
+    }
     var btn = document.getElementById('nav-' + v);
     btn.classList.remove('active','active-rose');
   });
   var btn = document.getElementById('nav-' + view);
   btn.classList.add(view === 'rose' ? 'active-rose' : 'active');
-
   // Init rose des vents au premier affichage
   if (view === 'rose' && typeof window.rvwInitYear === 'function') {
     window.rvwInitYear();
@@ -318,7 +325,6 @@ function switchView(view) {
   // Scroll en haut
   var body = document.querySelector('.app-body');
   if (body) body.scrollTop = 0;
-  window.scrollTo(0, 0);
 }
 
 function dismissGuide() {
