@@ -488,8 +488,7 @@ if ($edit_page) {
 
         <label>Meta description</label>
         <input type="text" name="meta_description" value="<?= htmlspecialchars($edit_page ? ($edit_page['meta_description'] ?? '') : '') ?>" placeholder="Pour Google...">
-
-        <label style="margin-top:12px">Contenu</label>
+        <label style="margin-top:12px">Contenu HTML</label>
                 <div id="wysiwyg-toolbar">
           <button type="button" class="wt-btn" onclick="fmt('bold')" title="Gras"><b>G</b></button>
           <button type="button" class="wt-btn" onclick="fmt('italic')" title="Italique"><i>I</i></button>

@@ -332,7 +332,66 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
 <?php endif; ?>
 
 <?php if ($edit || isset($_GET['new'])): ?>
-<!-- Éditeur contenteditable — préserve toutes les classes CSS -->
+<!-- ═══ ÉDITEUR ═══ -->
+<form method="POST" id="news-form">
+<input type="hidden" name="news_id" value="<?= $edit ? intval($edit['id']) : 0 ?>">
+<input type="hidden" name="save_news" value="1">
+<input type="hidden" name="statut" id="f-statut" value="<?= $edit ? htmlspecialchars($edit['statut']) : 'brouillon' ?>">
+
+<div class="news-editor-wrap view-edit">
+
+  <!-- Colonne gauche : formulaire -->
+  <div class="editor-col">
+    <div class="ecol-head ecol-head-vt">
+      <h3 style="color:#fff"><?= $edit ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Modifier l\'actualité' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nouvelle actualité' ?></h3>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="view-toggle">
+          <button type="button" class="vt-btn vt-edit active" onclick="setView('edit')" title="Éditeur">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Éditer
+          </button>
+          <button type="button" class="vt-btn vt-preview" onclick="setView('preview')" title="Aperçu">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Aperçu
+          </button>
+        </div>
+        <a href="news.php" style="font-size:.72rem;color:rgba(255,255,255,.8);text-decoration:none">← Liste</a>
+      </div>
+    </div>
+    <div class="ecol-body">
+
+      <div class="frow">
+        <label>Titre *</label>
+        <input type="text" name="titre" id="f-titre" value="<?= $edit ? htmlspecialchars($edit['titre']) : '' ?>" placeholder="Ex: Victoire ! L'audience est fixée au..." required>
+      </div>
+
+      <div class="frow">
+        <label>Accroche <span style="font-weight:400;color:#aaa">(résumé affiché dans la liste)</span></label>
+        <textarea name="accroche" id="f-accroche" rows="2" placeholder="2-3 phrases résumant l'actualité..."><?= $edit ? htmlspecialchars($edit['accroche']) : '' ?></textarea>
+      </div>
+
+      <div class="frow">
+        <label>Contenu complet</label>
+        <div class="palette">
+        <!-- Toolbar WYSIWYG -->
+        <div id="wysiwyg-toolbar">
+          <button type="button" class="wt-btn" onclick="fmt('bold')" title="Gras"><b>G</b></button>
+          <button type="button" class="wt-btn" onclick="fmt('italic')" title="Italique"><i>I</i></button>
+          <button type="button" class="wt-btn" onclick="fmt('underline')" title="Souligné"><u>S</u></button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="fmtBlock('h2')" title="Titre H2">H2</button>
+          <button type="button" class="wt-btn" onclick="fmtBlock('h3')" title="Titre H3">H3</button>
+          <button type="button" class="wt-btn" onclick="fmtBlock('p')" title="Paragraphe">¶</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="fmt('insertUnorderedList')" title="Liste à puces">• —</button>
+          <button type="button" class="wt-btn" onclick="fmt('insertOrderedList')" title="Liste numérotée">1.</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="insertLink()" title="Lien">🔗</button>
+          <button type="button" class="wt-btn" onclick="fmt('removeFormat')" title="Effacer style">Tx</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="openPalette(this)" style="background:#1673B2;color:#fff;padding:3px 12px;font-weight:700;min-width:auto" title="Insérer un style">＋ Style</button>
+        </div>
+        <!-- Éditeur contenteditable — préserve toutes les classes CSS -->
         <div id="wysiwyg-editor" contenteditable="true"
              oninput="syncEditor()"><?= $edit ? $edit['contenu'] : '' ?></div>
         <!-- Textarea caché pour soumission -->
