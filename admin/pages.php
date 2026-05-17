@@ -305,6 +305,17 @@ if ($edit_page) {
     .apercu-sheet-body { flex: 1; overflow-y: auto; padding: 16px; }
   }
 /* Éditeur WYSIWYG contenteditable */
+.adv-toggle { margin-top:10px; border:1px solid #e0e8f0; border-radius:6px; }
+.adv-toggle summary { padding:8px 12px; cursor:pointer; font-size:.72rem; font-weight:700;
+  color:#1673B2; text-transform:uppercase; letter-spacing:.05em; user-select:none;
+  list-style:none; display:flex; align-items:center; gap:6px; }
+.adv-toggle summary::-webkit-details-marker { display:none; }
+.adv-toggle summary::before { content:'▶'; font-size:.6rem; transition:transform .2s; }
+.adv-toggle[open] summary::before { transform:rotate(90deg); }
+.adv-toggle-body { padding:10px 12px; border-top:1px solid #e0e8f0; display:flex; flex-direction:column; gap:6px; }
+.adv-toggle-body label { font-size:.72rem; font-weight:700; color:#555; margin:0; }
+.adv-toggle-body select, .adv-toggle-body input[type=text] { 
+  width:100%; padding:5px 8px; border:1px solid #c8dff0; border-radius:4px; font-size:.82rem; }
 #wysiwyg-editor {
   min-height: 200px; max-height: 50vh; overflow-y: auto;
   padding: 14px; border: 1px solid #c8dff0; border-radius: 0 0 6px 6px;
@@ -457,54 +468,54 @@ if ($edit_page) {
           <label class="chk-item"><input type="checkbox" name="dans_menu" <?= (!$edit_page || $edit_page['dans_menu']) ? 'checked' : '' ?>> Dans le menu</label>
         </div>
 
-        <?php $pos = $edit_page ? ($edit_page['menu_position'] ?? 'all') : 'all'; ?>
-        <label style="margin-top:10px">Position dans le menu</label>
-        <select name="menu_position">
-          <option value="all"       <?= $pos==='all'       ?'selected':'' ?>>Partout (header + tabs + burger)</option>
-          <option value="tabs_only" <?= $pos==='tabs_only' ?'selected':'' ?>>Tabs uniquement</option>
-          <option value="header"    <?= $pos==='header'    ?'selected':'' ?>>Header + burger uniquement</option>
-        </select>
-
-        <?php $aff = $edit_page ? ($edit_page['affichage_menu'] ?? 'texte') : 'texte'; ?>
-        <label>Affichage dans le menu</label>
-        <select name="affichage_menu">
-          <option value="texte"       <?= $aff==='texte'       ?'selected':'' ?>>Texte uniquement</option>
-          <option value="icone"       <?= $aff==='icone'       ?'selected':'' ?>>Icône uniquement</option>
-          <option value="icone_texte" <?= $aff==='icone_texte' ?'selected':'' ?>>Icône + Texte</option>
-        </select>
-
-        <?php $btn = $edit_page ? ($edit_page['btn_style'] ?? '') : ''; ?>
-        <label>Style du bouton dans le menu</label>
-        <select name="btn_style">
-          <option value=""        <?= $btn===''        ?'selected':'' ?>>Normal (lien blanc)</option>
-          <option value="cta"     <?= $btn==='cta'     ?'selected':'' ?>>🟠 Bouton orange (CTA)</option>
-          <option value="white"   <?= $btn==='white'   ?'selected':'' ?>>⬜ Bouton blanc / écriture bleue</option>
-          <option value="outline" <?= $btn==='outline' ?'selected':'' ?>>◻ Contour blanc</option>
-        </select>
-
         <?php
-        // Liste des pages parentes possibles (pas elle-même, pas déjà enfant)
+        $pos = $edit_page ? ($edit_page['menu_position'] ?? 'all') : 'all';
+        $aff = $edit_page ? ($edit_page['affichage_menu'] ?? 'texte') : 'texte';
+        $btn = $edit_page ? ($edit_page['btn_style'] ?? '') : '';
         try {
             $all_pages_menu = getDB()->query("SELECT id, titre, slug FROM pages WHERE dans_menu=1 AND visible=1 AND (parent_id IS NULL OR parent_id=0) ORDER BY ordre ASC")->fetchAll();
         } catch (Exception $e) { $all_pages_menu = array(); }
         $cur_parent = $edit_page ? ($edit_page['parent_id'] ?? '') : '';
+        $has_adv = ($pos !== 'all' || $aff !== 'texte' || $btn !== '' || $cur_parent || ($edit_page && $edit_page['lien_url']));
         ?>
-        <label>Sous-menu de (optionnel)</label>
-        <select name="parent_id">
-          <option value="">— Aucun (item principal)</option>
-          <?php foreach ($all_pages_menu as $pp):
-            if ($edit_page && $pp['id'] == $edit_page['id']) continue; // pas elle-même
-          ?>
-          <option value="<?= $pp['id'] ?>" <?= $cur_parent==$pp['id']?'selected':'' ?>>
-            <?= htmlspecialchars($pp['titre']) ?> (<?= $pp['slug'] ?>)
-          </option>
-          <?php endforeach; ?>
-        </select>
-        <div style="font-size:.63rem;color:#aaa;margin-top:2px">Si sélectionné, cette page apparaît dans le sous-menu déroulant de l'item parent.</div>
-
-        <label>Lien externe (optionnel)</label>
-        <input type="text" name="lien_url" value="<?= htmlspecialchars($edit_page ? ($edit_page['lien_url'] ?? '') : '') ?>" placeholder="ex: membre/login.php ou #don">
-        <div style="font-size:.63rem;color:#aaa;margin-top:2px">Si rempli → lien direct, pas de tab. Utilisez #don pour scroller vers la carte de don.</div>
+        <details class="adv-toggle" <?= $has_adv ? 'open' : '' ?>>
+          <summary>⚙ Options avancées du menu</summary>
+          <div class="adv-toggle-body">
+            <label>Position dans le menu</label>
+            <select name="menu_position">
+              <option value="all"       <?= $pos==='all'       ?'selected':'' ?>>Partout (header + tabs + burger)</option>
+              <option value="tabs_only" <?= $pos==='tabs_only' ?'selected':'' ?>>Tabs uniquement</option>
+              <option value="header"    <?= $pos==='header'    ?'selected':'' ?>>Header + burger uniquement</option>
+            </select>
+            <label>Affichage dans le menu</label>
+            <select name="affichage_menu">
+              <option value="texte"       <?= $aff==='texte'       ?'selected':'' ?>>Texte uniquement</option>
+              <option value="icone"       <?= $aff==='icone'       ?'selected':'' ?>>Icône uniquement</option>
+              <option value="icone_texte" <?= $aff==='icone_texte' ?'selected':'' ?>>Icône + Texte</option>
+            </select>
+            <label>Style du bouton dans le menu</label>
+            <select name="btn_style">
+              <option value=""        <?= $btn===''        ?'selected':'' ?>>Normal (lien blanc)</option>
+              <option value="cta"     <?= $btn==='cta'     ?'selected':'' ?>>🟠 Bouton orange (CTA)</option>
+              <option value="white"   <?= $btn==='white'   ?'selected':'' ?>>⬜ Bouton blanc / écriture bleue</option>
+              <option value="outline" <?= $btn==='outline' ?'selected':'' ?>>◻ Contour blanc</option>
+            </select>
+            <label>Sous-menu de (optionnel)</label>
+            <select name="parent_id">
+              <option value="">— Aucun (item principal)</option>
+              <?php foreach ($all_pages_menu as $pp):
+                if ($edit_page && $pp['id'] == $edit_page['id']) continue;
+              ?>
+              <option value="<?= $pp['id'] ?>" <?= $cur_parent==$pp['id']?'selected':'' ?>>
+                <?= htmlspecialchars($pp['titre']) ?> (<?= $pp['slug'] ?>)
+              </option>
+              <?php endforeach; ?>
+            </select>
+            <label>Lien externe (optionnel)</label>
+            <input type="text" name="lien_url" value="<?= htmlspecialchars($edit_page ? ($edit_page['lien_url'] ?? '') : '') ?>" placeholder="ex: membre/login.php ou #don">
+            <div style="font-size:.63rem;color:#aaa;margin-top:2px">Si rempli → lien direct. Utilisez #don pour scroller vers la carte de don.</div>
+          </div>
+        </details>
 
         <!-- WIDGETS -->
         <?php if (!empty($all_widgets)): ?>
