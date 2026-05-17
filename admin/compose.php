@@ -458,6 +458,30 @@ function insBloc(k) {
   if (!k || !BLOCS[k]) return;
   var ed = document.getElementById('wysiwyg-editor');
   if (!ed) return;
+  // Si curseur/sélection dans un bloc stylé -> remplacer sa classe
+  var styled = null;
+  var SCLASSES = ['cadre-bleu','cadre-orange','cadre-vert','alerte','lettre-intro','citation-box','signature','actions-grid','ac-item','content-text'];
+  var sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) {
+    var node = sel.getRangeAt(0).commonAncestorContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    while (node && node !== ed) {
+      if (node.nodeType === 1) {
+        for (var i = 0; i < SCLASSES.length; i++) {
+          if (node.classList && node.classList.contains(SCLASSES[i])) { styled = node; break; }
+        }
+      }
+      if (styled) break;
+      node = node.parentNode;
+    }
+  }
+  if (styled) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = BLOCS[k];
+    var newEl = tmp.firstElementChild;
+    if (newEl) { styled.className = newEl.className; syncEditor(); if (typeof closePalette==='function') closePalette(); return; }
+  }
+  // Sinon insérer un nouveau bloc
   ed.focus();
   document.execCommand('insertHTML', false, BLOCS[k]);
   syncEditor();
