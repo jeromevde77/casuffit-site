@@ -1366,7 +1366,7 @@ window.pmwOpenMailto = function() {
     + whyArr.map(function(w){return '<li>'+w+'</li>';}).join('')
     + '</ul>'
     + captureHtml
-    + '<p style="margin-top:8px;font-size:.85em;color:#666">Selon l'instruction ministérielle du 17/07/2013 (IM 2013) — seule base légale valide.</p>'
+    + '<p style="margin-top:8px;font-size:.85em;color:#666">Selon l\'instruction ministérielle du 17/07/2013 (IM 2013) — seule base légale valide.</p>'
     + '<p style="color:#aaa;font-size:.8em;margin-top:16px">— Via <strong>ça suffit ! ASBL</strong> — casuffit.be</p>'
     + '</div></body></html>';
 
