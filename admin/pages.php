@@ -489,25 +489,7 @@ if ($edit_page) {
         <label>Meta description</label>
         <input type="text" name="meta_description" value="<?= htmlspecialchars($edit_page ? ($edit_page['meta_description'] ?? '') : '') ?>" placeholder="Pour Google...">
 
-        <!-- PALETTE DE STYLES -->
-        <div class="palette">
-          <div class="palette-title">Insérer un bloc stylisé</div>
-          <div class="palette-grid">
-            <button type="button" class="sb sb-titre"    onclick="ins('titre')">📌 Titre section</button>
-            <button type="button" class="sb sb-texte"    onclick="ins('texte')">📝 Texte bleu</button>
-            <button type="button" class="sb sb-cadreO"   onclick="ins('cadreO')">🟠 Cadre orange</button>
-            <button type="button" class="sb sb-cadreB"   onclick="ins('cadreB')">🔵 Cadre bleu</button>
-            <button type="button" class="sb sb-cadreV"   onclick="ins('cadreV')">🟢 Cadre vert</button>
-            <button type="button" class="sb sb-alerte"   onclick="ins('alerte')">⚠ Alerte</button>
-            <button type="button" class="sb sb-chiffre"  onclick="ins('chiffre')">🔢 Grand chiffre</button>
-            <button type="button" class="sb sb-arg"      onclick="ins('arg')">💬 Argument</button>
-            <button type="button" class="sb sb-liste"    onclick="ins('liste')">• Liste</button>
-            <button type="button" class="sb sb-bq"       onclick="ins('bq')">❝ Citation</button>
-            <button type="button" class="sb sb-img"      onclick="ouvrirMedias()">🖼 Image</button>
-          </div>
-        </div>
-
-        <label style="margin-top:12px">Contenu HTML</label>
+        <label style="margin-top:12px">Contenu</label>
                 <div id="wysiwyg-toolbar">
           <button type="button" class="wt-btn" onclick="fmt('bold')" title="Gras"><b>G</b></button>
           <button type="button" class="wt-btn" onclick="fmt('italic')" title="Italique"><i>I</i></button>

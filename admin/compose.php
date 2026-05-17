@@ -228,65 +228,7 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
 
 <div class="wrap">
 
-  <!-- ÉDITEUR -->
-  <div class="editor">
-    <div class="editor-head">
-      <h2>✉ Composer une newsletter</h2>
-      <p>Aperçu en temps réel → avec les styles du site</p>
-    </div>
-    <div class="editor-body">
-      <?php if ($msg): ?><div class="flash-ok"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
-      <?php if ($error): ?><div class="flash-err"><?= htmlspecialchars($error) ?></div><?php endif; ?>
-
-      <form method="POST" id="nlf">
-        <input type="hidden" name="nl_id" value="<?= $nl ? $nl['id'] : 0 ?>">
-
-        <label>Sujet de l'email *</label>
-        <input type="text" name="sujet" id="f-sujet" placeholder="Ex: Mise à jour — Action en référé"
-               value="<?= htmlspecialchars($nl ? $nl['sujet'] : '') ?>" oninput="majApercu()">
-
-        <!-- Blocs prêts à insérer -->
-        <div class="blocs-titre">📦 Insérer un bloc</div>
-        <div class="blocs-grid">
-          <button type="button" class="bloc-btn bb-titre"   onclick="ins('titre')">📌 Titre section</button>
-          <button type="button" class="bloc-btn bb-texte"   onclick="ins('texte')">📝 Paragraphe</button>
-          <button type="button" class="bloc-btn bb-orange"  onclick="ins('orange')">🟠 Encadré orange</button>
-          <button type="button" class="bloc-btn bb-bleu"    onclick="ins('bleu')">🔵 Encadré bleu</button>
-          <button type="button" class="bloc-btn bb-alerte"  onclick="ins('alerte')">⚠ Alerte</button>
-          <button type="button" class="bloc-btn bb-bouton"  onclick="ins('bouton')">🔗 Bouton</button>
-          <button type="button" class="bloc-btn bb-separateur" onclick="ins('sep')">— Séparateur</button>
-          <button type="button" class="bloc-btn bb-signature"  onclick="ins('sign')">✍ Signature</button>
-        </div>
-
-        <!-- Widgets du site -->
-        <div class="blocs-titre">🧩 Insérer un widget du site</div>
-        <div class="blocs-grid">
-          <?php foreach ($all_widgets as $w): ?>
-          <button type="button" class="bloc-btn" style="background:#f0f7ff;border-color:#bee3f8;color:#2c5282"
-                  onclick="insWidget('<?= $w['slug'] ?>')">
-            <?= htmlspecialchars($w['icone'] ?: '🧩') ?> <?= htmlspecialchars($w['titre']) ?>
-          </button>
-          <?php endforeach; ?>
-        </div>
-
-        <label>Contenu HTML</label>
-        <div id="wysiwyg-toolbar">
-          <button type="button" class="wt-btn" onclick="fmt('bold')"><b>G</b></button>
-          <button type="button" class="wt-btn" onclick="fmt('italic')"><i>I</i></button>
-          <button type="button" class="wt-btn" onclick="fmt('underline')"><u>S</u></button>
-          <div class="wt-sep"></div>
-          <button type="button" class="wt-btn" onclick="fmtBlock('h2')">H2</button>
-          <button type="button" class="wt-btn" onclick="fmtBlock('h3')">H3</button>
-          <button type="button" class="wt-btn" onclick="fmtBlock('p')">¶</button>
-          <div class="wt-sep"></div>
-          <button type="button" class="wt-btn" onclick="fmt('insertUnorderedList')">• —</button>
-          <button type="button" class="wt-btn" onclick="fmt('insertOrderedList')">1.</button>
-          <div class="wt-sep"></div>
-          <button type="button" class="wt-btn" onclick="insertLink()">🔗</button>
-          <button type="button" class="wt-btn" onclick="fmt('removeFormat')">Tx</button>
-          <div class="wt-sep"></div><button type="button" class="wt-btn" onclick="openPalette(this)" style="background:#1673B2;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
-        </div>
-        <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor(); majApercu()"><?= $nl ? $nl['contenu_html'] : '' ?></div>
+  <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor(); majApercu()"><?= $nl ? $nl['contenu_html'] : '' ?></div>
         <textarea name="contenu_html" id="f-contenu" style="display:none"><?= htmlspecialchars($nl ? $nl['contenu_html'] : '') ?></textarea>
       </form>
     </div>
