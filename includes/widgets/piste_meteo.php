@@ -1383,14 +1383,14 @@ window.pmwOpenMailto = function() {
     + '<ul style="background:#fde8e8;border-radius:6px;padding:16px 16px 16px 32px">'
     + why.map(function(w){ return '<li style="margin-bottom:6px">'+w+'</li>'; }).join('')
     + '</ul>'
-    + '<p style="margin-top:8px;font-size:.85em;color:#666">Selon l'instruction ministérielle du 17/07/2013 (base légale du PRS — AIP EBBR AD 2.21, non modifiable par skeyes sans décision ministérielle).</p>'
+    + '<p style="margin-top:8px;font-size:.85em;color:#666">Selon l\'instruction ministérielle du 17/07/2013 (base légale du PRS — AIP EBBR AD 2.21, non modifiable par skeyes sans décision ministérielle).</p>'
 
     // Capture
     + (captureHtml ? '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">📸 Capture du tableau de bord</h3>' + captureHtml : '')
 
     // Formule de politesse
     + '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #ddd">'
-    + '<p>Dans l'attente de votre réponse, je vous prie d'agréer mes salutations distinguées.</p>'
+    + '<p>Dans l\'attente de votre réponse, je vous prie d\'agréer mes salutations distinguées.</p>'
     + '<p style="color:#aaa;font-size:.8em;margin-top:16px">— Via <strong>ça suffit ! ASBL</strong> — <a href="https://www.casuffit.be" style="color:#1673B2">casuffit.be</a></p>'
     + '</div>'
     + '</div>'

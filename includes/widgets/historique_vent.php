@@ -893,7 +893,7 @@ function pmhRenderWidgetModal(wrap, d) {
 
     + (illegal
       ? '<div style="background:#fff8ee;border:2px solid #FF9900;border-radius:7px;padding:10px 14px;margin-bottom:14px;color:#7a4400;font-size:.83rem">'
-        + '⚖ <strong>Utilisation potentiellement illégale de la piste 01</strong> — Les normes de vent légales (AIP 2013) permettraient d'utiliser la piste 25.</div>'
+        + '⚖ <strong>Utilisation potentiellement illégale de la piste 01</strong> — Les normes de vent légales (AIP 2013) permettraient d\'utiliser la piste 25.</div>'
       : '')
 
     + '<table style="width:100%;border-collapse:collapse;background:#f8fafc;border-radius:7px;overflow:hidden;font-size:.82rem;margin-bottom:10px">'
