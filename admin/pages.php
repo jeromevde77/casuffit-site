@@ -306,13 +306,15 @@ if ($edit_page) {
   }
 /* Éditeur WYSIWYG contenteditable */
 #wysiwyg-editor {
-  min-height: 260px; padding: 14px; border: 1px solid #c8dff0; border-radius: 0 0 6px 6px;
+  min-height: 200px; max-height: 50vh; overflow-y: auto;
+  padding: 14px; border: 1px solid #c8dff0; border-radius: 0 0 6px 6px;
   background: #fff; font-family: "Helvetica Neue",Arial,sans-serif; font-size: .88rem;
   line-height: 1.7; color: #333; outline: none; cursor: text;
 }
 #wysiwyg-editor:focus { border-color: #1673B2; }
 #wysiwyg-toolbar { background: #f8fafc; border: 1px solid #c8dff0; border-bottom: none;
-  border-radius: 6px 6px 0 0; padding: 6px 10px; display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  border-radius: 6px 6px 0 0; padding: 6px 10px; display: flex; gap: 4px; flex-wrap: wrap; align-items: center;
+  position: sticky; top: 0; z-index: 50; }
 .wt-btn { background: #fff; border: 1px solid #dde; border-radius: 4px; padding: 3px 8px;
   cursor: pointer; font-size: .82rem; color: #333; min-width: 28px; text-align: center; }
 .wt-btn:hover { background: #e8f3fb; border-color: #1673B2; }
