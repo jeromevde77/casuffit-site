@@ -652,15 +652,17 @@ function openPalette(btn) {
   if (!p) return;
   if (p.classList.contains('open')) { p.classList.remove('open'); return; }
   var r = btn.getBoundingClientRect();
-  var pH = Math.min(window.innerHeight * 0.7, 500);
-  var top, left;
-  // Ouvrir vers le haut si pas assez de place en bas
-  if (r.bottom + pH + 10 > window.innerHeight) {
-    top = (r.top + window.scrollY - pH - 6);
+  var maxH = Math.round(window.innerHeight * 0.75);
+  p.style.maxHeight = maxH + 'px';
+  p.style.overflowY = 'auto';
+  var left = Math.min(Math.max(10, r.right - 560 + window.scrollX), window.innerWidth - 570);
+  var top;
+  // Ouvrir vers le bas si assez de place, sinon vers le haut
+  if (r.bottom + 10 + maxH <= window.innerHeight) {
+    top = r.bottom + 6 + window.scrollY;
   } else {
-    top = (r.bottom + 6 + window.scrollY);
+    top = Math.max(60, r.top - maxH - 6 + window.scrollY);
   }
-  left = Math.min(Math.max(10, r.left + window.scrollX), window.innerWidth - 580);
   p.style.top  = top + 'px';
   p.style.left = left + 'px';
   p.classList.add('open');
