@@ -1,6 +1,5 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// error_reporting(E_ALL); ini_set('display_errors', 1); // désactivé en production
 // membre/login.php — Demande de lien magique
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
@@ -12,7 +11,19 @@ if (getMembre($db)) { header('Location: dashboard.php'); exit; }
 
 $msg = ''; $error = ''; $success = false;
 
+// Token CSRF
+if (empty($_SESSION['csrf_login'])) {
+    $_SESSION['csrf_login'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_login'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Honeypot
+    if (!empty($_POST['website'])) { $success = true; $msg = 'Lien envoyé.'; goto end_login; }
+    // CSRF
+    if (empty($_POST['_csrf']) || !hash_equals($csrf_token, $_POST['_csrf'])) {
+        $error = 'Erreur de sécurité. Rechargez la page.'; goto end_login;
+    }
     $email = filter_var(trim(isset($_POST['email']) ? $_POST['email'] : ''), FILTER_VALIDATE_EMAIL);
 
     if (!$email) {
@@ -36,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = "Si cet email correspond à un compte membre actif, un lien de connexion a été envoyé.";
         }
     }
+    end_login:;
 }
 ?>
 <!DOCTYPE html>
@@ -85,6 +97,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 
   <form method="POST">
+    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf_token) ?>">
+    <div style="display:none" aria-hidden="true">
+      <input type="text" name="website" tabindex="-1" autocomplete="off">
+    </div>
     <label for="email">Votre adresse email</label>
     <input type="email" id="email" name="email" placeholder="votre@email.be" required autofocus>
     <button type="submit" class="btn">✉ Recevoir mon lien de connexion</button>

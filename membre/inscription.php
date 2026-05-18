@@ -1,7 +1,6 @@
 <?php
 // membre/inscription.php — Inscription nouveau membre
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// error_reporting(E_ALL); ini_set('display_errors', 1); // désactivé en production
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 
@@ -15,7 +14,38 @@ if (getMembre($db)) {
 
 $msg = ''; $error = ''; $success = false;
 
+// ── Générer token CSRF ────────────────────────────────────────────────────
+if (empty($_SESSION['csrf_inscription'])) {
+    $_SESSION['csrf_inscription'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_inscription'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    // ── 1. Honeypot : champ invisible, les bots le remplissent ───────────
+    if (!empty($_POST['website'])) {
+        // Bot détecté — on fait semblant de réussir
+        $success = true;
+        $msg = "Bienvenue ! Un lien de connexion a été envoyé.";
+        goto end_form;
+    }
+
+    // ── 2. Token CSRF ────────────────────────────────────────────────────
+    if (empty($_POST['_csrf']) || !hash_equals($csrf_token, $_POST['_csrf'])) {
+        $error = 'Erreur de sécurité. Rechargez la page et réessayez.';
+        goto end_form;
+    }
+
+    // ── 3. Rate limiting : max 3 inscriptions par heure par IP ──────────
+    $ip  = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $key = 'reg_' . md5($ip);
+    $now = time();
+    $_SESSION[$key] = array_filter($_SESSION[$key] ?? [], fn($t) => $now - $t < 3600);
+    if (count($_SESSION[$key]) >= 3) {
+        $error = 'Trop de tentatives. Réessayez dans une heure.';
+        goto end_form;
+    }
+    $_SESSION[$key][] = $now;
     $email    = filter_var(trim(isset($_POST['email'])    ? $_POST['email']    : ''), FILTER_VALIDATE_EMAIL);
     $prenom   = htmlspecialchars(trim(isset($_POST['prenom'])   ? $_POST['prenom']   : ''), ENT_QUOTES, 'UTF-8');
     $nom      = htmlspecialchars(trim(isset($_POST['nom'])      ? $_POST['nom']      : ''), ENT_QUOTES, 'UTF-8');
@@ -86,6 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+    end_form:;
 }
 ?>
 <!DOCTYPE html>
@@ -148,6 +179,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 
   <form method="POST">
+    <!-- Token CSRF -->
+    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf_token) ?>">
+    <!-- Honeypot : invisible pour les humains, les bots le remplissent -->
+    <div style="display:none" aria-hidden="true">
+      <label>Website</label>
+      <input type="text" name="website" tabindex="-1" autocomplete="off">
+    </div>
     <div class="form-row">
       <div>
         <label>Prénom *</label>
