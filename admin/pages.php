@@ -694,8 +694,9 @@ if ($edit_page) {
           <button type="button" class="wt-btn" onclick="removeBloc()" title="Supprimer le style du bloc" style="color:#c0392b;font-weight:700">✕ Bloc</button>
           <div class="wt-sep"></div><button type="button" class="wt-btn" onclick="openPalette(this)" style="background:#1673B2;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
         </div>
-        <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor()"><?= $edit_page ? ($edit_page['contenu'] ?? '') : '' ?></div>
+        <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor()"></div>
         <textarea name="contenu" id="f-contenu" style="display:none"><?= htmlspecialchars($edit_page ? ($edit_page['contenu'] ?? '') : '') ?></textarea>
+        <script>(function(){var t=document.getElementById('f-contenu');var e=document.getElementById('wysiwyg-editor');if(t&&e)e.innerHTML=t.value;})();</script>
         <div style="font-size:.63rem;color:#aaa;margin-top:2px">Aperçu → en temps réel</div>
 
         <!-- Champs NL soumis avec le form principal (alimentés par JS depuis le bloc NL ci-dessous) -->
