@@ -14,15 +14,22 @@ try {
 $pages = [];
 if ($hasNl) {
     try {
-        $pages = $db->query("SELECT id, slug, titre, titre_nl, contenu, contenu_nl, nl_status, visible 
-                             FROM pages 
+        $pages = $db->query("SELECT id, slug, titre, titre_nl, contenu, contenu_nl, nl_status, visible,
+                                    updated_at, nl_translated_at
+                             FROM pages
                              ORDER BY ordre ASC, titre ASC")->fetchAll(PDO::FETCH_ASSOC);
     } catch (Throwable $e) {}
 }
 
-$stats = ['vide' => 0, 'auto' => 0, 'relu' => 0];
+$stats = ['vide' => 0, 'auto' => 0, 'relu' => 0, 'desync' => 0];
 foreach ($pages as $p) {
     $stats[$p['nl_status'] ?? 'vide']++;
+    // Compter les pages désynchronisées (FR modifié après traduction NL)
+    if (!empty($p['nl_translated_at']) && !empty($p['updated_at'])
+        && ($p['nl_status'] ?? 'vide') !== 'vide'
+        && strtotime($p['updated_at']) > strtotime($p['nl_translated_at'])) {
+        $stats['desync']++;
+    }
 }
 $total = count($pages);
 ?><!DOCTYPE html>
@@ -76,7 +83,10 @@ $total = count($pages);
     <div class="stat-card stat-vide"><div class="stat-num"><?= $stats['vide'] ?></div><div class="stat-lbl">⚪ Vide</div></div>
     <div class="stat-card stat-auto"><div class="stat-num"><?= $stats['auto'] ?></div><div class="stat-lbl">🤖 Auto (à relire)</div></div>
     <div class="stat-card stat-relu"><div class="stat-num"><?= $stats['relu'] ?></div><div class="stat-lbl">✅ Relu</div></div>
-    <div class="stat-card"           ><div class="stat-num"><?= $total ?></div><div class="stat-lbl">Total pages</div></div>
+    <?php if ($stats['desync'] > 0): ?>
+    <div class="stat-card" style="border-color:#c00"><div class="stat-num" style="color:#c00"><?= $stats['desync'] ?></div><div class="stat-lbl">⚠️ Désynchronisées</div></div>
+    <?php endif; ?>
+    <div class="stat-card"><div class="stat-num"><?= $total ?></div><div class="stat-lbl">Total pages</div></div>
   </div>
 
   <table>
@@ -86,6 +96,7 @@ $total = count($pages);
         <th>Titre FR</th>
         <th>Titre NL</th>
         <th>État</th>
+        <th>Synchro</th>
         <th>Contenu</th>
         <th>Actions</th>
       </tr>
@@ -97,12 +108,28 @@ $total = count($pages);
         $lenFr  = strlen(strip_tags($p['contenu'] ?? ''));
         $lenNl  = strlen(strip_tags($p['contenu_nl'] ?? ''));
         $pct    = $lenFr > 0 ? round(100 * $lenNl / $lenFr) : 0;
+
+        // Détection désynchronisation : FR modifié APRÈS la dernière traduction NL
+        $updatedAt    = $p['updated_at']       ?? null;
+        $translatedAt = $p['nl_translated_at'] ?? null;
+        $isDesynced   = false;
+        $syncLabel    = '—';
+        if ($status !== 'vide' && $translatedAt && $updatedAt) {
+            $isDesynced = strtotime($updatedAt) > strtotime($translatedAt);
+            $syncLabel  = $isDesynced
+                ? '<span style="color:#c00;font-weight:700">⚠️ Désynchronisée</span>'
+                : '<span style="color:#27ae60">✓ À jour</span>';
+        } elseif ($status !== 'vide' && !$translatedAt) {
+            // Traduit avant qu'on ait le champ nl_translated_at — on ne sait pas
+            $syncLabel = '<span style="color:#d97706">? Inconnu</span>';
+        }
       ?>
-      <tr>
+      <tr <?= $isDesynced ? 'style="background:#fff8f0"' : '' ?>>
         <td><code><?= htmlspecialchars($p['slug']) ?></code><?= !$p['visible'] ? '<span class="badge-invisible">caché</span>' : '' ?></td>
         <td><?= htmlspecialchars($p['titre']) ?></td>
         <td><?= htmlspecialchars($p['titre_nl'] ?: '—') ?></td>
         <td><span class="badge badge-<?= $status ?>"><?= $badge ?></span></td>
+        <td style="font-size:.78rem"><?= $syncLabel ?></td>
         <td>
           <?= number_format($lenNl) ?> / <?= number_format($lenFr) ?> car.
           <?php if ($lenFr > 0): ?>

@@ -54,6 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_page'])) {
             if ($hasNl) {
                 $db->prepare("UPDATE pages SET slug=?,titre=?,titre_nl=?,contenu=?,contenu_nl=?,meta_description=?,meta_description_nl=?,nl_status=?,ordre=?,visible=?,dans_menu=?,icone=?,css_class=?,menu_position=?,lien_url=?,affichage_menu=?,btn_style=?,parent_id=?,updated_by=? WHERE id=?")
                    ->execute(array($slug,$titre,$titre_nl,$contenu,$contenu_nl,$meta,$meta_nl,$nl_status,$ordre,$visible,$menu,$icone,$css_class,$menu_position,$lien_url,$affichage_menu,$btn_style,$parent_id,ADMIN_USER,$id));
+                // Mettre à jour nl_translated_at si du contenu NL est sauvegardé
+                if (!empty($contenu_nl) || !empty($titre_nl)) {
+                    try {
+                        $db->prepare("UPDATE pages SET nl_translated_at=NOW() WHERE id=? AND nl_translated_at IS NULL")
+                           ->execute([$id]); // seulement si pas encore de timestamp (évite d'écraser la date auto)
+                    } catch (Throwable $e) { /* colonne pas encore ajoutée */ }
+                }
             } else {
                 $db->prepare("UPDATE pages SET slug=?,titre=?,contenu=?,meta_description=?,ordre=?,visible=?,dans_menu=?,icone=?,css_class=?,menu_position=?,lien_url=?,affichage_menu=?,btn_style=?,parent_id=?,updated_by=? WHERE id=?")
                    ->execute(array($slug,$titre,$contenu,$meta,$ordre,$visible,$menu,$icone,$css_class,$menu_position,$lien_url,$affichage_menu,$btn_style,$parent_id,ADMIN_USER,$id));

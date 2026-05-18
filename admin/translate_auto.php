@@ -164,7 +164,7 @@ try {
     // Vérifier que les colonnes _nl existent
     $cols = $db->query("SHOW COLUMNS FROM pages LIKE 'titre_nl'")->fetch();
     if ($cols) {
-        $stmt = $db->prepare("UPDATE pages SET titre_nl=?, meta_description_nl=?, contenu_nl=?, nl_status='auto' WHERE id=?");
+        $stmt = $db->prepare("UPDATE pages SET titre_nl=?, meta_description_nl=?, contenu_nl=?, nl_status='auto', nl_translated_at=NOW() WHERE id=?");
         $stmt->execute([
             $out['titre_nl']   ?? null,
             $out['meta_nl']    ?? null,

@@ -28,3 +28,8 @@ ALTER TABLE `news`
 -- ── Site_config : valeur NL pour les chaînes éditables ──────────────────
 ALTER TABLE `site_config`
   ADD COLUMN `valeur_nl` TEXT DEFAULT NULL AFTER `valeur`;
+
+-- ── Timestamp de la dernière traduction (pour détecter désynchronisation) ─
+ALTER TABLE `pages`
+  ADD COLUMN `nl_translated_at` TIMESTAMP NULL DEFAULT NULL
+  COMMENT 'Horodatage de la dernière traduction NL — comparé à updated_at pour détecter les désynchronisations';
