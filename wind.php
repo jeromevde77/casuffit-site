@@ -496,6 +496,11 @@ header('Expires: 0');
     <?php include __DIR__ . '/includes/widgets/rose_vents.php'; ?>
   </div>
 
+  <!-- Vue : Vols en temps réel -->
+  <div class="app-view" id="view-vols">
+    <?php include __DIR__ . '/includes/widgets/vols_brussels.php'; ?>
+  </div>
+
   <!-- Navigation fixe en bas -->
 </main>
 
@@ -509,11 +514,14 @@ header('Expires: 0');
   <button class="app-nav-bar-btn" id="nav-rose" onclick="switchView('rose')">
     <span class="nav-icon">🌬</span>Rose des vents
   </button>
+  <button class="app-nav-bar-btn" id="nav-vols" onclick="switchView('vols')">
+    <span class="nav-icon">✈</span>Vols
+  </button>
 </nav>
 
 <script>
 function switchView(view) {
-  ['meteo','historique','rose'].forEach(function(v) {
+  ['meteo','historique','rose','vols'].forEach(function(v) {
     var el = document.getElementById('view-' + v);
     if (v === view) {
       el.style.display = 'block';
@@ -530,6 +538,13 @@ function switchView(view) {
   // Init rose des vents au premier affichage
   if (view === 'rose' && typeof window.rvwInitYear === 'function') {
     window.rvwInitYear();
+  }
+  // Init/refresh carte Leaflet vols
+  if (view === 'vols') {
+    setTimeout(function(){
+      if(typeof window.vbrInvalidate === 'function') window.vbrInvalidate();
+      else if(typeof window.vbrLoad === 'function') window.vbrLoad();
+    }, 150);
   }
   // Forcer le repaint du widget historique
   if (view === 'historique') {
