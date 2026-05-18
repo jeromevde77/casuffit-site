@@ -140,10 +140,10 @@ if ($edit_page) {
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333}
     <?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>
-    .wrap{margin-left:240px;display:grid;grid-template-columns:240px 1fr 1fr;height:100vh;overflow:hidden}
-    .wrap.view-edit    { grid-template-columns: 240px 1fr; }
+    .wrap{margin-left:240px;display:grid;grid-template-columns:280px 1fr 1fr;height:100vh;overflow:hidden}
+    .wrap.view-edit    { grid-template-columns: 280px 1fr; }
     .wrap.view-edit    .apanel { display:none!important; }
-    .wrap.view-preview { grid-template-columns: 240px 1fr; }
+    .wrap.view-preview { grid-template-columns: 280px 1fr; }
     .wrap.view-preview .eform  { display:none!important; }
     /* Toggle */
     .view-toggle{display:flex;gap:3px;background:rgba(255,255,255,.15);border-radius:6px;padding:3px;flex-shrink:0}
@@ -170,7 +170,7 @@ if ($edit_page) {
     .pitem.child{padding-left:26px;background:#fafbfc}
     .pitem-ordre{font-size:.7rem;font-weight:700;color:#bbb;flex-shrink:0;width:20px;text-align:center}
     .pitem-info{flex:1;min-width:0}
-    .pitem-name{font-size:.82rem;font-weight:600;color:#0e3d6b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .pitem-name{font-size:.82rem;font-weight:600;color:#0e3d6b;line-height:1.3}
     .pitem-meta{font-size:.68rem;color:#aaa;margin-top:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
     .pitem-flag{font-size:.65rem;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.4}
     .pitem-flag-fr{background:#e8f3fb;color:#1673B2}
