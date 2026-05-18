@@ -133,8 +133,7 @@
     if(list)    list.style.display='none';
     if(btn)     btn.style.opacity='.5';
 
-    var url='https://opensky-network.org/api/states/all'
-      +'?lamin='+LAT_MIN+'&lomin='+LON_MIN+'&lamax='+LAT_MAX+'&lomax='+LON_MAX;
+    var url='/api/flights.php';
 
     fetch(url)
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
