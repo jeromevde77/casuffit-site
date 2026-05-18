@@ -7,6 +7,10 @@
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 
+// Éviter le timeout OVH sur les pages longues
+@set_time_limit(120);
+ignore_user_abort(true);
+
 header('Content-Type: application/json; charset=utf-8');
 
 // ── Vérifier configuration ──────────────────────────────────────────────
@@ -44,6 +48,25 @@ try {
 $titre = $page['titre'] ?? '';
 $meta  = $page['meta_description'] ?? '';
 $html  = $page['contenu'] ?? '';
+
+// ── Extraire les images base64 (pour ne pas les envoyer à Claude) ────────
+// Remplace chaque data:image/... par un placeholder __IMG_0__, __IMG_1__, etc.
+// et les remet en place après traduction.
+$base64Images = [];
+$html = preg_replace_callback(
+    '/src="(data:[^"]{20,})"/i',
+    function ($m) use (&$base64Images) {
+        $idx = count($base64Images);
+        $base64Images[$idx] = $m[1]; // garder la valeur originale
+        return 'src="__IMG_' . $idx . '__"';
+    },
+    $html
+);
+
+// Log pour debug si besoin
+if (!empty($base64Images)) {
+    error_log("translate_auto: " . count($base64Images) . " image(s) base64 extraite(s) pour page $page_id");
+}
 
 // Glossaire aéronautique pour cohérence
 $glossaire = <<<TXT
@@ -102,19 +125,25 @@ FORMAT DE RÉPONSE : strictement du JSON valide (et rien d'autre, pas de markdow
 TXT;
 
 // ── Appeler l'API Claude ────────────────────────────────────────────────
+// Choisir le modèle : Haiku (rapide) si contenu long ou contient des images,
+// Sonnet (meilleure qualité) pour les pages courtes
+$hasImages = !empty($base64Images);
+$isLong    = strlen($html) > 4000;
+$model     = ($hasImages || $isLong) ? 'claude-haiku-4-5-20251001' : 'claude-sonnet-4-6';
+
 $ch = curl_init('https://api.anthropic.com/v1/messages');
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
-    CURLOPT_TIMEOUT        => 90, // les longs contenus prennent du temps
+    CURLOPT_TIMEOUT        => 55, // sous la limite OVH (~60s)
     CURLOPT_HTTPHEADER     => [
         'Content-Type: application/json',
         'x-api-key: ' . ANTHROPIC_API_KEY,
         'anthropic-version: 2023-06-01',
     ],
     CURLOPT_POSTFIELDS     => json_encode([
-        'model'      => 'claude-sonnet-4-6',
-        'max_tokens' => 16000,
+        'model'      => $model,
+        'max_tokens' => 8192,
         'messages'   => [
             ['role' => 'user', 'content' => $prompt],
         ],
@@ -159,6 +188,17 @@ if (!$out || !isset($out['titre_nl'])) {
     exit;
 }
 
+// ── Réinjecter les images base64 dans le contenu traduit ─────────────────
+if (!empty($base64Images) && !empty($out['contenu_nl'])) {
+    foreach ($base64Images as $idx => $b64) {
+        $out['contenu_nl'] = str_replace(
+            'src="__IMG_' . $idx . '__"',
+            'src="' . $b64 . '"',
+            $out['contenu_nl']
+        );
+    }
+}
+
 // ── Sauvegarder en BDD (auto, à relire) ─────────────────────────────────
 try {
     // Vérifier que les colonnes _nl existent
@@ -182,6 +222,7 @@ echo json_encode([
     'titre_nl'   => $out['titre_nl']   ?? '',
     'meta_nl'    => $out['meta_nl']    ?? '',
     'contenu_nl' => $out['contenu_nl'] ?? '',
-    'model'      => $resp['model'] ?? 'claude',
+    'model'      => $resp['model'] ?? $model,
     'tokens'     => ($resp['usage']['input_tokens'] ?? 0) + ($resp['usage']['output_tokens'] ?? 0),
+    'images'     => count($base64Images),
 ]);
