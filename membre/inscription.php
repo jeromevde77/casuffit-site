@@ -76,9 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tel      = htmlspecialchars(trim(isset($_POST['telephone'])? $_POST['telephone']: ''), ENT_QUOTES, 'UTF-8');
     $rgpd     = !empty($_POST['rgpd']);
 
-    if (!\$email)  { \$error = tm('err_email'); }
-    elseif (!\$prenom || !\$nom) { \$error = tm('err_prenom_nom'); }
-    elseif (!\$rgpd) { \$error = tm('err_rgpd'); }
+    if (!$email)  { $error = tm('err_email'); }
+    elseif (!$prenom || !$nom) { $error = tm('err_prenom_nom'); }
+    elseif (!$rgpd) { $error = tm('err_rgpd'); }
     else {
         // Vérifier si email déjà inscrit
         $check = $db->prepare("SELECT id, statut FROM members WHERE email = ?");
@@ -130,11 +130,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 envoyerLienMagique($db, $nouveau_membre);
 
                 $success = true;
-                $msg = tm('msg_bienvenue', \$code_membre, \$email);
+                $msg = tm('msg_bienvenue', $code_membre, $email);
 
             } catch (Exception $e) {
                 error_log('Inscription membre: ' . $e->getMessage());
-                $error = tm('err_creation') . ': ' . \$e->getMessage();
+                $error = tm('err_creation') . ': ' . $e->getMessage();
             }
         }
     }

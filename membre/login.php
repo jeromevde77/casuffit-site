@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Envoyer le lien
             envoyerLienMagique($db, $membre);
             $success = true;
-            $msg = tm('msg_lien_envoye', \$email);
+            $msg = tm('msg_lien_envoye', $email);
         } else {
             // Sécurité : ne pas révéler si l'email existe ou non
             $success = true;

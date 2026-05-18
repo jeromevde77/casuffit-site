@@ -127,8 +127,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <!-- Infos non modifiables -->
   <div class="info-box">
-    <strong><?= tm('info_membre', htmlspecialchars(\$membre['code_membre'] ?? '—')) ?></strong><br>
-    <?= tm('cree_le', \$membre['created_at'] ? date('d/m/Y', strtotime(\$membre['created_at'])) : '—') ?>
+    <strong><?= tm('info_membre', htmlspecialchars($membre['code_membre'] ?? '—')) ?></strong><br>
+    <?= tm('cree_le', $membre['created_at'] ? date('d/m/Y', strtotime($membre['created_at'])) : '—') ?>
   </div>
 
   <form method="POST">

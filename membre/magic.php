@@ -20,7 +20,7 @@ if (strlen($token) !== 64) {
     $membre = $stmt->fetch();
 
     if (!$membre) {
-        \$error = tm('lien_invalide_msg');
+        $error = tm('lien_invalide_msg');
     } else {
         // Connecter le membre
         $_SESSION['membre_id']    = $membre['id'];
