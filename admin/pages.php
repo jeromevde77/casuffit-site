@@ -678,9 +678,30 @@ if ($edit_page) {
         <input type="text" id="v-titre_nl" value="<?= htmlspecialchars($edit_page['titre_nl'] ?? '') ?>" placeholder="Laisser vide pour utiliser le titre FR" oninput="syncNl()">
         <label style="margin-top:10px">Meta description (NL)</label>
         <input type="text" id="v-meta_nl" value="<?= htmlspecialchars($edit_page['meta_description_nl'] ?? '') ?>" placeholder="Pour Google (NL)" oninput="syncNl()">
-        <label style="margin-top:10px">Contenu HTML (NL)</label>
-        <textarea id="v-contenu_nl" rows="14" style="width:100%;font-family:monospace;font-size:.78rem;padding:8px;border:1px solid #ddd;border-radius:5px;line-height:1.5;box-sizing:border-box" oninput="syncNl()"><?= htmlspecialchars($edit_page['contenu_nl'] ?? '') ?></textarea>
-        <div style="font-size:.65rem;color:#888;margin-top:4px">💡 Mêmes balises HTML que la version FR. Laisser vide → fallback automatique sur le contenu FR.</div>
+
+        <label style="margin-top:10px">Contenu (NL)</label>
+        <!-- Toolbar NL — même boutons que le FR, ciblant wysiwyg-editor-nl -->
+        <div id="wysiwyg-toolbar-nl" style="background:#fff8ee;border:1px solid #f0c060;border-bottom:none;border-radius:6px 6px 0 0;padding:6px 10px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:50">
+          <button type="button" class="wt-btn" onclick="fmtNl('bold')" title="Gras"><b>G</b></button>
+          <button type="button" class="wt-btn" onclick="fmtNl('italic')" title="Italique"><i>I</i></button>
+          <button type="button" class="wt-btn" onclick="fmtNl('underline')" title="Souligné"><u>S</u></button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="fmtBlockNl('h2')" title="H2">H2</button>
+          <button type="button" class="wt-btn" onclick="fmtBlockNl('h3')" title="H3">H3</button>
+          <button type="button" class="wt-btn" onclick="fmtBlockNl('p')" title="¶">¶</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="fmtNl('insertUnorderedList')" title="Liste">• —</button>
+          <button type="button" class="wt-btn" onclick="fmtNl('insertOrderedList')" title="Numéroté">1.</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="insertLinkNl()" title="Lien">🔗</button>
+          <button type="button" class="wt-btn" onclick="fmtNl('removeFormat')" title="Effacer">Tx</button>
+          <button type="button" class="wt-btn" onclick="removeBlocNl()" title="Supprimer bloc" style="color:#c0392b;font-weight:700">✕ Bloc</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="openPaletteNl(this)" style="background:#FF9900;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
+        </div>
+        <div id="wysiwyg-editor-nl" contenteditable="true" oninput="syncNl()" style="min-height:180px;max-height:50vh;overflow-y:auto;padding:14px;border:1px solid #f0c060;border-radius:0 0 6px 6px;background:#fffdf5;font-family:'Helvetica Neue',Arial,sans-serif;font-size:.88rem;line-height:1.7;color:#333;outline:none;cursor:text"></div>
+        <div style="font-size:.63rem;color:#aaa;margin-top:2px">Laisser vide → fallback automatique sur le contenu FR</div>
+
         <div style="display:flex;gap:14px;margin-top:10px;align-items:center;flex-wrap:wrap">
           <div>
             <label style="display:block;margin-bottom:4px">État</label>
@@ -702,13 +723,96 @@ if ($edit_page) {
     <script>
     // Synchronise les champs visibles NL → champs hidden du form principal
     function syncNl() {
+      var edNl = document.getElementById('wysiwyg-editor-nl');
       document.getElementById('h-titre_nl').value            = document.getElementById('v-titre_nl')?.value   || '';
       document.getElementById('h-meta_description_nl').value = document.getElementById('v-meta_nl')?.value    || '';
-      document.getElementById('h-contenu_nl').value          = document.getElementById('v-contenu_nl')?.value || '';
+      document.getElementById('h-contenu_nl').value          = edNl ? edNl.innerHTML : '';
       document.getElementById('h-nl_status').value           = document.getElementById('v-nl_status')?.value  || 'vide';
     }
-    // Sync au chargement pour s'assurer que les hidden sont à jour
+
+    // Initialiser le contenu du wysiwyg NL depuis le hidden
+    (function() {
+      var edNl = document.getElementById('wysiwyg-editor-nl');
+      var hidden = document.getElementById('h-contenu_nl');
+      if (edNl && hidden && hidden.value) edNl.innerHTML = hidden.value;
+    })();
+
+    // Sync au chargement
     syncNl();
+
+    // ── Fonctions wysiwyg NL (même logique que FR mais ciblant wysiwyg-editor-nl) ──
+    var _activeEditorNl = false;
+    function _focusNl() {
+      var ed = document.getElementById('wysiwyg-editor-nl');
+      if (ed && !_activeEditorNl) { ed.focus(); _activeEditorNl = true; }
+    }
+    document.addEventListener('focusin', function(e) {
+      var ed = document.getElementById('wysiwyg-editor-nl');
+      _activeEditorNl = ed && ed.contains(e.target);
+    });
+
+    function fmtNl(cmd, val) {
+      document.getElementById('wysiwyg-editor-nl')?.focus();
+      document.execCommand(cmd, false, val || null);
+      syncNl();
+    }
+    function fmtBlockNl(tag) {
+      document.getElementById('wysiwyg-editor-nl')?.focus();
+      document.execCommand('formatBlock', false, tag);
+      syncNl();
+    }
+    function insertLinkNl() {
+      var url = prompt('URL du lien :');
+      if (url) fmtNl('createLink', url);
+    }
+    function removeBlocNl() {
+      var ed = document.getElementById('wysiwyg-editor-nl');
+      if (!ed) return;
+      ed.focus();
+      var sel = window.getSelection();
+      if (!sel.rangeCount) return;
+      var node = sel.getRangeAt(0).commonAncestorContainer;
+      while (node && node !== ed) {
+        if (node.nodeType === 1 && node.className) {
+          node.className = '';
+          node.removeAttribute('style');
+          break;
+        }
+        node = node.parentNode;
+      }
+      syncNl();
+    }
+    function openPaletteNl(btn) {
+      // Réutilise la palette FR mais insère dans l'éditeur NL
+      window._paletteTargetNl = true;
+      openPalette(btn);
+    }
+
+    // Surcharge insBloc pour gérer le cas NL
+    var _insBlocOrig = typeof insBloc === 'function' ? insBloc : null;
+    function insBloc(k) {
+      if (!k || !BLOCS[k]) return;
+      var edId = window._paletteTargetNl ? 'wysiwyg-editor-nl' : 'wysiwyg-editor';
+      var ed = document.getElementById(edId);
+      if (!ed) return;
+      ed.focus();
+      var sel = window.getSelection();
+      if (sel.rangeCount) {
+        var range = sel.getRangeAt(0);
+        // Vérifier que la sélection est dans le bon éditeur
+        if (!ed.contains(range.commonAncestorContainer)) {
+          range = document.createRange();
+          range.selectNodeContents(ed);
+          range.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+      document.execCommand('insertHTML', false, BLOCS[k]);
+      if (edId === 'wysiwyg-editor-nl') syncNl(); else syncEditor();
+      window._paletteTargetNl = false;
+      if (typeof closePalette === 'function') closePalette();
+    }
 
     function autoTranslate(pageId) {
       if (!confirm('Traduire automatiquement en néerlandais ? Cela remplacera le contenu NL actuel.')) return;
@@ -721,7 +825,9 @@ if ($edit_page) {
           if (d.ok) {
             document.getElementById('v-titre_nl').value    = d.titre_nl   || '';
             document.getElementById('v-meta_nl').value     = d.meta_nl    || '';
-            document.getElementById('v-contenu_nl').value  = d.contenu_nl || '';
+            // Injecter dans le wysiwyg NL
+            var edNl = document.getElementById('wysiwyg-editor-nl');
+            if (edNl) edNl.innerHTML = d.contenu_nl || '';
             document.getElementById('v-nl_status').value   = 'auto';
             syncNl();
             btn.textContent = '✅ Traduit (à relire)';
