@@ -626,7 +626,9 @@ function autoTranslateNews(newsId) {
     .catch(e=>{ alert('Erreur réseau'); btn.textContent='🤖 Traduire automatiquement'; btn.disabled=false; });
 }
 </script>
-<?php endif; ?>
+<?php endif; // fin bloc NL ?>
+
+<?php else: ?>
 <!-- ═══ LISTE ═══ -->
 <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e0e8f0;background:#fff">
   <h2 style="margin:0;font-size:1rem;color:#0e3d6b"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z"/></svg>Actualités</h2>
