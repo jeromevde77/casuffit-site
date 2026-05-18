@@ -7,7 +7,14 @@
     <div class="vbr-title">✈ Vols en cours — Zone Bruxelles</div>
     <div style="display:flex;gap:6px;align-items:center">
       <span class="vbr-badge" id="vbr-count">—</span>
-      <button class="vbr-hbtn" onclick="vbrCenter()" title="Centrer sur Bruxelles">⌂</button>
+      <select id="vbr-airport" onchange="vbrSetAirport(this.value)" class="vbr-airport-sel">
+        <option value="EBBR">✈ Bruxelles</option>
+        <option value="EBCI">✈ Charleroi</option>
+        <option value="EBLG">✈ Liège</option>
+        <option value="EBOS">✈ Oostende</option>
+        <option value="EBAW">✈ Anvers</option>
+      </select>
+      <button class="vbr-hbtn" onclick="vbrCenter()" title="Centrer sur l'aéroport">⌂</button>
       <button class="vbr-hbtn" onclick="vbrLoad()" title="Actualiser">↺</button>
     </div>
   </div>
@@ -76,6 +83,8 @@
 .vbr-badge{background:rgba(255,255,255,.2);border-radius:10px;padding:2px 8px;font-size:.72rem;font-weight:700}
 .vbr-hbtn{background:none;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:5px;padding:2px 8px;cursor:pointer;font-size:1rem;line-height:1}
 .vbr-hbtn:hover{background:rgba(255,255,255,.15)}
+.vbr-airport-sel{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:5px;padding:2px 6px;font-size:.75rem;cursor:pointer;outline:none}
+.vbr-airport-sel option{background:#0e3d6b;color:#fff}
 /* Info panel */
 .vbr-info{display:flex;gap:12px;padding:12px 14px;background:#f0f7ff;border-bottom:2px solid #1673B2;position:relative;align-items:flex-start}
 .vbr-info-close{position:absolute;top:8px;right:10px;background:none;border:none;font-size:.85rem;cursor:pointer;color:#888;font-weight:700}
@@ -121,6 +130,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 (function(){
+  var AIRPORTS = {
+    EBBR:{name:'Bruxelles',icao:'EBBR',lat:50.9014,lng:4.4844,bb:[50.1,3.5,51.7,5.5]},
+    EBCI:{name:'Charleroi',icao:'EBCI',lat:50.4564,lng:4.4538,bb:[49.7,3.6,51.2,5.3]},
+    EBLG:{name:'Liège',   icao:'EBLG',lat:50.6374,lng:5.4432,bb:[49.9,4.7,51.4,6.2]},
+    EBOS:{name:'Oostende',icao:'EBOS',lat:51.1988,lng:2.8622,bb:[50.5,1.9,51.9,3.9]},
+    EBAW:{name:'Anvers',  icao:'EBAW',lat:51.1894,lng:4.4603,bb:[50.5,3.6,51.9,5.3]}
+  };
+  var currentAirport = 'EBBR';
   var HOME = {lat:50.9014,lng:4.4844,zoom:9};
   var map=null, markers={}, trackLine=null, selectedIcao=null, allStates=[];
   var DIRS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
@@ -153,11 +170,23 @@
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
       attribution:'© <a href="https://www.openstreetmap.org">OSM</a>',maxZoom:18
     }).addTo(map);
-    L.marker([HOME.lat,HOME.lng],{icon:L.divIcon({
-      html:'<div style="background:#0e3d6b;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;border:1.5px solid #F5A623;white-space:nowrap">EBBR</div>',
+    window._apMarker = L.marker([HOME.lat,HOME.lng],{icon:L.divIcon({
+      html:'<div id="vbr-ap-label" style="background:#0e3d6b;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;border:1.5px solid #F5A623;white-space:nowrap">EBBR</div>',
       className:'',iconAnchor:[22,10]
     })}).addTo(map);
     window.vbrCenter=function(){if(map)map.setView([HOME.lat,HOME.lng],HOME.zoom);};
+    window.vbrSetAirport=function(icao){
+      var a=AIRPORTS[icao]; if(!a) return;
+      currentAirport=icao;
+      HOME={lat:a.lat,lng:a.lng,zoom:9};
+      if(window._apMarker){
+        window._apMarker.setLatLng([a.lat,a.lng]);
+        var lbl=document.getElementById('vbr-ap-label');
+        if(lbl) lbl.textContent=icao;
+      }
+      vbrCenter();
+      vbrLoad();
+    };
     window.vbrInvalidate=function(){
       if(map){map.invalidateSize();setTimeout(function(){map.invalidateSize();map.setView([HOME.lat,HOME.lng],HOME.zoom);},200);}
     };
@@ -318,7 +347,8 @@
     initMap();
     setTimeout(function(){if(map)map.invalidateSize();},100);
 
-    fetch('/api/flights.php')
+    var bb=AIRPORTS[currentAirport].bb;
+    fetch('/api/flights.php?lamin='+bb[0]+'&lomin='+bb[1]+'&lamax='+bb[2]+'&lomax='+bb[3])
       .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
       .then(function(d){
         if(elL)elL.style.display='none';

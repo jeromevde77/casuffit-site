@@ -1,28 +1,16 @@
 <?php
-// Proxy OpenSky Network — évite les restrictions CORS
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Cache-Control: max-age=30'); // Cache 30s pour éviter le rate limit
+header('Cache-Control: max-age=30');
 
-$LAT_MIN = 50.5; $LAT_MAX = 51.3;
-$LON_MIN = 3.8;  $LON_MAX = 5.2;
+$lamin = isset($_GET['lamin']) ? floatval($_GET['lamin']) : 50.1;
+$lomin = isset($_GET['lomin']) ? floatval($_GET['lomin']) : 3.5;
+$lamax = isset($_GET['lamax']) ? floatval($_GET['lamax']) : 51.7;
+$lomax = isset($_GET['lomax']) ? floatval($_GET['lomax']) : 5.5;
 
 $url = "https://opensky-network.org/api/states/all"
-     . "?lamin={$LAT_MIN}&lomin={$LON_MIN}&lamax={$LAT_MAX}&lomax={$LON_MAX}";
+     . "?lamin={$lamin}&lomin={$lomin}&lamax={$lamax}&lomax={$lomax}";
 
-$ctx = stream_context_create([
-    'http' => [
-        'timeout' => 10,
-        'header'  => "User-Agent: casuffit.be/1.0\r\n"
-    ]
-]);
-
+$ctx = stream_context_create(['http'=>['timeout'=>10,'header'=>"User-Agent: casuffit.be/1.0\r\n"]]);
 $raw = @file_get_contents($url, false, $ctx);
-
-if ($raw === false) {
-    http_response_code(502);
-    echo json_encode(['error' => 'Impossible de contacter OpenSky Network']);
-    exit;
-}
-
+if($raw===false){ http_response_code(502); echo json_encode(['error'=>'OpenSky indisponible']); exit; }
 echo $raw;
