@@ -371,11 +371,8 @@ if ($edit_page) {
 #wysiwyg-editor .cadre-vert   { padding: 12px 16px; background: #e8f5e9; border-left: 4px solid #2e7d32; margin: 10px 0; border-radius: 4px; display: block; }
 #wysiwyg-editor .alerte       { background: #fff8ee; border: 2px solid #FF9900; padding: 12px 16px; border-radius: 6px; margin: 10px 0; display: block; }
 #wysiwyg-editor .al-titre     { font-weight: 700; color: #FF9900; margin-bottom: 6px; display: block; }
-#wysiwyg-editor h2, #wysiwyg-editor h3 { color: #FF9900; font-weight: 600; border-bottom: 1px solid #c8dff0; padding-bottom: 4px; margin: 16px 0 8px; }
 #wysiwyg-editor .content-text { color: #1673B2; }
 #wysiwyg-editor .ac-item      { background: #f0f6fb; border-left: 3px solid #1673B2; padding: 10px 14px; margin: 8px 0; }
-#wysiwyg-editor ul, #wysiwyg-editor ol { padding-left: 20px; }
-#wysiwyg-editor blockquote    { border-left: 4px solid #FF9900; padding: 8px 14px; background: #fff8ee; margin: 10px 0; }
 /* Styles manquants */
 #wysiwyg-editor .lettre-intro  { background: #0e3d6b; color: #fff; padding: 16px 20px; margin-bottom: 16px; display: block; }
 #wysiwyg-editor .lettre-intro p { color: #fff; margin: 0; line-height: 1.55; }
@@ -389,12 +386,54 @@ if ($edit_page) {
 #wysiwyg-editor .cadre-vert .cv-titre { font-weight: 600; color: #1b5e20; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; display: block; }
 #wysiwyg-editor .signature     { background: #e8f3fb; border-left: 3px solid #1673B2; padding: 12px 16px; margin-top: 16px; font-size: .88rem; color: #1673B2; display: block; }
 #wysiwyg-editor .section-title { color: #FF9900; font-weight: 400; font-size: 1.1rem; margin: 20px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #c8dff0; }
-#wysiwyg-editor .orange.section-title, #wysiwyg-editor div.orange.section-title { color: #FF9900; font-weight: 400; font-size: 1.05rem; margin: 20px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #c8dff0; }
+#wysiwyg-editor .orange.section-title, #wysiwyg-editor div.orange.section-title, #wysiwyg-editor h3.orange { color: #FF9900; font-weight: 400; font-size: 1.05rem; margin: 20px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #c8dff0; }
 #wysiwyg-editor .content-text  { color: #1673B2; margin-bottom: 10px; font-size: 95%; line-height: 1.65; }
 #wysiwyg-editor img             { max-width: 100%; height: auto; display: block; margin: 10px 0; border-radius: 4px; }
 #wysiwyg-editor p               { margin-bottom: 8px; }
 #wysiwyg-editor strong          { font-weight: 700; }
 #wysiwyg-editor a               { color: #1673B2; }
+/* Chiffres */
+#wysiwyg-editor .chiffre-val   { font-size: 1.5rem; font-weight: 700; color: #FF9900; }
+#wysiwyg-editor .chiffre-label { font-size: 70%; color: #555; display: block; margin-top: 2px; }
+#wysiwyg-editor .chiffres-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px; margin: 14px 0; }
+#wysiwyg-editor .chiffre-card  { background: #e8f3fb; border-top: 3px solid #1673B2; padding: 14px; text-align: center; }
+/* Timeline */
+#wysiwyg-editor .timeline      { position: relative; padding-left: 24px; margin: 14px 0; }
+#wysiwyg-editor .timeline::before { content: ""; position: absolute; left: 6px; top: 0; bottom: 0; width: 2px; background: #c8dff0; }
+#wysiwyg-editor .tl-item       { position: relative; margin-bottom: 14px; }
+#wysiwyg-editor .tl-item::before { content: ""; position: absolute; left: -20px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #1673B2; border: 2px solid #fff; box-shadow: 0 0 0 2px #1673B2; }
+#wysiwyg-editor .tl-item.bad::before { background: #FF9900; box-shadow: 0 0 0 2px #FF9900; }
+#wysiwyg-editor .tl-date       { font-weight: 600; font-size: 85%; color: #1673B2; }
+#wysiwyg-editor .tl-item.bad .tl-date { color: #cc7a00; }
+#wysiwyg-editor .tl-text       { font-size: 90%; color: #555; line-height: 1.5; }
+/* Séparateur */
+#wysiwyg-editor .sep           { border: none; border-top: 1px solid #c8dff0; margin: 20px 0; display: block; }
+#wysiwyg-editor .divider       { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: #555; font-size: 72%; font-weight: 400; text-transform: uppercase; letter-spacing: .08em; }
+#wysiwyg-editor .divider::before, #wysiwyg-editor .divider::after { content: ""; flex: 1; height: 1px; background: #c8dff0; }
+/* Demandes */
+#wysiwyg-editor .demandes-list { list-style: none; padding: 0; margin: 12px 0; }
+#wysiwyg-editor .demande-item  { display: flex; gap: 14px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid #c8dff0; }
+#wysiwyg-editor .demande-item:last-child { border-bottom: none; }
+#wysiwyg-editor .demande-num   { width: 32px; height: 32px; background: #1673B2; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 90%; flex-shrink: 0; margin-top: 2px; }
+/* Fiscal */
+#wysiwyg-editor .fiscal-box    { background: #fffdf0; border: 1px solid #fcd99a; padding: 10px 14px; margin-bottom: 14px; display: flex; gap: 10px; align-items: flex-start; }
+#wysiwyg-editor .fiscal-text   { font-size: 78%; color: #7a5010; line-height: 1.4; }
+/* Virement */
+#wysiwyg-editor .virement-box  { background: #f9f9f9; border: 1px solid #c8dff0; padding: 14px 16px; margin-bottom: 14px; }
+#wysiwyg-editor .iban-row      { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+#wysiwyg-editor .iban-val      { font-family: monospace; font-size: .9rem; font-weight: 700; color: #0e5a96; margin-bottom: 3px; }
+#wysiwyg-editor .iban-bank     { font-size: 70%; color: #555; }
+#wysiwyg-editor .comm-box      { margin-top: 10px; background: rgba(255,153,0,0.08); border: 1px dashed #FF9900; padding: 8px 12px; }
+#wysiwyg-editor .comm-label    { font-size: 65%; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #cc7a00; margin-bottom: 2px; display: block; }
+#wysiwyg-editor .comm-val      { font-size: 82%; font-style: italic; color: #1673B2; }
+/* Misc */
+#wysiwyg-editor .dc-titre      { font-weight: 600; color: #1673B2; font-size: 95%; margin-bottom: 4px; }
+#wysiwyg-editor .dc-text       { font-size: 85%; color: #555; margin: 0; }
+#wysiwyg-editor h2             { color: #FF9900; font-weight: 600; font-size: 1.2rem; border-bottom: 1px solid #c8dff0; padding-bottom: 4px; margin: 16px 0 8px; }
+#wysiwyg-editor h3             { color: #0e3d6b; font-weight: 600; font-size: 1.05rem; margin: 14px 0 6px; }
+#wysiwyg-editor ul, #wysiwyg-editor ol { padding-left: 20px; margin: 8px 0; }
+#wysiwyg-editor li             { margin-bottom: 4px; line-height: 1.5; }
+#wysiwyg-editor blockquote     { border-left: 4px solid #FF9900; padding: 8px 14px; background: #fff8ee; margin: 10px 0; font-style: italic; }
 /* ── Palette de styles flottante ──────────────────────────────────── */
 #style-palette {
   display: none; position: fixed; z-index: 9999;
