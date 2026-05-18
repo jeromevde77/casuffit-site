@@ -24,6 +24,7 @@
     <div class="vbr-info-right">
       <div class="vbr-info-cs" id="vi-cs">—</div>
       <div class="vbr-info-route" id="vi-route"></div>
+      <div class="vbr-info-airline" id="vi-airline"></div>
       <div class="vbr-info-grid">
         <div class="vbr-stat"><div class="vbr-stat-lbl">ALTITUDE</div><div class="vbr-stat-val" id="vi-alt">—</div></div>
         <div class="vbr-stat"><div class="vbr-stat-lbl">VITESSE</div><div class="vbr-stat-val" id="vi-spd">—</div></div>
@@ -84,7 +85,8 @@
 .vbr-photo-credit{font-size:.5rem;color:#aaa;text-align:right;margin-top:2px}
 .vbr-info-right{flex:1;min-width:0}
 .vbr-info-cs{font-size:1.4rem;font-weight:800;color:#0e3d6b;line-height:1.1;margin-bottom:2px}
-.vbr-info-route{font-size:.72rem;color:#1673B2;font-weight:600;margin-bottom:8px}
+.vbr-info-route{font-size:.88rem;color:#0e3d6b;font-weight:800;margin-bottom:2px;letter-spacing:.5px}
+.vbr-info-airline{font-size:.68rem;color:#888;margin-bottom:7px}
 .vbr-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
 .vbr-stat{background:#fff;border-radius:5px;padding:4px 7px;border:1px solid #dde6f0}
 .vbr-stat-lbl{font-size:.52rem;color:#aaa;font-weight:700;text-transform:uppercase}
@@ -161,6 +163,32 @@
     };
   }
 
+  function fetchRoute(callsign){
+    var elRoute  = document.getElementById('vi-route');
+    var elAirline = document.getElementById('vi-airline');
+    elRoute.textContent = ''; elAirline.textContent = '';
+    if(!callsign || callsign==='???') return;
+    fetch('https://api.adsbdb.com/v0/callsign/' + encodeURIComponent(callsign.trim()))
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        var fr = d && d.response && d.response.flightroute;
+        if(!fr) return;
+        var o = fr.origin, dst = fr.destination;
+        if(o && dst){
+          elRoute.textContent = o.iata_code + '  ✈  ' + dst.iata_code;
+          elRoute.title = o.name + ' → ' + dst.name;
+          var parts = [];
+          if(o.municipality) parts.push(o.municipality);
+          parts.push('→');
+          if(dst.municipality) parts.push(dst.municipality);
+          elAirline.textContent = (fr.airline ? fr.airline.name + ' · ' : '') + parts.join(' ');
+        } else if(o){
+          elRoute.textContent = o.iata_code + '  ✈  ?';
+          elAirline.textContent = o.name;
+        }
+      }).catch(function(){});
+  }
+
   function fetchPhoto(icao24){
     var img=document.getElementById('vbr-photo');
     var cred=document.getElementById('vbr-photo-credit');
@@ -195,6 +223,7 @@
     var cs=(s[1]||'???').trim();
     document.getElementById('vi-cs').textContent=cs;
     document.getElementById('vi-route').textContent='';
+    fetchRoute(cs);
     var alt=mToFt(s[7]), spd=msToKt(s[9]), vs=s[11]?Math.round(s[11]*196.85):null;
     document.getElementById('vi-alt').textContent=alt?alt.toLocaleString()+' ft':'—';
     document.getElementById('vi-spd').textContent=spd?spd+' kt':'—';
