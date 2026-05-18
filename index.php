@@ -201,7 +201,12 @@ $don_texte   = cfg('don_texte', 'Action en référé contre l Etat belge');
     window.rgpdInit = function() {
       if (getConsent()) return; // déjà choisi
       var banner = document.getElementById('rgpd-banner');
-      if (banner) banner.style.display = 'flex';
+      if (banner) {
+        banner.style.display = 'flex';
+        // Éviter que la bannière couvre les boutons
+        var h = banner.offsetHeight || 140;
+        document.body.style.paddingBottom = (h + 10) + 'px';
+      }
     };
 
     window.rgpdAcceptAll = function() {
@@ -232,6 +237,7 @@ $don_texte   = cfg('don_texte', 'Action en référé contre l Etat belge');
     function hideBanner() {
       var banner = document.getElementById('rgpd-banner');
       if (banner) banner.style.display = 'none';
+      document.body.style.paddingBottom = '';
     }
   })();
   </script>
