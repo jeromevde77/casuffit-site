@@ -671,7 +671,7 @@ function pmhShowError(msg){
   document.addEventListener('DOMContentLoaded', doInit); // Fallback
 })();
 
-};)();
+})();
 
 // ── Stats auto depuis BDD ─────────────────────────────────────────────────
 (function() {
