@@ -305,8 +305,25 @@
       });
   };
 
-  if(document.readyState!=='loading'){vbrLoad();}
-  else{document.addEventListener('DOMContentLoaded',vbrLoad);}
-  setInterval(vbrLoad,60000);
+  function startWidget(){
+    // ResizeObserver : s'initialise dès que le container est visible
+    var mapEl = document.getElementById('vbr-mapbox');
+    if(!mapEl) return;
+    var initialized = false;
+    var ro = new ResizeObserver(function(){
+      var w = mapEl.offsetWidth, h = mapEl.offsetHeight;
+      if(w > 50 && h > 50){
+        if(!initialized){ initialized=true; vbrLoad(); }
+        else if(map){ map.invalidateSize(); map.setView([HOME.lat,HOME.lng],HOME.zoom); }
+      }
+    });
+    ro.observe(mapEl);
+    // Fallback si déjà visible
+    if(mapEl.offsetWidth > 50){ vbrLoad(); }
+  }
+
+  if(document.readyState!=='loading'){ startWidget(); }
+  else{ document.addEventListener('DOMContentLoaded', startWidget); }
+  setInterval(function(){ if(map) vbrLoad(); }, 60000);
 })();
 </script>
