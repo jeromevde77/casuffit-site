@@ -1599,9 +1599,11 @@ foreach ($header_widgets as $w_slug) {
         $w_file = __DIR__ . '/includes/widgets/' . $w_slug . '.php';
         if (!file_exists($w_file)) continue;
     ?>
-    <?php $widget_no_scale = false; ob_start(); include $w_file; $w_html = ob_get_clean(); ?>
+    <?php
+    $widget_no_scale = (strpos(file_get_contents($w_file), '$widget_no_scale = true') !== false);
+    ?>
     <div data-widget="<?= $w_slug ?>" <?= $widget_no_scale ? 'data-no-scale="1"' : '' ?> style="display:none">
-      <?= $w_html ?>
+      <?php include $w_file; ?>
     </div>
     <?php endforeach; ?>
   </div><!-- /colonne droite -->
