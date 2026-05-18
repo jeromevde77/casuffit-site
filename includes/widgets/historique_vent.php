@@ -342,7 +342,7 @@ window.pmhLoad = function(){
       if(d.error){pmhShowError(d.error);return;}
       pmhData=d.results||[];
       pmhRender(d);
-      pmhRenderCards(pmhData);
+      pmhRenderCards();
     })
     .catch(function(e){pmhShowError('Erreur: '+e.message);});
 };
@@ -782,6 +782,42 @@ function pmhShowError(msg){
     // Chargement initial
     loadStats('30d');
   });
+
+  // ── Vue cartes mobile ─────────────────────────────────────────────────
+  function pmhRenderCards() {
+    var wrap = document.getElementById('pmh-cards');
+    if (!wrap) return;
+    if (!pmhData.length) { wrap.innerHTML = ''; return; }
+    var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+    wrap.innerHTML = pmhData.map(function(m, idx) {
+      var t = new Date(m.time);
+      var timeUTC = isNaN(t) ? m.time : t.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC';
+      var timeBE  = isNaN(t) ? '' : t.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Brussels'})+' (BE)';
+      var dateStr = isNaN(t) ? '' : t.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'});
+      var ws = m.wspd_kt||m.wspd||0;
+      var wg = m.wgst_kt||m.wgst_metar||m.wgst_irm||null;
+      var wd = (m.wdir==='VRB'||!m.wdir) ? null : parseInt(m.wdir);
+      var wdTxt = wd!==null ? wd+'° '+dirs[Math.round(wd/22.5)%16] : 'Variable';
+      var windTxt = wdTxt+' — '+ws+' kt'+(wg?' 💨 '+wg+' kt':'');
+      var s13 = m.aip2013||{}; var snow = m.aip_now||{};
+      return '<div class="pmh-card">'
+        +'<div class="pmh-card-head">'
+          +'<div><div class="pmh-card-time">'+timeUTC+'</div>'
+          +'<div class="pmh-card-date">'+timeBE+' · '+dateStr+'</div></div>'
+        +'</div>'
+        +'<div class="pmh-card-body">'
+          +'<div class="pmh-card-wind">🌬 '+windTxt+'</div>'
+          +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP 2013</div>'+(s13.prs?'PRS':'Hors PRS')+' · '+(s13.runways||[]).join('/')+'</div>'
+          +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP actuel</div>'+(snow.prs?'PRS':'Hors PRS')+' · '+(snow.runways||[]).join('/')+'</div>'
+          +(m.divergence?'<div class="pmh-card-verdict" style="background:#fff0f0;color:#c00;grid-column:1/-1;padding:6px;border-radius:6px;font-weight:600">⚡ Divergence</div>':'')
+          +'<div style="grid-column:1/-1">'
+            +'<button type="button" class="pmh-card-widget-btn" onclick="pmhOpenWidget('+idx+')">▶ Voir widget</button>'
+          +'</div>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+  }
+
 })();
 
 // ── Widget replay par heure ───────────────────────────────────────────────
@@ -916,43 +952,5 @@ function pmhRenderWidgetModal(wrap, d) {
       : '');
 }
 
-
-
-// ── Vue cartes mobile ─────────────────────────────────────────────────
-function pmhRenderCards(pmhData) {
-  var wrap = document.getElementById('pmh-cards');
-  if (!wrap) return;
-  if (!pmhData.length) { wrap.innerHTML = ''; return; }
-  var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
-  wrap.innerHTML = pmhData.map(function(m, idx) {
-    var t = new Date(m.time);
-    var timeUTC = isNaN(t) ? m.time : t.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC';
-    var timeBE  = isNaN(t) ? '' : t.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Brussels'})+' (BE)';
-    var dateStr = isNaN(t) ? '' : t.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'});
-    var ws = m.wspd_kt||m.wspd||0;
-    var wg = m.wgst_kt||m.wgst_metar||m.wgst_irm||null;
-    var wd = (m.wdir==='VRB'||!m.wdir) ? null : parseInt(m.wdir);
-    var wdTxt = wd!==null ? wd+'° '+dirs[Math.round(wd/22.5)%16] : 'Variable';
-    var windTxt = wdTxt+' — '+ws+' kt'+(wg?' 💨 '+wg+' kt':'');
-    var s13 = m.aip2013||{}; var snow = m.aip_now||{};
-    var aip13Txt = (s13.prs?'PRS':'Hors PRS')+' · '+(s13.runways||[]).join('/');
-    var aipNowTxt = (snow.prs?'PRS':'Hors PRS')+' · '+(snow.runways||[]).join('/');
-    var viol = m.divergence;
-    return '<div class="pmh-card">'
-      +'<div class="pmh-card-head">'
-        +'<div><div class="pmh-card-time">'+timeUTC+'</div>'
-        +'<div class="pmh-card-date">'+timeBE+' · '+dateStr+'</div></div>'
-      +'</div>'
-      +'<div class="pmh-card-body">'
-        +'<div class="pmh-card-wind">🌬 '+windTxt+'</div>'
-        +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP 2013</div>'+aip13Txt+'</div>'
-        +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP actuel</div>'+aipNowTxt+'</div>'
-        +(viol?'<div class="pmh-card-verdict" style="background:#fff0f0;color:#c00;grid-column:1/-1;padding:6px;border-radius:6px;font-weight:600">⚡ Divergence</div>':'')        +'<div style="grid-column:1/-1">'
-          +'<button type="button" class="pmh-card-widget-btn" onclick="pmhOpenWidget('+idx+')">▶ Voir widget conditions</button>'
-        +'</div>'
-      +'</div>'
-    +'</div>';
-  }).join('');
-}
 
 </script>
