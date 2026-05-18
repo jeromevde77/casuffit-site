@@ -14,6 +14,9 @@ inject_content_*.php
 logs/
 *.log
 
+# ─── Cache local (tokens, réponses API) ─────────────────────────────────
+cache/
+
 # ─── Médias uploadés (trop lourds pour Git) ─────────────────────────────
 medias/*.jpg
 medias/*.jpeg

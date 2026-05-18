@@ -38,6 +38,9 @@ AddDefaultCharset UTF-8
     RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteRule ^uploads/(.*)$   - [F,L]
 
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
+    RewriteRule ^cache/(.*)$     - [F,L]
+
     # Médias : autoriser uniquement les images
     RewriteRule ^medias/.*\.(php|sql|htaccess|env|sh)$ - [F,L]
 </IfModule>

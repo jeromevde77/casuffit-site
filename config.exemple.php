@@ -21,6 +21,12 @@ define('BREVO_API_KEY', '');    // ex: xkeysib-abc123...
 // Token secret pour déclencher /api/trigger_metar.php depuis cron-job.org
 // Générer avec : php -r "echo bin2hex(random_bytes(24));"
 define('CRON_TOKEN', 'CHANGEZ_MOI_TOKEN_ALEATOIRE_HEX');
+
+// ── OPENSKY NETWORK (vols ADS-B) ─────────────────────────────────────────
+// Compte gratuit sur https://opensky-network.org → Account → API Clients
+// Sans ces credentials, l'API tombe en mode anonyme (rate limit strict)
+define('OPENSKY_CLIENT_ID',     'votre-pseudo-api-client');
+define('OPENSKY_CLIENT_SECRET', 'CHANGEZ_MOI_SECRET_OPENSKY');
 // Option B : SMTP OVH
 define('SMTP_HOST',      'ssl0.ovh.net');
 define('SMTP_PORT',      465);
