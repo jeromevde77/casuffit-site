@@ -342,7 +342,7 @@ window.pmhLoad = function(){
       if(d.error){pmhShowError(d.error);return;}
       pmhData=d.results||[];
       pmhRender(d);
-      pmhRenderCards();
+      if(typeof window.pmhRenderCards==="function") window.pmhRenderCards();
     })
     .catch(function(e){pmhShowError('Erreur: '+e.message);});
 };
@@ -670,7 +670,7 @@ function pmhShowError(msg){
   document.addEventListener('DOMContentLoaded', doInit); // Fallback
 })();
 
-})();
+};)();
 
 // ── Stats auto depuis BDD ─────────────────────────────────────────────────
 (function() {
