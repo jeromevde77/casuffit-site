@@ -506,13 +506,14 @@ header.site-header {
 .subtab-btn.active { color: #0e3d6b; border-bottom-color: #1673B2; font-weight: 700; }
 
 /* Sous-tab select mobile */
-.subtabs-mobile-wrap { display:none; padding:8px 12px; background:#f0f6ff; border-bottom:2px solid #c8ddf5; }
-.subtabs-sel { width:100%; padding:9px 12px; border:2px solid var(--bleu-ciel); border-radius:8px; font-size:.88rem; font-family:inherit; color:var(--bleu-fonce); background:#fff; font-weight:600; outline:none; -webkit-appearance:auto; cursor:pointer; }
+.subtabs-mobile-wrap { display:none; padding:6px 12px; background:#e4eef8; border-bottom:2px solid #c8ddf5; align-items:center; gap:8px; }
+.subtabs-mobile-lbl { font-size:.68rem; font-weight:700; color:#1673B2; white-space:nowrap; text-transform:uppercase; letter-spacing:.03em; flex-shrink:0; }
+.subtabs-sel { flex:1; padding:6px 10px; border:1.5px solid #a8c8e8; border-radius:7px; font-size:.82rem; font-family:inherit; color:var(--bleu-fonce); background:#fff; font-weight:600; outline:none; -webkit-appearance:auto; cursor:pointer; }
 
 @media (max-width: 600px) {
   .subtabs-wrap { padding:0; }
   .subtabs { display:none !important; }
-  .subtabs-mobile-wrap { display:block; }
+  .subtabs-mobile-wrap { display:flex; }
 }
 
 /* ══ MAIN LAYOUT ══════════════════════════════════════════════════════ */
@@ -1500,6 +1501,7 @@ foreach ($header_widgets as $w_slug) {
 <!-- Sous-tabs (rangée secondaire, affichée si le tab actif a des enfants) -->
 <div class="subtabs-wrap" id="subtabs-wrap">
   <div class="subtabs-mobile-wrap">
+    <span class="subtabs-mobile-lbl">Section&nbsp;▸</span>
     <select id="subtabs-sel" class="subtabs-sel" onchange="showSubTabMobile(this.value)"></select>
   </div>
   <div class="subtabs" id="subtabs-inner">
