@@ -603,97 +603,106 @@ if ($edit_page) {
           <button type="button" class="wt-btn" onclick="removeBloc()" title="Supprimer le style du bloc" style="color:#c0392b;font-weight:700">✕ Bloc</button>
           <div class="wt-sep"></div><button type="button" class="wt-btn" onclick="openPalette(this)" style="background:#1673B2;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
         </div>
-        <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor()"></div>
+        <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor()"><?= $edit_page ? ($edit_page['contenu'] ?? '') : '' ?></div>
         <textarea name="contenu" id="f-contenu" style="display:none"><?= htmlspecialchars($edit_page ? ($edit_page['contenu'] ?? '') : '') ?></textarea>
-        <script>
-        // Injecter le contenu via JS pour éviter les conflits de parsing HTML
-        (function() {
-          var ta = document.getElementById('f-contenu');
-          var ed = document.getElementById('wysiwyg-editor');
-          if (ta && ed) ed.innerHTML = ta.value;
-        })();
-        </script>
         <div style="font-size:.63rem;color:#aaa;margin-top:2px">Aperçu → en temps réel</div>
 
-        <!-- ── Version néerlandaise (NL) ────────────────────────────────── -->
-        <?php
-        $nl_status  = $edit_page['nl_status'] ?? 'vide';
-        $has_nl     = $edit_page && (!empty($edit_page['titre_nl']) || !empty($edit_page['contenu_nl']));
-        $badges = ['vide'=>'⚪ Vide','auto'=>'🤖 Traduction auto','relu'=>'✅ Relu humain'];
-        $colors = ['vide'=>'#999','auto'=>'#d97706','relu'=>'#27ae60'];
-        ?>
-        <details class="nl-block" <?= $has_nl ? 'open' : '' ?> style="margin-top:18px;background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:10px 14px">
-          <summary style="cursor:pointer;font-weight:700;color:#0e3d6b;display:flex;justify-content:space-between;align-items:center">
-            <span>🇳🇱 Version néerlandaise (NL)</span>
-            <span style="font-size:.7rem;color:<?= $colors[$nl_status] ?>;font-weight:600">
-              <?= $badges[$nl_status] ?>
-            </span>
-          </summary>
-          <div style="margin-top:12px">
-            <label>Titre (NL)</label>
-            <input type="text" name="titre_nl" value="<?= htmlspecialchars($edit_page['titre_nl'] ?? '') ?>" placeholder="Laisser vide pour utiliser le titre FR">
-
-            <label style="margin-top:10px">Meta description (NL)</label>
-            <input type="text" name="meta_description_nl" value="<?= htmlspecialchars($edit_page['meta_description_nl'] ?? '') ?>" placeholder="Pour Google (NL)">
-
-            <label style="margin-top:10px">Contenu HTML (NL)</label>
-            <textarea name="contenu_nl" rows="14" style="width:100%;font-family:monospace;font-size:.78rem;padding:8px;border:1px solid #ddd;border-radius:5px;line-height:1.5"><?= htmlspecialchars($edit_page['contenu_nl'] ?? '') ?></textarea>
-            <div style="font-size:.65rem;color:#888;margin-top:4px">
-              💡 Mêmes balises HTML que la version FR (h2, h3, p, ul, etc.). Laisser vide → fallback automatique sur le contenu FR.
-            </div>
-
-            <div style="display:flex;gap:14px;margin-top:10px;align-items:center;flex-wrap:wrap">
-              <div>
-                <label style="display:block;margin-bottom:4px">État</label>
-                <select name="nl_status" style="min-width:200px">
-                  <option value="vide"  <?= $nl_status==='vide' ?'selected':'' ?>>⚪ Vide / brouillon</option>
-                  <option value="auto"  <?= $nl_status==='auto' ?'selected':'' ?>>🤖 Auto (à relire)</option>
-                  <option value="relu"  <?= $nl_status==='relu' ?'selected':'' ?>>✅ Relu par humain</option>
-                </select>
-              </div>
-              <?php if ($edit_page): ?>
-              <button type="button" onclick="autoTranslate(<?= $edit_page['id'] ?>)" style="background:#1673B2;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.82rem">
-                🤖 Traduire automatiquement
-              </button>
-              <a href="<?= SITE_URL ?>/nl/?page=<?= $edit_page['slug'] ?>" target="_blank" style="font-size:.78rem;color:#1673B2;text-decoration:underline">
-                👁 Aperçu NL
-              </a>
-              <?php endif; ?>
-            </div>
-          </div>
-        </details>
+        <!-- Champs NL soumis avec le form principal (alimentés par JS depuis le bloc NL ci-dessous) -->
+        <input type="hidden" name="titre_nl"            id="h-titre_nl"            value="<?= htmlspecialchars($edit_page['titre_nl']            ?? '') ?>">
+        <input type="hidden" name="meta_description_nl" id="h-meta_description_nl" value="<?= htmlspecialchars($edit_page['meta_description_nl'] ?? '') ?>">
+        <input type="hidden" name="contenu_nl"          id="h-contenu_nl"          value="<?= htmlspecialchars($edit_page['contenu_nl']          ?? '') ?>">
+        <input type="hidden" name="nl_status"           id="h-nl_status"           value="<?= htmlspecialchars($edit_page['nl_status']           ?? 'vide') ?>">
       </form>
     </div><!-- /eform-body -->
 
-        <script>
-        function autoTranslate(pageId) {
-          if (!confirm('Traduire automatiquement le titre, la meta description et le contenu en néerlandais ? Cela remplacera le contenu NL actuel.')) return;
-          var btn = event.target;
-          btn.textContent = '⏳ Traduction en cours…';
-          btn.disabled = true;
-          fetch('/admin/translate_auto.php?page_id=' + pageId, { method: 'POST' })
-            .then(r => r.json())
-            .then(d => {
-              if (d.ok) {
-                document.querySelector('input[name=titre_nl]').value = d.titre_nl || '';
-                document.querySelector('input[name=meta_description_nl]').value = d.meta_nl || '';
-                document.querySelector('textarea[name=contenu_nl]').value = d.contenu_nl || '';
-                document.querySelector('select[name=nl_status]').value = 'auto';
-                btn.textContent = '✅ Traduit (à relire)';
-                setTimeout(() => { btn.textContent = '🤖 Re-traduire'; btn.disabled = false; }, 2000);
-              } else {
-                alert('Erreur : ' + (d.error || 'inconnue'));
-                btn.textContent = '🤖 Traduire automatiquement';
-                btn.disabled = false;
-              }
-            })
-            .catch(e => {
-              alert('Erreur réseau : ' + e.message);
-              btn.textContent = '🤖 Traduire automatiquement';
-              btn.disabled = false;
-            });
-        }
-        </script>
+    <!-- ── Bloc NL — EN DEHORS du form principal pour ne pas casser le WYSIWYG ── -->
+    <?php if ($edit_page): ?>
+    <?php
+    $nl_status  = $edit_page['nl_status'] ?? 'vide';
+    $has_nl     = !empty($edit_page['titre_nl']) || !empty($edit_page['contenu_nl']);
+    $badges = ['vide'=>'⚪ Vide','auto'=>'🤖 Traduction auto','relu'=>'✅ Relu humain'];
+    $colors = ['vide'=>'#999','auto'=>'#d97706','relu'=>'#27ae60'];
+    ?>
+    <div style="padding:0 20px 20px">
+      <details class="nl-block" <?= $has_nl ? 'open' : '' ?> style="background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:10px 14px">
+        <summary style="cursor:pointer;font-weight:700;color:#0e3d6b;display:flex;justify-content:space-between;align-items:center">
+          <span>🇳🇱 Version néerlandaise (NL)</span>
+          <span id="nl-status-badge" style="font-size:.7rem;color:<?= $colors[$nl_status] ?>;font-weight:600"><?= $badges[$nl_status] ?></span>
+        </summary>
+        <div style="margin-top:12px">
+          <label>Titre (NL)</label>
+          <input type="text" id="v-titre_nl" value="<?= htmlspecialchars($edit_page['titre_nl'] ?? '') ?>" placeholder="Laisser vide pour utiliser le titre FR" oninput="syncNl()">
+
+          <label style="margin-top:10px">Meta description (NL)</label>
+          <input type="text" id="v-meta_nl" value="<?= htmlspecialchars($edit_page['meta_description_nl'] ?? '') ?>" placeholder="Pour Google (NL)" oninput="syncNl()">
+
+          <label style="margin-top:10px">Contenu HTML (NL)</label>
+          <textarea id="v-contenu_nl" rows="14" style="width:100%;font-family:monospace;font-size:.78rem;padding:8px;border:1px solid #ddd;border-radius:5px;line-height:1.5;box-sizing:border-box" oninput="syncNl()"><?= htmlspecialchars($edit_page['contenu_nl'] ?? '') ?></textarea>
+          <div style="font-size:.65rem;color:#888;margin-top:4px">
+            💡 Mêmes balises HTML que la version FR. Laisser vide → fallback automatique sur le contenu FR.
+          </div>
+
+          <div style="display:flex;gap:14px;margin-top:10px;align-items:center;flex-wrap:wrap">
+            <div>
+              <label style="display:block;margin-bottom:4px">État</label>
+              <select id="v-nl_status" onchange="syncNl()" style="min-width:200px">
+                <option value="vide"  <?= $nl_status==='vide' ?'selected':'' ?>>⚪ Vide / brouillon</option>
+                <option value="auto"  <?= $nl_status==='auto' ?'selected':'' ?>>🤖 Auto (à relire)</option>
+                <option value="relu"  <?= $nl_status==='relu' ?'selected':'' ?>>✅ Relu par humain</option>
+              </select>
+            </div>
+            <button type="button" onclick="autoTranslate(<?= $edit_page['id'] ?>)" style="background:#1673B2;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.82rem">
+              🤖 Traduire automatiquement
+            </button>
+            <a href="<?= SITE_URL ?>/nl/?page=<?= htmlspecialchars($edit_page['slug']) ?>" target="_blank" style="font-size:.78rem;color:#1673B2;text-decoration:underline">
+              👁 Aperçu NL
+            </a>
+          </div>
+        </div>
+      </details>
+    </div>
+    <?php endif; ?>
+
+    <script>
+    // Synchronise les champs visibles NL → champs hidden du form principal
+    function syncNl() {
+      document.getElementById('h-titre_nl').value            = document.getElementById('v-titre_nl')?.value   || '';
+      document.getElementById('h-meta_description_nl').value = document.getElementById('v-meta_nl')?.value    || '';
+      document.getElementById('h-contenu_nl').value          = document.getElementById('v-contenu_nl')?.value || '';
+      document.getElementById('h-nl_status').value           = document.getElementById('v-nl_status')?.value  || 'vide';
+    }
+    // Sync au chargement pour s'assurer que les hidden sont à jour
+    syncNl();
+
+    function autoTranslate(pageId) {
+      if (!confirm('Traduire automatiquement en néerlandais ? Cela remplacera le contenu NL actuel.')) return;
+      var btn = event.target;
+      btn.textContent = '⏳ Traduction en cours…';
+      btn.disabled = true;
+      fetch('/admin/translate_auto.php?page_id=' + pageId, { method: 'POST' })
+        .then(r => r.json())
+        .then(d => {
+          if (d.ok) {
+            document.getElementById('v-titre_nl').value    = d.titre_nl   || '';
+            document.getElementById('v-meta_nl').value     = d.meta_nl    || '';
+            document.getElementById('v-contenu_nl').value  = d.contenu_nl || '';
+            document.getElementById('v-nl_status').value   = 'auto';
+            syncNl();
+            btn.textContent = '✅ Traduit (à relire)';
+            setTimeout(() => { btn.textContent = '🤖 Re-traduire'; btn.disabled = false; }, 2500);
+          } else {
+            alert('Erreur : ' + (d.error || 'inconnue'));
+            btn.textContent = '🤖 Traduire automatiquement';
+            btn.disabled = false;
+          }
+        })
+        .catch(e => {
+          alert('Erreur réseau : ' + e.message);
+          btn.textContent = '🤖 Traduire automatiquement';
+          btn.disabled = false;
+        });
+    }
+    </script>
     <div class="eform-foot">
       <button type="submit" form="pf" name="save_page" class="btn btn-p"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Sauvegarder</button>
       <?php if ($edit_page): ?>
