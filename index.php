@@ -1356,6 +1356,29 @@ blockquote {
   line-height: 1.6;
 }
 .news-contenu p { margin-bottom: 6px; }
+/* ── Styles de contenu dans les actualités (classes content.css) ── */
+.news-full h2, .news-full h3 { color: var(--orange-hex); font-weight: 600; border-bottom: 1px solid #e0e8f0; padding-bottom: 4px; margin: 14px 0 8px; }
+.news-full h2 { font-size: 1rem; }
+.news-full h3 { font-size: .9rem; }
+.news-full h2 a, .news-full h3 a { color: inherit; text-decoration: none; }
+.news-full h2 a:hover, .news-full h3 a:hover { text-decoration: underline; }
+.news-full .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.news-full .action-card { background: #e8f3fb; border-top: 3px solid #1673B2; padding: 12px 10px; border-radius: 4px; }
+.news-full .ac-num { font-size: 1.3rem; font-weight: 700; color: #7ec8e3; }
+.news-full .ac-titre { font-weight: 600; color: #0e3d6b; font-size: .88rem; margin: 4px 0; }
+.news-full .ac-titre a { color: #0e3d6b; text-decoration: none; }
+.news-full .ac-titre a:hover { color: #1673B2; text-decoration: underline; }
+.news-full .ac-text { font-size: .78rem; color: #555; line-height: 1.5; }
+.news-full .cadre-bleu { padding: 12px 16px; background: #e8f3fb; border-left: 4px solid #1673B2; color: #1673B2; margin: 10px 0; border-radius: 4px; }
+.news-full .cadre-vert { padding: 12px 16px; background: #e8f5e9; border-left: 4px solid #2e7d32; margin: 10px 0; border-radius: 4px; }
+.news-full .cv-titre { font-weight: 600; color: #1b5e20; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; display: block; }
+.news-full .alerte { background: #fff8ee; border: 2px solid #FF9900; padding: 12px 16px; border-radius: 6px; margin: 10px 0; }
+.news-full .al-titre { font-weight: 700; color: #FF9900; margin-bottom: 6px; display: block; }
+.news-full .signature { background: #e8f3fb; border-left: 3px solid #1673B2; padding: 10px 14px; margin-top: 14px; font-size: .88rem; }
+.news-full ol, .news-full ul { padding-left: 20px; margin: 8px 0; }
+.news-full li { margin-bottom: 4px; }
+.news-full p { margin-bottom: 8px; }
+@media (max-width: 480px) { .news-full .actions-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
