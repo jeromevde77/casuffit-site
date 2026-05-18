@@ -192,7 +192,10 @@
     /* ── Vues ── */
     .app-view { display: none; }
     .app-view.active { display: block; min-height: 100%; padding: 12px; }
-    #view-historique.active { padding: 0; } /* le widget .pmh gère son propre padding */
+    #view-historique.active { padding: 0; }
+    #view-historique .pmh { display: block !important; visibility: visible !important; }
+    #view-historique .pmh-body { display: flex !important; }
+    #view-historique .pmh-form { display: flex !important; }
 
 
     /* Footer liens discrets */
@@ -321,6 +324,14 @@ function switchView(view) {
   // Init rose des vents au premier affichage
   if (view === 'rose' && typeof window.rvwInitYear === 'function') {
     window.rvwInitYear();
+  }
+  // Forcer le repaint du widget historique
+  if (view === 'historique') {
+    var pmhEl = document.getElementById('pmh');
+    if (pmhEl) {
+      pmhEl.style.display = 'none';
+      setTimeout(function(){ pmhEl.style.display = ''; }, 20);
+    }
   }
   // Scroll en haut
   var body = document.querySelector('.app-body');
