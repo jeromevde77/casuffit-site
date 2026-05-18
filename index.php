@@ -505,11 +505,14 @@ header.site-header {
 .subtab-btn:hover { color: #0e3d6b; background: rgba(22,115,178,.08); }
 .subtab-btn.active { color: #0e3d6b; border-bottom-color: #1673B2; font-weight: 700; }
 
-@media (max-width: 500px) {
-  .subtabs-wrap { padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-  .subtabs-wrap::-webkit-scrollbar { display: none; }
-  .subtabs { min-width: max-content; padding: 0 8px; gap: 0; }
-  .subtab-btn { padding: 7px 10px; font-size: .7rem; }
+/* Sous-tab select mobile */
+.subtabs-mobile-wrap { display:none; padding:8px 12px; background:#f0f6ff; border-bottom:2px solid #c8ddf5; }
+.subtabs-sel { width:100%; padding:9px 12px; border:2px solid var(--bleu-ciel); border-radius:8px; font-size:.88rem; font-family:inherit; color:var(--bleu-fonce); background:#fff; font-weight:600; outline:none; -webkit-appearance:auto; cursor:pointer; }
+
+@media (max-width: 600px) {
+  .subtabs-wrap { padding:0; }
+  .subtabs { display:none !important; }
+  .subtabs-mobile-wrap { display:block; }
 }
 
 /* ══ MAIN LAYOUT ══════════════════════════════════════════════════════ */
@@ -1496,6 +1499,9 @@ foreach ($header_widgets as $w_slug) {
 
 <!-- Sous-tabs (rangée secondaire, affichée si le tab actif a des enfants) -->
 <div class="subtabs-wrap" id="subtabs-wrap">
+  <div class="subtabs-mobile-wrap">
+    <select id="subtabs-sel" class="subtabs-sel" onchange="showSubTabMobile(this.value)"></select>
+  </div>
   <div class="subtabs" id="subtabs-inner">
     <?php foreach ($menu_pages as $p):
       $pid = $p['id'];
@@ -1852,6 +1858,18 @@ function showTab(id, el) {
     });
     var parentBtn = myGroup.querySelector('[data-slug="'+id+'"]');
     if (parentBtn) parentBtn.classList.add('active');
+    // Sync select mobile sous-tabs
+    var stSel = document.getElementById('subtabs-sel');
+    if(stSel) {
+      stSel.innerHTML = '';
+      myGroup.querySelectorAll('.subtab-btn').forEach(function(b){
+        var opt = document.createElement('option');
+        opt.value = b.dataset.slug;
+        opt.textContent = b.textContent.trim();
+        if(b.classList.contains('active')) opt.selected = true;
+        stSel.appendChild(opt);
+      });
+    }
   } else if (subtabsWrap) {
     subtabsWrap.classList.remove('visible');
   }
@@ -1897,10 +1915,18 @@ function showSubTab(id, el, noScroll) {
     if (typeof window.rvwInitYear === 'function') window.rvwInitYear();
   }
 
+  // Sync select mobile
+  var stSel = document.getElementById('subtabs-sel');
+  if(stSel) stSel.value = id;
+
   if (!noScroll && window.innerWidth <= 900) {
     var w = document.querySelector('.subtabs-wrap');
     if (w) window.scrollTo({top: w.offsetTop - 60, behavior: 'smooth'});
   }
+}
+
+function showSubTabMobile(val) {
+  showSubTab(val, null);
 }
 
 function showTabMobile(val) {
