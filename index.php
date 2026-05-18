@@ -1486,9 +1486,16 @@ function navBtnClass($p) {
 
 <!-- ZONE HEADER — widgets globaux (affichés sur toutes les pages) -->
 <?php
+// Helper : charge la version NL du widget si elle existe, sinon FR
+function widgetFile(string $slug): string {
+    $base = __DIR__ . '/includes/widgets/' . $slug;
+    if (LANG === 'nl' && file_exists($base . '_nl.php')) return $base . '_nl.php';
+    return $base . '.php';
+}
+
 $header_widgets = isset($page_widgets['__header__']) ? $page_widgets['__header__'] : array();
 foreach ($header_widgets as $w_slug) {
-    $w_file = __DIR__ . '/includes/widgets/' . $w_slug . '.php';
+    $w_file = widgetFile($w_slug);
     if (!file_exists($w_file)) continue;
     $widget_no_scale = false;
     ob_start(); include $w_file; $w_html = ob_get_clean();
@@ -1651,7 +1658,7 @@ foreach ($header_widgets as $w_slug) {
         }
     }
     foreach ($all_widget_slugs as $w_slug):
-        $w_file = __DIR__ . '/includes/widgets/' . $w_slug . '.php';
+        $w_file = widgetFile($w_slug);
         if (!file_exists($w_file)) continue;
     ?>
     <?php
