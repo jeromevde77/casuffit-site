@@ -257,11 +257,15 @@
 .pmh-wmodal-body { padding: 18px; }
 .pmh-stats-note { font-size: .72rem; color: #888; margin-top: 8px; text-align: right; }
 
+/* Desktop : tableau visible, cartes cachées */
+#pmh-cards { display: none; }
+
+/* Mobile (≤600px) : cartes visibles, tableau caché */
 @media (max-width: 600px) {
   .pmh { font-size: 11px; }
-  .pmh-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .pmh-table { font-size: .68rem; min-width: 520px; }
-  .pmh-table th, .pmh-table td { padding: 4px 5px; white-space: nowrap; }
+  .pmh-table-wrap, .pmh-scroll-hint { display: none !important; }
+  .pmh-actions { flex-wrap: wrap; }
+  #pmh-cards { display: block; }
   .pmh-wmodal-bg { align-items: flex-end; }
   .pmh-wmodal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; max-height: 85vh; }
 }
