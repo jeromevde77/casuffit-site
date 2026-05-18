@@ -613,9 +613,8 @@ if ($edit_page) {
         <input type="hidden" name="contenu_nl"          id="h-contenu_nl"          value="<?= htmlspecialchars($edit_page['contenu_nl']          ?? '') ?>">
         <input type="hidden" name="nl_status"           id="h-nl_status"           value="<?= htmlspecialchars($edit_page['nl_status']           ?? 'vide') ?>">
       </form>
-    </div><!-- /eform-body -->
 
-    <!-- ── Bloc NL — EN DEHORS du form principal pour ne pas casser le WYSIWYG ── -->
+    <!-- ── Bloc NL — dans eform-body, après le form ── -->
     <?php if ($edit_page): ?>
     <?php
     $nl_status  = $edit_page['nl_status'] ?? 'vide';
@@ -623,45 +622,36 @@ if ($edit_page) {
     $badges = ['vide'=>'⚪ Vide','auto'=>'🤖 Traduction auto','relu'=>'✅ Relu humain'];
     $colors = ['vide'=>'#999','auto'=>'#d97706','relu'=>'#27ae60'];
     ?>
-    <div style="padding:0 20px 20px">
-      <details class="nl-block" <?= $has_nl ? 'open' : '' ?> style="background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:10px 14px">
-        <summary style="cursor:pointer;font-weight:700;color:#0e3d6b;display:flex;justify-content:space-between;align-items:center">
-          <span>🇳🇱 Version néerlandaise (NL)</span>
-          <span id="nl-status-badge" style="font-size:.7rem;color:<?= $colors[$nl_status] ?>;font-weight:600"><?= $badges[$nl_status] ?></span>
-        </summary>
-        <div style="margin-top:12px">
-          <label>Titre (NL)</label>
-          <input type="text" id="v-titre_nl" value="<?= htmlspecialchars($edit_page['titre_nl'] ?? '') ?>" placeholder="Laisser vide pour utiliser le titre FR" oninput="syncNl()">
-
-          <label style="margin-top:10px">Meta description (NL)</label>
-          <input type="text" id="v-meta_nl" value="<?= htmlspecialchars($edit_page['meta_description_nl'] ?? '') ?>" placeholder="Pour Google (NL)" oninput="syncNl()">
-
-          <label style="margin-top:10px">Contenu HTML (NL)</label>
-          <textarea id="v-contenu_nl" rows="14" style="width:100%;font-family:monospace;font-size:.78rem;padding:8px;border:1px solid #ddd;border-radius:5px;line-height:1.5;box-sizing:border-box" oninput="syncNl()"><?= htmlspecialchars($edit_page['contenu_nl'] ?? '') ?></textarea>
-          <div style="font-size:.65rem;color:#888;margin-top:4px">
-            💡 Mêmes balises HTML que la version FR. Laisser vide → fallback automatique sur le contenu FR.
+    <details class="nl-block" <?= $has_nl ? 'open' : '' ?> style="margin-top:16px;background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:10px 14px">
+      <summary style="cursor:pointer;font-weight:700;color:#0e3d6b;display:flex;justify-content:space-between;align-items:center">
+        <span>🇳🇱 Version néerlandaise (NL)</span>
+        <span style="font-size:.7rem;color:<?= $colors[$nl_status] ?>;font-weight:600"><?= $badges[$nl_status] ?></span>
+      </summary>
+      <div style="margin-top:12px">
+        <label>Titre (NL)</label>
+        <input type="text" id="v-titre_nl" value="<?= htmlspecialchars($edit_page['titre_nl'] ?? '') ?>" placeholder="Laisser vide pour utiliser le titre FR" oninput="syncNl()">
+        <label style="margin-top:10px">Meta description (NL)</label>
+        <input type="text" id="v-meta_nl" value="<?= htmlspecialchars($edit_page['meta_description_nl'] ?? '') ?>" placeholder="Pour Google (NL)" oninput="syncNl()">
+        <label style="margin-top:10px">Contenu HTML (NL)</label>
+        <textarea id="v-contenu_nl" rows="14" style="width:100%;font-family:monospace;font-size:.78rem;padding:8px;border:1px solid #ddd;border-radius:5px;line-height:1.5;box-sizing:border-box" oninput="syncNl()"><?= htmlspecialchars($edit_page['contenu_nl'] ?? '') ?></textarea>
+        <div style="font-size:.65rem;color:#888;margin-top:4px">💡 Mêmes balises HTML que la version FR. Laisser vide → fallback automatique sur le contenu FR.</div>
+        <div style="display:flex;gap:14px;margin-top:10px;align-items:center;flex-wrap:wrap">
+          <div>
+            <label style="display:block;margin-bottom:4px">État</label>
+            <select id="v-nl_status" onchange="syncNl()" style="min-width:200px">
+              <option value="vide"  <?= $nl_status==='vide' ?'selected':'' ?>>⚪ Vide / brouillon</option>
+              <option value="auto"  <?= $nl_status==='auto' ?'selected':'' ?>>🤖 Auto (à relire)</option>
+              <option value="relu"  <?= $nl_status==='relu' ?'selected':'' ?>>✅ Relu par humain</option>
+            </select>
           </div>
-
-          <div style="display:flex;gap:14px;margin-top:10px;align-items:center;flex-wrap:wrap">
-            <div>
-              <label style="display:block;margin-bottom:4px">État</label>
-              <select id="v-nl_status" onchange="syncNl()" style="min-width:200px">
-                <option value="vide"  <?= $nl_status==='vide' ?'selected':'' ?>>⚪ Vide / brouillon</option>
-                <option value="auto"  <?= $nl_status==='auto' ?'selected':'' ?>>🤖 Auto (à relire)</option>
-                <option value="relu"  <?= $nl_status==='relu' ?'selected':'' ?>>✅ Relu par humain</option>
-              </select>
-            </div>
-            <button type="button" onclick="autoTranslate(<?= $edit_page['id'] ?>)" style="background:#1673B2;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.82rem">
-              🤖 Traduire automatiquement
-            </button>
-            <a href="<?= SITE_URL ?>/nl/?page=<?= htmlspecialchars($edit_page['slug']) ?>" target="_blank" style="font-size:.78rem;color:#1673B2;text-decoration:underline">
-              👁 Aperçu NL
-            </a>
-          </div>
+          <button type="button" onclick="autoTranslate(<?= $edit_page['id'] ?>)" style="background:#1673B2;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.82rem">🤖 Traduire automatiquement</button>
+          <a href="<?= SITE_URL ?>/nl/?page=<?= htmlspecialchars($edit_page['slug']) ?>" target="_blank" style="font-size:.78rem;color:#1673B2;text-decoration:underline">👁 Aperçu NL</a>
         </div>
-      </details>
-    </div>
+      </div>
+    </details>
     <?php endif; ?>
+
+    </div><!-- /eform-body -->
 
     <script>
     // Synchronise les champs visibles NL → champs hidden du form principal
