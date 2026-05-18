@@ -18,12 +18,12 @@ ALTER TABLE `widgets`
   ADD COLUMN `description_nl` VARCHAR(255) DEFAULT NULL AFTER `description`,
   ADD COLUMN `nl_status`      ENUM('vide','auto','relu') NOT NULL DEFAULT 'vide';
 
--- ── News : titre + contenu en NL ────────────────────────────────────────
+-- ── News : titre + accroche + contenu en NL ────────────────────────────
 ALTER TABLE `news`
-  ADD COLUMN `titre_nl`         VARCHAR(255) DEFAULT NULL AFTER `titre`,
-  ADD COLUMN `contenu_html_nl`  LONGTEXT     DEFAULT NULL AFTER `contenu_html`,
-  ADD COLUMN `contenu_text_nl`  LONGTEXT     DEFAULT NULL AFTER `contenu_text`,
-  ADD COLUMN `nl_status`        ENUM('vide','auto','relu') NOT NULL DEFAULT 'vide';
+  ADD COLUMN `titre_nl`    VARCHAR(255) DEFAULT NULL AFTER `titre`,
+  ADD COLUMN `accroche_nl` TEXT         DEFAULT NULL AFTER `accroche`,
+  ADD COLUMN `contenu_nl`  LONGTEXT     DEFAULT NULL AFTER `contenu`,
+  ADD COLUMN `nl_status`   ENUM('vide','auto','relu') NOT NULL DEFAULT 'vide';
 
 -- ── Site_config : valeur NL pour les chaînes éditables ──────────────────
 ALTER TABLE `site_config`
