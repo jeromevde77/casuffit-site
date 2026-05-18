@@ -16,6 +16,11 @@ define('DB_CHARSET', 'utf8mb4');
 // Option A : Brevo API (recommandé)
 define('ANTHROPIC_API_KEY', 'sk-ant-api03-VOTRE_CLE_ANTHROPIC'); // Pour la traduction automatique
 define('BREVO_API_KEY', '');    // ex: xkeysib-abc123...
+
+// ── CRON EXTERNE ─────────────────────────────────────────────────────────
+// Token secret pour déclencher /api/trigger_metar.php depuis cron-job.org
+// Générer avec : php -r "echo bin2hex(random_bytes(24));"
+define('CRON_TOKEN', 'CHANGEZ_MOI_TOKEN_ALEATOIRE_HEX');
 // Option B : SMTP OVH
 define('SMTP_HOST',      'ssl0.ovh.net');
 define('SMTP_PORT',      465);
