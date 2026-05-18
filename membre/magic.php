@@ -1,6 +1,6 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0); // désactivé en production
 // membre/magic.php — Valide le token magique et connecte le membre
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
