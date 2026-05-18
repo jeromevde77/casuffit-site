@@ -480,6 +480,60 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
       <input type="hidden" name="contenu_nl"  id="h-contenu_nl"  value="<?= htmlspecialchars($edit['contenu_nl']  ?? '') ?>">
       <input type="hidden" name="nl_status"   id="h-nl_status"   value="<?= htmlspecialchars($edit['nl_status']   ?? 'vide') ?>">
 
+<?php if ($edit): ?>
+<?php
+$nl_status_n = $edit['nl_status'] ?? 'vide';
+$has_nl_n    = !empty($edit['titre_nl']) || !empty($edit['contenu_nl']);
+$badges_n = ['vide'=>'⚪ Vide','auto'=>'🤖 Traduction auto','relu'=>'✅ Relu humain'];
+$colors_n = ['vide'=>'#999','auto'=>'#d97706','relu'=>'#27ae60'];
+?>
+      <details class="nl-block" <?= $has_nl_n ? 'open' : '' ?> style="margin-top:16px;background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:10px 14px">
+        <summary style="cursor:pointer;font-weight:700;color:#0e3d6b;display:flex;justify-content:space-between;align-items:center">
+          <span>🇳🇱 Version néerlandaise (NL)</span>
+          <span style="font-size:.7rem;color:<?= $colors_n[$nl_status_n] ?>;font-weight:600"><?= $badges_n[$nl_status_n] ?></span>
+        </summary>
+        <div style="margin-top:12px">
+          <label>Titre (NL)</label>
+          <input type="text" id="v-titre_nl" value="<?= htmlspecialchars($edit['titre_nl'] ?? '') ?>" placeholder="Laisser vide pour utiliser le titre FR" oninput="syncNl()" style="width:100%;padding:8px 10px;border:1px solid #f0c060;border-radius:5px;font-size:.88rem;box-sizing:border-box;margin-bottom:10px">
+          <label>Accroche (NL)</label>
+          <textarea id="v-accroche_nl" rows="2" placeholder="Résumé en néerlandais..." oninput="syncNl()" style="width:100%;padding:8px;border:1px solid #f0c060;border-radius:5px;font-size:.88rem;box-sizing:border-box;margin-bottom:10px"><?= htmlspecialchars($edit['accroche_nl'] ?? '') ?></textarea>
+          <label>Contenu (NL)</label>
+          <div style="background:#fff8ee;border:1px solid #f0c060;border-bottom:none;border-radius:6px 6px 0 0;padding:6px 10px;display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+            <button type="button" class="wt-btn" onclick="fmtNl('bold')"><b>G</b></button>
+            <button type="button" class="wt-btn" onclick="fmtNl('italic')"><i>I</i></button>
+            <button type="button" class="wt-btn" onclick="fmtNl('underline')"><u>S</u></button>
+            <div class="wt-sep"></div>
+            <button type="button" class="wt-btn" onclick="fmtBlockNl('h2')">H2</button>
+            <button type="button" class="wt-btn" onclick="fmtBlockNl('h3')">H3</button>
+            <button type="button" class="wt-btn" onclick="fmtBlockNl('p')">¶</button>
+            <div class="wt-sep"></div>
+            <button type="button" class="wt-btn" onclick="fmtNl('insertUnorderedList')">• —</button>
+            <button type="button" class="wt-btn" onclick="fmtNl('insertOrderedList')">1.</button>
+            <div class="wt-sep"></div>
+            <button type="button" class="wt-btn" onclick="insertLinkNl()">🔗</button>
+            <button type="button" class="wt-btn" onclick="fmtNl('removeFormat')">Tx</button>
+            <button type="button" class="wt-btn" onclick="removeBlocNl()" style="color:#c0392b;font-weight:700">✕ Bloc</button>
+            <div class="wt-sep"></div>
+            <button type="button" class="wt-btn" onclick="openPaletteNl(this)" style="background:#FF9900;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
+          </div>
+          <div id="wysiwyg-editor-nl" contenteditable="true" oninput="syncNl()"
+               style="min-height:180px;max-height:40vh;overflow-y:auto;padding:14px;border:1px solid #f0c060;border-radius:0 0 6px 6px;background:#fffdf5;font-family:'Helvetica Neue',Arial,sans-serif;font-size:.88rem;line-height:1.7;color:#333;outline:none;cursor:text"></div>
+          <div style="font-size:.63rem;color:#aaa;margin-top:2px">Laisser vide → fallback automatique sur le contenu FR</div>
+          <div style="display:flex;gap:14px;margin-top:10px;align-items:center;flex-wrap:wrap">
+            <div>
+              <label style="display:block;margin-bottom:4px;font-size:.8rem">État</label>
+              <select id="v-nl_status" onchange="syncNl()" style="min-width:200px;padding:6px;border:1px solid #ddd;border-radius:5px">
+                <option value="vide"  <?= $nl_status_n==='vide' ?'selected':'' ?>>⚪ Vide / brouillon</option>
+                <option value="auto"  <?= $nl_status_n==='auto' ?'selected':'' ?>>🤖 Auto (à relire)</option>
+                <option value="relu"  <?= $nl_status_n==='relu' ?'selected':'' ?>>✅ Relu par humain</option>
+              </select>
+            </div>
+            <button type="button" onclick="autoTranslateNews(<?= $edit['id'] ?>)" style="background:#1673B2;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.82rem;margin-top:18px">🤖 Traduire automatiquement</button>
+          </div>
+        </div>
+      </details>
+<?php endif; ?>
+
     </div><!-- /ecol-body -->
     <div class="save-bar">
       <button type="submit" class="btn-save"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Sauvegarder</button>
@@ -517,67 +571,7 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
 </form>
 
 <?php if ($edit): ?>
-<?php
-$nl_status_n = $edit['nl_status'] ?? 'vide';
-$has_nl_n    = !empty($edit['titre_nl']) || !empty($edit['contenu_nl']);
-$badges_n = ['vide'=>'⚪ Vide','auto'=>'🤖 Traduction auto','relu'=>'✅ Relu humain'];
-$colors_n = ['vide'=>'#999','auto'=>'#d97706','relu'=>'#27ae60'];
-?>
-<div style="max-width:900px;margin:0 auto;padding:0 20px 30px">
-  <details class="nl-block" <?= $has_nl_n ? 'open' : '' ?> style="background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:10px 14px">
-    <summary style="cursor:pointer;font-weight:700;color:#0e3d6b;display:flex;justify-content:space-between;align-items:center">
-      <span>🇳🇱 Version néerlandaise (NL)</span>
-      <span style="font-size:.7rem;color:<?= $colors_n[$nl_status_n] ?>;font-weight:600"><?= $badges_n[$nl_status_n] ?></span>
-    </summary>
-    <div style="margin-top:12px">
-
-      <label>Titre (NL)</label>
-      <input type="text" id="v-titre_nl" value="<?= htmlspecialchars($edit['titre_nl'] ?? '') ?>" placeholder="Laisser vide pour utiliser le titre FR" oninput="syncNl()" style="width:100%;padding:8px 10px;border:1px solid #f0c060;border-radius:5px;font-size:.88rem;box-sizing:border-box;margin-bottom:10px">
-
-      <label>Accroche (NL)</label>
-      <textarea id="v-accroche_nl" rows="2" placeholder="Résumé en néerlandais..." oninput="syncNl()" style="width:100%;padding:8px;border:1px solid #f0c060;border-radius:5px;font-size:.88rem;box-sizing:border-box;margin-bottom:10px"><?= htmlspecialchars($edit['accroche_nl'] ?? '') ?></textarea>
-
-      <label>Contenu (NL)</label>
-      <!-- Toolbar NL -->
-      <div style="background:#fff8ee;border:1px solid #f0c060;border-bottom:none;border-radius:6px 6px 0 0;padding:6px 10px;display:flex;gap:4px;flex-wrap:wrap;align-items:center">
-        <button type="button" class="wt-btn" onclick="fmtNl('bold')"><b>G</b></button>
-        <button type="button" class="wt-btn" onclick="fmtNl('italic')"><i>I</i></button>
-        <button type="button" class="wt-btn" onclick="fmtNl('underline')"><u>S</u></button>
-        <div class="wt-sep"></div>
-        <button type="button" class="wt-btn" onclick="fmtBlockNl('h2')">H2</button>
-        <button type="button" class="wt-btn" onclick="fmtBlockNl('h3')">H3</button>
-        <button type="button" class="wt-btn" onclick="fmtBlockNl('p')">¶</button>
-        <div class="wt-sep"></div>
-        <button type="button" class="wt-btn" onclick="fmtNl('insertUnorderedList')">• —</button>
-        <button type="button" class="wt-btn" onclick="fmtNl('insertOrderedList')">1.</button>
-        <div class="wt-sep"></div>
-        <button type="button" class="wt-btn" onclick="insertLinkNl()">🔗</button>
-        <button type="button" class="wt-btn" onclick="fmtNl('removeFormat')">Tx</button>
-        <button type="button" class="wt-btn" onclick="removeBlocNl()" style="color:#c0392b;font-weight:700">✕ Bloc</button>
-        <div class="wt-sep"></div>
-        <button type="button" class="wt-btn" onclick="openPaletteNl(this)" style="background:#FF9900;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
-      </div>
-      <div id="wysiwyg-editor-nl" contenteditable="true" oninput="syncNl()"
-           style="min-height:180px;max-height:50vh;overflow-y:auto;padding:14px;border:1px solid #f0c060;border-radius:0 0 6px 6px;background:#fffdf5;font-family:'Helvetica Neue',Arial,sans-serif;font-size:.88rem;line-height:1.7;color:#333;outline:none;cursor:text"></div>
-      <div style="font-size:.63rem;color:#aaa;margin-top:2px">Laisser vide → fallback automatique sur le contenu FR</div>
-
-      <div style="display:flex;gap:14px;margin-top:10px;align-items:center;flex-wrap:wrap">
-        <div>
-          <label style="display:block;margin-bottom:4px;font-size:.8rem">État</label>
-          <select id="v-nl_status" onchange="syncNl()" style="min-width:200px;padding:6px;border:1px solid #ddd;border-radius:5px">
-            <option value="vide"  <?= $nl_status_n==='vide' ?'selected':'' ?>>⚪ Vide / brouillon</option>
-            <option value="auto"  <?= $nl_status_n==='auto' ?'selected':'' ?>>🤖 Auto (à relire)</option>
-            <option value="relu"  <?= $nl_status_n==='relu' ?'selected':'' ?>>✅ Relu par humain</option>
-          </select>
-        </div>
-        <button type="button" onclick="autoTranslateNews(<?= $edit['id'] ?>)" style="background:#1673B2;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.82rem;margin-top:18px">🤖 Traduire automatiquement</button>
-      </div>
-    </div>
-  </details>
-</div>
-
 <script>
-// ── Bloc NL : sync hidden fields ────────────────────────────────────────
 function syncNl() {
   document.getElementById('h-titre_nl').value    = document.getElementById('v-titre_nl')?.value    || '';
   document.getElementById('h-accroche_nl').value = document.getElementById('v-accroche_nl')?.value || '';
@@ -585,15 +579,12 @@ function syncNl() {
   document.getElementById('h-contenu_nl').value  = edNl ? edNl.innerHTML : '';
   document.getElementById('h-nl_status').value   = document.getElementById('v-nl_status')?.value   || 'vide';
 }
-// Initialiser le wysiwyg NL
 (function() {
   var edNl = document.getElementById('wysiwyg-editor-nl');
   var h = document.getElementById('h-contenu_nl');
   if (edNl && h && h.value) edNl.innerHTML = h.value;
   syncNl();
 })();
-
-// ── Fonctions wysiwyg NL ────────────────────────────────────────────────
 function fmtNl(cmd,val){ document.getElementById('wysiwyg-editor-nl')?.focus(); document.execCommand(cmd,false,val||null); syncNl(); }
 function fmtBlockNl(tag){ document.getElementById('wysiwyg-editor-nl')?.focus(); document.execCommand('formatBlock',false,tag); syncNl(); }
 function insertLinkNl(){ var u=prompt('URL :'); if(u) fmtNl('createLink',u); }
@@ -605,8 +596,6 @@ function removeBlocNl(){
   syncNl();
 }
 function openPaletteNl(btn){ window._paletteTargetNl=true; openPalette(btn); }
-
-// ── autoTranslate news ────────────────────────────────────────────────
 function autoTranslateNews(newsId) {
   if (!confirm('Traduire automatiquement en néerlandais ? Remplace le contenu NL actuel.')) return;
   var btn = event.target; btn.textContent='⏳ Traduction…'; btn.disabled=true;
@@ -626,7 +615,7 @@ function autoTranslateNews(newsId) {
     .catch(e=>{ alert('Erreur réseau'); btn.textContent='🤖 Traduire automatiquement'; btn.disabled=false; });
 }
 </script>
-<?php endif; // fin bloc NL ?>
+<?php endif; ?>
 
 <?php else: ?>
 <!-- ═══ LISTE ═══ -->
