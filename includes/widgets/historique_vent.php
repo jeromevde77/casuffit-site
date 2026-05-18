@@ -1,4 +1,4 @@
-<?php // deploy-trigger: 1779054372 // includes/widgets/historique_vent.php — v2 avec saisie par ligne + export Excel ?>
+<?php // includes/widgets/historique_vent.php — v2 avec saisie par ligne + export Excel ?>
 <div class="pmh" id="pmh">
 
   <div class="pmh-header">
@@ -20,18 +20,18 @@
         <label class="pmh-lbl">Date de début (UTC)</label>
         <div class="pmh-dt-wrap">
           <input type="date" id="pmh-start-date" class="pmh-input pmh-dt-part">
-          <input type="time" id="pmh-start-hour" class="pmh-input pmh-dt-part" value="06:00" step="1800">
+          <input type="time" id="pmh-start-hour" class="pmh-input pmh-dt-part" step="1800">
         </div>
       </div>
       <div class="pmh-form-row">
         <label class="pmh-lbl">Date de fin (UTC)</label>
         <div class="pmh-dt-wrap">
           <input type="date" id="pmh-end-date" class="pmh-input pmh-dt-part">
-          <input type="time" id="pmh-end-hour" class="pmh-input pmh-dt-part" value="12:00" step="1800">
+          <input type="time" id="pmh-end-hour" class="pmh-input pmh-dt-part" step="1800">
         </div>
       </div>
       <div class="pmh-form-btns">
-        <button type="button" class="pmh-btn" onclick="pmhLoad()">
+        <button class="pmh-btn" onclick="pmhLoad()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           Analyser
         </button>
@@ -93,8 +93,7 @@
       </div>
 
       <!-- Tableau -->
-      <div class="pmh-scroll-hint">← Faites défiler horizontalement →</div>
-        <div class="pmh-table-wrap">
+      <div class="pmh-table-wrap">
         <table class="pmh-table" id="pmh-table">
           <thead>
             <tr>
@@ -250,29 +249,6 @@
 .pmh-wmodal-bg.open { display: flex; }
 .pmh-wmodal { background: #fff; border-radius: 12px; width: 520px; max-width: 96vw;
   max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.3); }
-
-/* ── Mobile iPhone ────────────────────────────────────────────── */
-@media (max-width: 500px) {
-  .pmh { font-size: 12px; }
-  .pmh-table-wrap { -webkit-overflow-scrolling: touch; }
-  .pmh-table { font-size: .72rem; min-width: 600px; }
-  .pmh-table th, .pmh-table td { padding: 5px 5px; }
-  /* Cacher colonnes secondaires sur iPhone */
-  .pmh-table th:nth-child(9), .pmh-table td:nth-child(9),
-  .pmh-table th:nth-child(3), .pmh-table td:nth-child(3) { display: none; }
-  /* Modale plein écran sur mobile */
-  .pmh-wmodal-bg { align-items: flex-end; }
-  .pmh-wmodal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0;
-    max-height: 85vh; }
-  .pmh-widget-btn { padding: 4px 8px; font-size: .7rem; }
-  .pmh-row-btns { flex-wrap: wrap; gap: 2px; }
-  .pmh-row-btn { font-size: .62rem; padding: 2px 4px; }
-  /* Barre de scroll visible */
-  .pmh-scroll-hint { display: block; }
-}
-.pmh-scroll-hint { display: none; text-align: center; font-size: .7rem; color: #aaa;
-  padding: 4px; }
-
 .pmh-wmodal-head { padding: 12px 18px; border-bottom: 1px solid #eee;
   display: flex; align-items: center; justify-content: space-between; background: #0e3d6b; border-radius: 12px 12px 0 0; }
 .pmh-wmodal-head h3 { margin: 0; color: #fff; font-size: .95rem; }
@@ -310,54 +286,54 @@ function dirText(d){if(!d||d===0)return'Variable';return['N','NNE','NE','ENE','E
 function rwyBadge(r){var c=r.indexOf('25')>-1?'pmh-r25':r.indexOf('07')>-1?'pmh-r07':r.indexOf('19')>-1?'pmh-r19':'pmh-r01';return'<span class="pmh-rwy-badge '+c+'">'+r+'</span>';}
 
 // ── Chargement ──────────────────────────────────────────────────────────
-// Heures via input[type=time] natif
+// Initialiser les selects d'heures dès le chargement (avant interaction)
+(function initHourSelectsEarly() {
+  function doInit() {
+    ['pmh-start-hour','pmh-end-hour'].forEach(function(id) {
+      var sel = document.getElementById(id);
+      if (!sel || sel.options.length) return;
+      for (var h = 0; h < 24; h++) {
+        for (var m = 0; m < 60; m += 30) {
+          var val = (h < 10 ? '0' : '') + h + ':' + (m === 0 ? '00' : '30');
+          var opt = document.createElement('option');
+          opt.value = opt.textContent = val;
+          sel.appendChild(opt);
+        }
+      }
+      // Valeur par défaut : 06:00 pour start, 12:00 pour end
+      sel.value = (id === 'pmh-start-hour') ? '06:00' : '12:00';
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', doInit);
+  } else { doInit(); }
+})();
 
 window.pmhLoad = function(){
-  // Feedback immédiat
-  var _btn = document.querySelector('.pmh-btn');
-  if(_btn) { _btn.textContent = '⏳ Chargement...'; _btn.disabled = true; }
-  var _resetBtn = function(){ if(_btn){ _btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Analyser'; _btn.disabled = false; }};
-  try {
-    var startDate=document.getElementById('pmh-start-date').value;
-    var startHour=(document.getElementById('pmh-start-hour').value||'00:00').substring(0,5);
-    var endDate=document.getElementById('pmh-end-date').value;
-    var endHour=(document.getElementById('pmh-end-hour').value||'23:30').substring(0,5);
-    if(!startDate||!endDate){alert('Veuillez saisir une date de début et de fin.');return;}
-    // Valider format heure
-    if(!/^\d{2}:\d{2}$/.test(startHour)) startHour='00:00';
-    if(!/^\d{2}:\d{2}$/.test(endHour)) endHour='23:30';
-    var startISO=startDate+'T'+startHour+':00Z';
-    var endISO=endDate+'T'+endHour+':00Z';
-    pmhPeriod={start:startDate+'T'+startHour,end:endDate+'T'+endHour,startISO:startISO,endISO:endISO};
-    pmhRealRwys={};pmhNotes={};pmhData=[];
-    var elLoad=document.getElementById('pmh-loading');
-    var elRes=document.getElementById('pmh-results');
-    var elErr=document.getElementById('pmh-error');
-    if(elLoad) elLoad.style.display='flex';
-    if(elRes) elRes.style.display='none';
-    if(elErr) elErr.style.display='none';
-    fetch('/api/metar_history.php?start='+encodeURIComponent(startISO)+'&end='+encodeURIComponent(endISO))
-      .then(function(r){
-        if(!r.ok) throw new Error('HTTP '+r.status);
-        return r.json();
-      })
-      .then(function(d){
-        if(elLoad) elLoad.style.display='none';
-        _resetBtn();
+  var startDate=document.getElementById('pmh-start-date').value;
+  var startHour=document.getElementById('pmh-start-hour').value;
+  var endDate=document.getElementById('pmh-end-date').value;
+  var endHour=document.getElementById('pmh-end-hour').value;
+  if(!startDate||!endDate){alert('Veuillez saisir une date de début et de fin.');return;}
+  var start=startDate+'T'+startHour;
+  var end=endDate+'T'+endHour;
+  var startISO=startDate+'T'+startHour+':00Z';
+  var endISO=endDate+'T'+endHour+':00Z';
+  pmhPeriod={start:start,end:end,startISO:startISO,endISO:endISO};
+  pmhRealRwys={};pmhNotes={};pmhData=[];
+  document.getElementById('pmh-loading').style.display='flex';
+  document.getElementById('pmh-results').style.display='none';
+  document.getElementById('pmh-error').style.display='none';
+  // Charger les données
+  fetch('/api/metar_history.php?start='+encodeURIComponent(startISO)+'&end='+encodeURIComponent(endISO))
+    .then(function(r){return r.json();})
+    .then(function(d){
+      document.getElementById('pmh-loading').style.display='none';
       if(d.error){pmhShowError(d.error);return;}
-        pmhData=d.results||[];
-        if(!pmhData.length){pmhShowError('Aucune donnée pour cette période.');return;}
-        pmhRender(d);
-      })
-      .catch(function(e){
-        if(elLoad) elLoad.style.display='none';
-        _resetBtn();
-      pmhShowError('Erreur réseau: '+e.message);
-      });
-  } catch(ex) {
-    _resetBtn();
-    alert('Erreur pmhLoad: '+ex.message);
-  }
+      pmhData=d.results||[];
+      pmhRender(d);
+    })
+    .catch(function(e){pmhShowError('Erreur: '+e.message);});
 };
 
 // ── Saisie par ligne ────────────────────────────────────────────────────
@@ -523,35 +499,6 @@ function pmhRender(d){
   });
   document.getElementById('pmh-source-note').textContent=
     'Source : '+(d.source||'IRM')+' — '+d.count+' entrée(s). '+(d.note||'');
-  // Générer les cartes mobile
-  pmhRenderCards();
-}
-
-function pmhRenderCards() {
-  var wrap = document.getElementById('pmh-cards');
-  if (!wrap) return;
-  if (!pmhData.length) { wrap.innerHTML=''; return; }
-  var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
-  wrap.innerHTML = pmhData.map(function(m, idx) {
-    var t = new Date(m.time);
-    var timeUTC = isNaN(t) ? m.time : t.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC';
-    var timeBE  = isNaN(t) ? '' : t.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Brussels'})+' (BE)';
-    var dateStr = isNaN(t) ? '' : t.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'});
-    var wd = (m.wdir==='VRB'||!m.wdir) ? null : parseInt(m.wdir);
-    var wdTxt = wd!==null ? wd+'° '+dirs[Math.round(wd/22.5)%16] : 'Variable';
-    var ws = m.wspd_kt||m.wspd||0;
-    var wg = m.wgst_kt||m.wgst_metar||m.wgst_irm||null;
-    var windTxt = wdTxt+' — '+ws+' kt'+(wg?' 💨'+wg+' kt':'');
-    var s13 = m.aip2013||{};
-    var snow = m.aip_now||{};
-    var aip13Txt = (s13.prs?'PRS':'Hors PRS')+' · '+(s13.runways||[]).join('/');
-    var aipNowTxt = (snow.prs?'PRS':'Hors PRS')+' · '+(snow.runways||[]).join('/');
-    var viol = m.divergence;
-    var verdictBg = viol ? '#fff0f0' : '#f0fff4';
-    var verdictColor = viol ? '#c00' : '#080';
-    var verdictTxt = viol ? '⚡ Divergence AIP 2013 / Actuel' : '✓ Cohérent';
-    return '<div class="pmh-card">'      +'<div class="pmh-card-head">'        +'<div><div class="pmh-card-time">'+timeUTC+'</div>'        +'<div class="pmh-card-date">'+timeBE+' · '+dateStr+'</div></div>'      +'</div>'      +'<div class="pmh-card-body">'        +'<div class="pmh-card-wind">🌬 '+windTxt+'</div>'        +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP 2013 (légal)</div>'+aip13Txt+'</div>'        +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP actuel</div>'+aipNowTxt+'</div>'        +(viol?'<div class="pmh-card-verdict" style="background:'+verdictBg+';color:'+verdictColor+'">'+verdictTxt+'</div>':'')        +'<div class="pmh-card-btn-row">'          +'<button class="pmh-card-widget-btn" onclick="pmhOpenWidget('+idx+')">▶ Voir widget</button>'        +'</div>'      +'</div>'    +'</div>';
-  }).join('');
 }
 
 // ── Export PDF ────────────────────────────────────────────────────────────
@@ -645,27 +592,14 @@ window.pmhExport = function(){
     +'.note-cell{color:#555;font-style:italic;font-size:7pt;max-width:100px}'
     +'.footer{margin-top:8px;font-size:6.5pt;color:#999;border-top:1px solid #e0e8f0;padding-top:5px;display:flex;justify-content:space-between}'
     +'@media print{.no-print{display:none}}'
-    +'@media (max-width: 600px) {
+    +'
+@media (max-width: 600px) {
   .pmh { font-size: 11px; }
   .pmh-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .pmh-table { font-size: .68rem; min-width: 520px; }
   .pmh-table th, .pmh-table td { padding: 4px 5px; white-space: nowrap; }
-  /* Modale plein écran sur mobile */
   .pmh-wmodal-bg { align-items: flex-end; }
   .pmh-wmodal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; max-height: 85vh; }
-  /* Cartes après analyse */
-  #pmh-cards { margin-top: 10px; }
-  .pmh-card { background:#fff; border:1.5px solid #e0e8f0; border-radius:10px; margin-bottom:10px; }
-  .pmh-card-head { background:#0e3d6b; color:#fff; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; }
-  .pmh-card-time { font-weight:700; font-size:.9rem; }
-  .pmh-card-date { font-size:.72rem; opacity:.75; }
-  .pmh-card-body { padding:10px 12px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .pmh-card-wind { grid-column:1/-1; font-size:1rem; font-weight:700; color:#0e3d6b; }
-  .pmh-card-aip { background:#f5f9ff; border-radius:6px; padding:6px 8px; font-size:.78rem; }
-  .pmh-card-aip-label { font-size:.62rem; color:#888; font-weight:700; text-transform:uppercase; margin-bottom:2px; }
-  .pmh-card-verdict { grid-column:1/-1; padding:6px 8px; border-radius:6px; font-size:.8rem; font-weight:600; text-align:center; }
-  .pmh-card-btn-row { grid-column:1/-1; }
-  .pmh-card-widget-btn { width:100%; background:#1673B2; color:#fff; border:none; border-radius:7px; padding:10px; font-size:.88rem; font-weight:700; cursor:pointer; }
 }
 </style></head><body>'
     +'<div class="header">'
@@ -721,24 +655,11 @@ window.addEventListener('DOMContentLoaded',function(){
   function fmtDate(dt){return dt.toISOString().slice(0,10);}
   function fmtHour(dt){return dt.toISOString().slice(11,16);}
 
-  // Remplir un select d'heures (pas 30min)
-  function fillHourSelect(id, selectedVal) {
-    var sel = document.getElementById(id);
-    if (!sel) return;
-    sel.innerHTML = '';
-    for (var h = 0; h < 24; h++) {
-      for (var m = 0; m < 60; m += 30) {
-        var val = (h < 10 ? '0' : '') + h + ':' + (m === 0 ? '00' : '30');
-        var opt = document.createElement('option');
-        opt.value = opt.textContent = val;
-        if (val === selectedVal) opt.selected = true;
-        sel.appendChild(opt);
-      }
-    }
-  }
-
-  fillHourSelect('pmh-start-hour', fmtHour(d).slice(0,5));
-  fillHourSelect('pmh-end-hour',   fmtHour(e).slice(0,5));
+  // Initialiser les input[type=time]
+  var sh = document.getElementById('pmh-start-hour');
+  var eh = document.getElementById('pmh-end-hour');
+  if (sh) sh.value = fmtHour(d).slice(0,5);
+  if (eh) eh.value = fmtHour(e).slice(0,5);
   document.getElementById('pmh-start-date').value = fmtDate(d);
   document.getElementById('pmh-end-date').value   = fmtDate(e);
 });
@@ -921,7 +842,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 function pmhRenderWidgetModal(wrap, d) {
-  var wd = d.wdir, ws = d.wspd, wg = d.wgst, prs = d.prs_active, p13 = (d.aip2013 && d.aip2013.prs_active);
+  var wd = d.wdir, ws = d.wspd, wg = d.wgst, prs = d.prs_active, p13 = d.aip2013?.prs_active;
   var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
   var dirTxt = wd !== null ? dirs[Math.round(wd/22.5)%16] : '—';
 
