@@ -1,6 +1,6 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 
@@ -373,7 +373,7 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
             <div class="nl-txt"><?= $membre['newsletter'] ? tm('abonne') : tm('non_abonne') ?></div>
           </div>
           <?php if ($membre['newsletter']): ?>
-            <a href="dashboard.php?desabonner=1" onclick="return confirm('<?= tm(\'confirm_desabo\') ?>')" style="display:block;text-align:center;background:#fde8e8;color:#c53030;border-radius:7px;padding:7px;font-size:.78rem;font-weight:700;text-decoration:none"><?= tm('se_desabonner') ?></a>
+            <a href="dashboard.php?desabonner=1" onclick="return confirm('<?= tm('confirm_desabo') ?>')" style="display:block;text-align:center;background:#fde8e8;color:#c53030;border-radius:7px;padding:7px;font-size:.78rem;font-weight:700;text-decoration:none"><?= tm('se_desabonner') ?></a>
           <?php else: ?>
             <a href="dashboard.php?reabonner=1" style="display:block;text-align:center;background:#e8f8f0;color:#27ae60;border-radius:7px;padding:7px;font-size:.78rem;font-weight:700;text-decoration:none"><?= tm('se_reabonner') ?></a>
           <?php endif; ?>
