@@ -2,7 +2,7 @@
 <!-- CARTE DON NL -->
   <div class="donation-card">
     <div class="don-titre">💶 Steun onze actie</div>
-    <div class="don-sub"><?= htmlspecialchars(cfg('don_texte','Gerechtskosten — Kortgedingprocedure')) ?></div>
+    <div class="don-sub"><?= htmlspecialchars(cfgLang('don_texte','Gerechtskosten — Kortgedingprocedure')) ?></div>
 
     <!-- Twee opties -->
     <div class="don-options">

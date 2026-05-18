@@ -43,10 +43,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_widget'])) {
                 $contenu_php = $no_scale_line . $contenu_php;
             }
         }
-        // Sauvegarder le fichier PHP du widget
-        $widget_file = $widgets_dir . $slug . '.php';
+        // Sauvegarder le fichier PHP du widget (FR ou NL selon le mode)
+        $is_nl_edit  = !empty($_POST['editing_nl']);
+        $widget_file = $is_nl_edit
+            ? $widgets_dir . $slug . '_nl.php'
+            : $widgets_dir . $slug . '.php';
         file_put_contents($widget_file, $contenu_php);
-        header('Location: widgets.php?edit='.$id.'&msg='.urlencode('Widget sauvegardé.')); exit;
+        $redirect_nl = $is_nl_edit ? '&view_nl=1' : '';
+        header('Location: widgets.php?edit='.$id.$redirect_nl.'&msg='.urlencode('Widget sauvegardé.')); exit;
     }
 }
 
@@ -80,8 +84,18 @@ $widgets = $db->query("SELECT w.*, COUNT(pw.page_slug) as nb_pages FROM widgets 
 // Lire le contenu du fichier PHP du widget en cours d'édition
 // et détecter l'option no_scale
 $widget_php_content = '';
+$viewing_nl = isset($_GET['view_nl']) && $_GET['view_nl'] == '1';
 if ($edit_widget) {
-    $wfile = $widgets_dir . $edit_widget['slug'] . '.php';
+    $nl_file = $widgets_dir . $edit_widget['slug'] . '_nl.php';
+    $fr_file = $widgets_dir . $edit_widget['slug'] . '.php';
+
+    if ($viewing_nl && file_exists($nl_file)) {
+        $wfile = $nl_file;
+    } else {
+        $wfile = $fr_file;
+        $viewing_nl = false;
+    }
+
     if (file_exists($wfile)) {
         $widget_php_content = file_get_contents($wfile);
     } else {
@@ -227,14 +241,14 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
 }
 
 /* ── Palette de styles flottante ──────────────────────────────────── */
-#style-palette {
+#style-palette, #w-style-palette {
   display: none; position: fixed; z-index: 9999;
   background: #fff; border: 1px solid #c8dff0; border-radius: 10px;
   box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 14px;
   width: 560px; max-width: 96vw; max-height: 80vh; overflow-y: auto;
 }
-#style-palette.open { display: block; }
-#style-palette h4 { font-size: .72rem; font-weight: 700; color: #888;
+#style-palette.open, #w-style-palette.open { display: block; }
+#style-palette h4, #w-style-palette h4 { font-size: .72rem; font-weight: 700; color: #888;
   text-transform: uppercase; letter-spacing: .06em; margin: 0 0 10px; }
 .sp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .sp-item { border: 1.5px solid #e0e8f0; border-radius: 7px; padding: 10px 12px;
@@ -304,7 +318,7 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
             <?php endif; ?>
             · <?= intval($w['nb_pages']) ?> page(s)
             <?php if (file_exists(__DIR__ . '/../includes/widgets/' . $w['slug'] . '_nl.php')): ?>
-            · <span style="background:#fff3cd;color:#856404;border-radius:4px;padding:1px 5px;font-size:.62rem;font-weight:700">🇳🇱 NL</span>
+            · <a href="widgets.php?edit=<?= $w['id'] ?>&view_nl=1" onclick="event.stopPropagation()" style="background:#fff3cd;color:#856404;border-radius:4px;padding:1px 5px;font-size:.62rem;font-weight:700;text-decoration:none">🇳🇱 NL</a>
             <?php else: ?>
             · <span style="background:#f8f9fa;color:#aaa;border-radius:4px;padding:1px 5px;font-size:.62rem">FR only</span>
             <?php endif; ?>
@@ -332,7 +346,22 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
         <div>
           <h2><?= $edit_widget ? htmlspecialchars($edit_widget['titre']) : 'Nouveau widget' ?></h2>
-          <p><?= $edit_widget ? 'includes/widgets/'.$edit_widget['slug'].'.php' : 'Créer un nouveau widget PHP' ?></p>
+          <p>
+            <?php if ($edit_widget): ?>
+            <?php $has_nl = file_exists(__DIR__ . '/../includes/widgets/' . $edit_widget['slug'] . '_nl.php'); ?>
+            <?php if ($viewing_nl): ?>
+              <span style="color:#856404;font-weight:700">🇳🇱 includes/widgets/<?= $edit_widget['slug'] ?>_nl.php</span>
+              · <a href="widgets.php?edit=<?= $edit_widget['id'] ?>" style="color:rgba(255,255,255,.7);font-size:.75rem">→ voir FR</a>
+            <?php else: ?>
+              includes/widgets/<?= $edit_widget['slug'] ?>.php
+              <?php if ($has_nl): ?>
+              · <a href="widgets.php?edit=<?= $edit_widget['id'] ?>&view_nl=1" style="color:#ffd47e;font-size:.75rem">→ voir NL</a>
+              <?php endif; ?>
+            <?php endif; ?>
+            <?php else: ?>
+              Créer un nouveau widget PHP
+            <?php endif; ?>
+          </p>
         </div>
         <div class="view-toggle">
           <button type="button" class="vt-btn vt-edit active" onclick="setView('edit')" title="Éditeur">
@@ -359,6 +388,9 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
       <form id="wf" method="POST">
         <input type="hidden" name="widget_id" value="<?= $edit_widget ? intval($edit_widget['id']) : 0 ?>">
         <input type="hidden" name="save_widget" value="1">
+        <?php if ($viewing_nl): ?>
+        <input type="hidden" name="editing_nl" value="1">
+        <?php endif; ?>
 
         <div class="row3">
           <div>

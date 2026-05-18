@@ -11,22 +11,26 @@
         <?php endif; ?>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
           <div>
-            <div style="font-weight:700;color:var(--bleu-hex);font-size:.88rem;margin-bottom:3px"><?= htmlspecialchars($n['titre']) ?></div>
+            <div style="font-weight:700;color:var(--bleu-hex);font-size:.88rem;margin-bottom:3px"><?= htmlspecialchars(tdb($n,'titre') ?? $n['titre']) ?></div>
             <div style="font-size:.7rem;color:#999"><?= date('d/m/Y', strtotime($n['date_creation'])) ?></div>
           </div>
           <span class="news-chevron" id="chev-<?= $ni ?>" style="color:var(--bleu-hex);font-size:.8rem;flex-shrink:0;transition:transform .2s;transform:<?= $n['epingle'] ? 'rotate(180deg)' : 'none' ?>">▼</span>
         </div>
-        <?php if (!empty($n['accroche'])): ?>
-          <div style="font-size:.8rem;color:#555;line-height:1.5;margin-top:6px"><?= htmlspecialchars($n['accroche']) ?></div>
-        <?php elseif (!empty($n['contenu'])): ?>
-          <div style="font-size:.8rem;color:#555;line-height:1.5;margin-top:6px"><?= htmlspecialchars(mb_strimwidth(strip_tags($n['contenu']), 0, 120, '…')) ?></div>
+        <?php
+        $accroche_aff = tdb($n,'accroche') ?? $n['accroche'] ?? '';
+        $contenu_aff  = tdb($n,'contenu')  ?? $n['contenu']  ?? '';
+        ?>
+        <?php if (!empty($accroche_aff)): ?>
+          <div style="font-size:.8rem;color:#555;line-height:1.5;margin-top:6px"><?= htmlspecialchars($accroche_aff) ?></div>
+        <?php elseif (!empty($contenu_aff)): ?>
+          <div style="font-size:.8rem;color:#555;line-height:1.5;margin-top:6px"><?= htmlspecialchars(mb_strimwidth(strip_tags($contenu_aff), 0, 120, '…')) ?></div>
         <?php endif; ?>
       </div>
 
       <!-- Contenu complet dépliable -->
       <div class="news-full" id="news-full-<?= $ni ?>" style="display:<?= $n['epingle'] ? 'block' : 'none' ?>;padding:0 12px 12px;border-top:1px solid var(--bleu-ciel)">
         <div class="apanel-inner" style="padding:12px 0;box-shadow:none">
-          <?= $n['contenu'] ?>
+          <?= tdb($n,'contenu') ?? $n['contenu'] ?>
         </div>
       </div>
 
