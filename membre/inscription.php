@@ -20,11 +20,19 @@ if (empty($_SESSION['csrf_inscription'])) {
 }
 $csrf_token = $_SESSION['csrf_inscription'];
 
+// ── Question mathématique anti-bot ────────────────────────────────────────
+if (empty($_SESSION['captcha_a']) || empty($_SESSION['captcha_b'])) {
+    $_SESSION['captcha_a'] = rand(2, 9);
+    $_SESSION['captcha_b'] = rand(1, 9);
+}
+$captcha_a      = $_SESSION['captcha_a'];
+$captcha_b      = $_SESSION['captcha_b'];
+$captcha_result = $captcha_a + $captcha_b;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // ── 1. Honeypot : champ invisible, les bots le remplissent ───────────
+    // ── 1. Honeypot ──────────────────────────────────────────────────────
     if (!empty($_POST['website'])) {
-        // Bot détecté — on fait semblant de réussir
         $success = true;
         $msg = "Bienvenue ! Un lien de connexion a été envoyé.";
         goto end_form;
@@ -35,6 +43,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Erreur de sécurité. Rechargez la page et réessayez.';
         goto end_form;
     }
+
+    // ── 3. Question mathématique ─────────────────────────────────────────
+    $captcha_input = intval($_POST['captcha_answer'] ?? -999);
+    if ($captcha_input !== $captcha_result) {
+        $error = 'Réponse incorrecte à la vérification anti-robot. Réessayez.';
+        $_SESSION['captcha_a'] = rand(2, 9);
+        $_SESSION['captcha_b'] = rand(1, 9);
+        $captcha_a = $_SESSION['captcha_a'];
+        $captcha_b = $_SESSION['captcha_b'];
+        $captcha_result = $captcha_a + $captcha_b;
+        goto end_form;
+    }
+    unset($_SESSION['captcha_a'], $_SESSION['captcha_b']);
 
     // ── 3. Rate limiting : max 3 inscriptions par heure par IP ──────────
     $ip  = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
@@ -213,6 +234,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="check-wrap">
       <input type="checkbox" name="rgpd" id="rgpd" required>
       <label for="rgpd">J'accepte que mes données soient utilisées par l'ASBL <strong>ça suffit !</strong> (Piste 01 · UBCNA) conformément au RGPD. Je peux me désabonner à tout moment depuis mon espace membre.</label>
+    </div>
+    <div style="background:#f0f7ff;border:1.5px solid #c8dff0;border-radius:8px;padding:14px;margin-bottom:16px">
+      <label style="font-size:.82rem;font-weight:600;color:#0e3d6b;display:block;margin-bottom:8px">
+        🤖 Vérification anti-robot *
+      </label>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:1rem;font-weight:700;color:#1673B2"><?= $captcha_a ?> + <?= $captcha_b ?> = ?</span>
+        <input type="number" name="captcha_answer" required
+               style="width:80px;padding:8px 10px;border:1.5px solid #c8dff0;border-radius:6px;font-size:1rem;font-weight:700;text-align:center"
+               placeholder="?" min="0" max="99" autocomplete="off">
+      </div>
     </div>
     <button type="submit" class="btn">Créer mon espace membre →</button>
   </form>
