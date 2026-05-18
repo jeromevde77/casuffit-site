@@ -1,0 +1,218 @@
+<?php
+// membre/lang.php — Traductions pour l'espace membre
+// Inclure après session_start()
+
+// Priorité : param GET ?lang= > session membre_lang > session LANG (site principal) > FR
+if (!empty($_GET['lang']) && in_array($_GET['lang'], ['fr','nl'])) {
+    $_SESSION['membre_lang'] = $_GET['lang'];
+}
+$LANG = $_SESSION['membre_lang'] ?? $_SESSION['app_lang'] ?? 'fr';
+
+// ── Dictionnaire ──────────────────────────────────────────────────────────
+$T = $LANG === 'nl' ? [
+
+  // Titres & nav
+  'site_title'          => 'ça suffit ! VZW',
+  'retour_site'         => '← Terug naar de site',
+  'retour_espace'       => '← Terug naar mijn ruimte',
+
+  // Inscription
+  'inscription_titre'   => 'Uw ledenruimte aanmaken',
+  'inscription_page'    => 'Lid worden — ça suffit ! VZW',
+  'avantages_intro'     => 'Door lid te worden krijgt u:',
+  'avantage_qr'         => 'Een persoonlijke QR-code met gestructureerde mededeling (+++)',
+  'avantage_dons'       => 'Het overzicht van uw giften in uw privéruimte',
+  'avantage_nl'         => 'De nieuwsbrief om op de hoogte te blijven van onze acties',
+  'avantage_acces'      => 'Beveiligde toegang via magische link (zonder wachtwoord)',
+  'prenom'              => 'Voornaam *',
+  'nom'                 => 'Naam *',
+  'email'               => 'E-mail *',
+  'adresse'             => 'Adres (straat en nummer)',
+  'adresse_ph'          => 'Leliestraat 42',
+  'commune'             => 'Gemeente',
+  'commune_ph'          => 'Waterloo',
+  'telephone'           => 'Telefoon',
+  'telephone_ph'        => '+32 470 00 00 00',
+  'rgpd_label'          => 'Ik ga akkoord dat mijn gegevens worden gebruikt door de VZW <strong>ça suffit !</strong> (Baan 01 · UBCNA) overeenkomstig de AVG. Ik kan me op elk moment uitschrijven vanuit mijn ledenruimte.',
+  'captcha_label'       => '🤖 Anti-robotverificatie *',
+  'btn_creer'           => 'Mijn ledenruimte aanmaken →',
+  'deja_membre'         => 'Al lid?',
+  'recevoir_lien'       => 'Mijn aanmeldingslink ontvangen',
+  'msg_bienvenue'       => 'Welkom! 🎉 Uw ledenaccount <strong>%s</strong> is aangemaakt.<br>Een aanmeldingslink is verzonden naar <strong>%s</strong>. Controleer uw spam indien nodig.',
+  'msg_deja_membre'     => 'U bent al lid! Een aanmeldingslink is verzonden naar <strong>%s</strong>.',
+  'err_email'           => 'Ongeldig e-mailadres.',
+  'err_prenom_nom'      => 'Voornaam en naam zijn verplicht.',
+  'err_rgpd'            => 'U moet het AVG-beleid aanvaarden.',
+  'err_captcha'         => 'Fout antwoord op de anti-robotverificatie. Probeer opnieuw.',
+  'err_rate_limit'      => 'Te veel pogingen. Probeer over een uur opnieuw.',
+  'err_securite'        => 'Beveiligingsfout. Herlaad de pagina en probeer opnieuw.',
+  'err_creation'        => 'Fout bij het aanmaken van het account.',
+
+  // Login
+  'login_titre'         => 'Toegang ledenruimte',
+  'login_page'          => 'Aanmelding lid — ça suffit ! VZW',
+  'login_explain'       => 'Voer uw e-mail in en wij sturen u een <strong>beveiligde aanmeldingslink</strong> geldig 24u. Geen wachtwoord te onthouden!',
+  'votre_email'         => 'Uw e-mailadres',
+  'btn_recevoir_lien'   => '✉ Mijn aanmeldingslink ontvangen',
+  'pas_encore_membre'   => 'Nog geen lid?',
+  'creer_espace'        => 'Mijn ledenruimte aanmaken',
+  'msg_lien_envoye'     => 'Een aanmeldingslink is verzonden naar <strong>%s</strong>.<br>Deze link is geldig <strong>24 uur</strong>. Controleer uw spam indien nodig.',
+  'msg_lien_generique'  => 'Als dit e-mailadres overeenkomt met een actief ledenaccount, is een aanmeldingslink verzonden.',
+  'err_email_invalide'  => 'Ongeldig e-mailadres.',
+
+  // Magic link
+  'magic_page'          => 'Aanmelding — ça suffit ! VZW',
+  'lien_invalide_titre' => 'Ongeldige of verlopen link',
+  'lien_invalide_msg'   => 'Deze link is ongeldig of verlopen. <a href="login.php">Vraag een nieuwe link aan</a>.',
+  'btn_new_lien'        => 'Een nieuwe link aanvragen',
+
+  // Confirm email
+  'confirm_invalide_h'  => 'Ongeldige link',
+  'confirm_invalide_p'  => 'Deze bevestigingslink is ongeldig of al gebruikt.',
+  'confirm_ok_h'        => '✓ E-mail bevestigd',
+  'confirm_ok_p'        => 'Uw e-mail is bijgewerkt naar <strong>%s</strong>.',
+  'retour_espace_btn'   => '← Mijn ledenruimte',
+
+  // Profil
+  'profil_page'         => 'Mijn profiel — ça suffit ! VZW',
+  'profil_titre'        => 'Mijn profiel',
+  'identite'            => 'Identiteit',
+  'contact'             => 'Contact',
+  'adresse_section'     => 'Adres',
+  'rue_numero'          => 'Straat en nummer',
+  'code_postal'         => 'Postcode',
+  'email_warn'          => '⚠ Het wijzigen van het e-mailadres verandert ook uw aanmeldingsadres via magische link.',
+  'btn_enregistrer'     => '💾 Wijzigingen opslaan',
+  'msg_profil_ok'       => 'Uw gegevens zijn opgeslagen.',
+  'err_champs_req'      => 'Voornaam, naam en e-mail zijn verplicht.',
+  'err_email_invalide2' => 'Ongeldig e-mailadres.',
+  'err_email_pris'      => 'Dit e-mailadres is al in gebruik door een ander account.',
+  'info_membre'         => '🪪 Lidnummer: %s',
+  'cree_le'             => 'Aangemaakt op %s',
+
+  // Dashboard (utilisé dans dashboard.php)
+  'dashboard_page'      => 'Mijn ruimte — ça suffit ! VZW',
+  'back_site'           => '← Hoofdsite',
+  'bonjour'             => 'Hallo',
+  'membre_depuis'       => 'Lid',
+  'tab_dons'            => '💶 Mijn giften',
+  'tab_profil'          => '👤 Mijn profiel',
+  'tab_nl'              => '📰 Nieuwsbrief',
+  'generer_qr'          => '💶 Een betalings-QR genereren',
+  'deconnexion'         => 'Afmelden',
+  'msg_profil_maj'      => '✓ Uw gegevens zijn opgeslagen.',
+  'msg_qr_genere'       => '✓ QR-code gegenereerd — scan om te betalen.',
+  'msg_desabonne'       => '✓ Uitgeschreven van de nieuwsbrief.',
+  'msg_reabonne'        => '✓ Opnieuw ingeschreven voor de nieuwsbrief.',
+  'err_email_inv'       => '✗ Ongeldig e-mailadres.',
+  'err_email_pris2'     => '✗ Dit e-mailadres is al in gebruik door een ander account.',
+  'err_rgpd_req'        => '⚠ AVG-toestemming vereist',
+  'selecteur_lang'      => 'FR | NL',
+
+] : [
+
+  // Titres & nav
+  'site_title'          => 'ça suffit ! ASBL',
+  'retour_site'         => '← Retour au site',
+  'retour_espace'       => '← Retour à mon espace',
+
+  // Inscription
+  'inscription_titre'   => 'Créer votre espace membre',
+  'inscription_page'    => 'Devenir membre — ça suffit ! ASBL',
+  'avantages_intro'     => 'En devenant membre vous obtenez :',
+  'avantage_qr'         => 'Un QR code personnel avec communication structurée (+++)',
+  'avantage_dons'       => 'L\'historique de vos dons dans votre espace privé',
+  'avantage_nl'         => 'La newsletter pour rester informé(e) de nos actions',
+  'avantage_acces'      => 'Accès sécurisé par lien magique (sans mot de passe)',
+  'prenom'              => 'Prénom *',
+  'nom'                 => 'Nom *',
+  'email'               => 'Email *',
+  'adresse'             => 'Adresse (rue et numéro)',
+  'adresse_ph'          => 'Rue des Lilas 42',
+  'commune'             => 'Commune',
+  'commune_ph'          => 'Waterloo',
+  'telephone'           => 'Téléphone',
+  'telephone_ph'        => '+32 470 00 00 00',
+  'rgpd_label'          => 'J\'accepte que mes données soient utilisées par l\'ASBL <strong>ça suffit !</strong> (Piste 01 · UBCNA) conformément au RGPD. Je peux me désabonner à tout moment depuis mon espace membre.',
+  'captcha_label'       => '🤖 Vérification anti-robot *',
+  'btn_creer'           => 'Créer mon espace membre →',
+  'deja_membre'         => 'Déjà membre ?',
+  'recevoir_lien'       => 'Recevoir mon lien de connexion',
+  'msg_bienvenue'       => 'Bienvenue ! 🎉 Votre compte membre <strong>%s</strong> a été créé.<br>Un lien de connexion a été envoyé à <strong>%s</strong>. Vérifiez vos spams si nécessaire.',
+  'msg_deja_membre'     => 'Vous êtes déjà membre ! Un lien de connexion a été envoyé à <strong>%s</strong>.',
+  'err_email'           => 'Adresse email invalide.',
+  'err_prenom_nom'      => 'Prénom et nom sont obligatoires.',
+  'err_rgpd'            => 'Vous devez accepter la politique RGPD.',
+  'err_captcha'         => 'Réponse incorrecte à la vérification anti-robot. Réessayez.',
+  'err_rate_limit'      => 'Trop de tentatives. Réessayez dans une heure.',
+  'err_securite'        => 'Erreur de sécurité. Rechargez la page et réessayez.',
+  'err_creation'        => 'Erreur lors de la création du compte.',
+
+  // Login
+  'login_titre'         => 'Accès espace membre',
+  'login_page'          => 'Connexion membre — ça suffit ! ASBL',
+  'login_explain'       => 'Entrez votre email et nous vous enverrons un <strong>lien de connexion sécurisé</strong> valable 24h. Pas de mot de passe à retenir !',
+  'votre_email'         => 'Votre adresse email',
+  'btn_recevoir_lien'   => '✉ Recevoir mon lien de connexion',
+  'pas_encore_membre'   => 'Pas encore membre ?',
+  'creer_espace'        => 'Créer mon espace membre',
+  'msg_lien_envoye'     => 'Un lien de connexion a été envoyé à <strong>%s</strong>.<br>Ce lien est valable <strong>24 heures</strong>. Vérifiez vos spams si nécessaire.',
+  'msg_lien_generique'  => 'Si cet email correspond à un compte membre actif, un lien de connexion a été envoyé.',
+  'err_email_invalide'  => 'Adresse email invalide.',
+
+  // Magic link
+  'magic_page'          => 'Connexion — ça suffit ! ASBL',
+  'lien_invalide_titre' => 'Lien invalide ou expiré',
+  'lien_invalide_msg'   => 'Ce lien est invalide ou a expiré. <a href="login.php">Demandez un nouveau lien</a>.',
+  'btn_new_lien'        => 'Demander un nouveau lien',
+
+  // Confirm email
+  'confirm_invalide_h'  => 'Lien invalide',
+  'confirm_invalide_p'  => 'Ce lien de confirmation est invalide ou a déjà été utilisé.',
+  'confirm_ok_h'        => '✓ Email confirmé',
+  'confirm_ok_p'        => 'Votre email a été mis à jour vers <strong>%s</strong>.',
+  'retour_espace_btn'   => '← Mon espace membre',
+
+  // Profil
+  'profil_page'         => 'Mon profil — ça suffit ! ASBL',
+  'profil_titre'        => 'Mon profil',
+  'identite'            => 'Identité',
+  'contact'             => 'Contact',
+  'adresse_section'     => 'Adresse',
+  'rue_numero'          => 'Rue et numéro',
+  'code_postal'         => 'Code postal',
+  'email_warn'          => '⚠ Modifier l\'email changera aussi votre adresse de connexion par lien magique.',
+  'btn_enregistrer'     => '💾 Enregistrer les modifications',
+  'msg_profil_ok'       => 'Vos informations ont bien été mises à jour.',
+  'err_champs_req'      => 'Prénom, nom et email sont obligatoires.',
+  'err_email_invalide2' => 'Adresse email invalide.',
+  'err_email_pris'      => 'Cette adresse email est déjà utilisée par un autre compte.',
+  'info_membre'         => '🪪 Numéro de membre : %s',
+  'cree_le'             => 'Créé le %s',
+
+  // Dashboard
+  'dashboard_page'      => 'Mon espace — ça suffit ! ASBL',
+  'back_site'           => '← Site principal',
+  'bonjour'             => 'Bonjour',
+  'membre_depuis'       => 'Membre',
+  'tab_dons'            => '💶 Mes dons',
+  'tab_profil'          => '👤 Mon profil',
+  'tab_nl'              => '📰 Newsletter',
+  'generer_qr'          => '💶 Générer un QR de paiement',
+  'deconnexion'         => 'Déconnexion',
+  'msg_profil_maj'      => '✓ Vos données ont été enregistrées.',
+  'msg_qr_genere'       => '✓ QR code généré — scannez pour payer.',
+  'msg_desabonne'       => '✓ Désabonné(e) de la newsletter.',
+  'msg_reabonne'        => '✓ Réabonné(e) à la newsletter.',
+  'err_email_inv'       => '✗ Adresse email invalide.',
+  'err_email_pris2'     => '✗ Cette adresse email est déjà utilisée par un autre compte.',
+  'err_rgpd_req'        => '⚠ Consentement RGPD requis',
+  'selecteur_lang'      => 'FR | NL',
+];
+
+// Raccourci
+function tm(string $key, ...$args): string {
+    global $T;
+    $val = $T[$key] ?? "[$key]";
+    return $args ? vsprintf($val, $args) : $val;
+}

@@ -5,6 +5,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 
 session_start();
+require_once __DIR__ . '/lang.php';
 $db     = getDB();
 $membre = requireMembre($db);
 
@@ -23,15 +24,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validation
     if (!$prenom || !$nom || !$email) {
-        $error = 'Prénom, nom et email sont obligatoires.';
+        $error = tm('err_champs_req');
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Adresse email invalide.';
+        $error = tm('err_email_invalide2');
     } else {
         // Vérifier que l'email n'est pas déjà utilisé par un autre membre
         $check = $db->prepare("SELECT id FROM members WHERE email = ? AND id != ?");
         $check->execute([$email, $membre['id']]);
         if ($check->fetch()) {
-            $error = 'Cette adresse email est déjà utilisée par un autre compte.';
+            $error = tm('err_email_pris');
         } else {
             try {
                 // Mettre à jour le membre
@@ -49,22 +50,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$membre['id']]);
                 $membre = $stmt->fetch();
 
-                $success = 'Vos informations ont bien été mises à jour.';
+                $success = tm('msg_profil_ok');
 
             } catch (Exception $e) {
                 error_log('Profil update: ' . $e->getMessage());
-                $error = 'Erreur lors de la mise à jour. Veuillez réessayer.';
+                $error = tm('err_creation');
             }
         }
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $LANG ?>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Mon profil — ça suffit ! ASBL</title>
+  <title><?= tm('profil_page') ?></title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #1a3a5c; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; }
@@ -114,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <div class="logo">
     <h1>ça suffit ! <span>ASBL</span></h1>
-    <p>Mon profil</p>
+    <p><?= tm('profil_titre') ?></p>
   </div>
 
   <?php if ($success): ?>
@@ -126,58 +127,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <!-- Infos non modifiables -->
   <div class="info-box">
-    <strong>🪪 Numéro de membre : <?= htmlspecialchars($membre['code_membre'] ?? '—') ?></strong>
-    Créé le <?= $membre['created_at'] ? date('d/m/Y', strtotime($membre['created_at'])) : '—' ?>
+    <strong><?= tm('info_membre', htmlspecialchars(\$membre['code_membre'] ?? '—')) ?></strong><br>
+    <?= tm('cree_le', \$membre['created_at'] ? date('d/m/Y', strtotime(\$membre['created_at'])) : '—') ?>
   </div>
 
   <form method="POST">
 
-    <div class="section-title">Identité</div>
+    <div class="section-title"><?= tm('identite') ?></div>
 
     <div class="form-row">
       <div class="form-group">
-        <label>Prénom *</label>
+        <label><?= tm('prenom') ?></label>
         <input type="text" name="prenom" value="<?= htmlspecialchars($membre['prenom'] ?? '') ?>" required>
       </div>
       <div class="form-group">
-        <label>Nom *</label>
+        <label><?= tm('nom') ?></label>
         <input type="text" name="nom" value="<?= htmlspecialchars($membre['nom'] ?? '') ?>" required>
       </div>
     </div>
 
-    <div class="section-title">Contact</div>
+    <div class="section-title"><?= tm('contact') ?></div>
 
     <div class="form-group">
       <label>Email *</label>
       <input type="email" name="email" value="<?= htmlspecialchars($membre['email'] ?? '') ?>" required>
-      <p style="font-size:.75rem;color:#888;margin-top:4px">⚠ Modifier l'email changera aussi votre adresse de connexion par lien magique.</p>
+      <p style="font-size:.75rem;color:#888;margin-top:4px"><?= tm('email_warn') ?></p>
     </div>
 
     <div class="form-group">
       <label>Téléphone</label>
-      <input type="tel" name="telephone" value="<?= htmlspecialchars($membre['telephone'] ?? '') ?>" placeholder="+32 470 00 00 00">
+      <input type="tel" name="telephone" value="<?= htmlspecialchars($membre['telephone'] ?? '') ?>" placeholder="<?= tm('telephone_ph') ?>">
     </div>
 
-    <div class="section-title">Adresse</div>
+    <div class="section-title"><?= tm('adresse_section') ?></div>
 
     <div class="form-group">
       <label>Rue et numéro</label>
-      <input type="text" name="adresse" value="<?= htmlspecialchars($membre['adresse'] ?? '') ?>" placeholder="Rue des Lilas 42">
+      <input type="text" name="adresse" value="<?= htmlspecialchars($membre['adresse'] ?? '') ?>" placeholder="<?= tm('adresse_ph') ?>">
     </div>
 
     <div class="form-group">
       <label>Commune</label>
-      <input type="text" name="commune" value="<?= htmlspecialchars($membre['commune'] ?? '') ?>" placeholder="Waterloo">
+      <input type="text" name="commune" value="<?= htmlspecialchars($membre['commune'] ?? '') ?>" placeholder="<?= tm('commune_ph') ?>">
     </div>
 
-    <button type="submit">💾 Enregistrer les modifications</button>
+    <button type="submit"><?= tm('btn_enregistrer') ?></button>
 
   </form>
 
   <div class="links">
-    <a href="dashboard.php">← Retour à mon espace</a>
+    <a href="dashboard.php"><?= tm('retour_espace') ?></a>
     <span>|</span>
-    <a href="../index.php">← Retour au site</a>
+    <a href="../index.php"><?= tm('retour_site') ?></a>
   </div>
 
 </div>

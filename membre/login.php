@@ -5,6 +5,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 
 session_start();
+require_once __DIR__ . '/lang.php';
 $db = getDB();
 
 if (getMembre($db)) { header('Location: dashboard.php'); exit; }
@@ -19,10 +20,10 @@ $csrf_token = $_SESSION['csrf_login'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Honeypot
-    if (!empty($_POST['website'])) { $success = true; $msg = 'Lien envoyé.'; goto end_login; }
+    if (!empty($_POST['website'])) { $success = true; $msg = tm('msg_lien_generique'); goto end_login; }
     // CSRF
     if (empty($_POST['_csrf']) || !hash_equals($csrf_token, $_POST['_csrf'])) {
-        $error = 'Erreur de sécurité. Rechargez la page.'; goto end_login;
+        $error = tm('err_securite'); goto end_login;
     }
     $email = filter_var(trim(isset($_POST['email']) ? $_POST['email'] : ''), FILTER_VALIDATE_EMAIL);
 
@@ -40,21 +41,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Envoyer le lien
             envoyerLienMagique($db, $membre);
             $success = true;
-            $msg = "Un lien de connexion a été envoyé à <strong>$email</strong>.<br>Ce lien est valable <strong>24 heures</strong>. Vérifiez vos spams si nécessaire.";
+            $msg = tm('msg_lien_envoye', \$email);
         } else {
             // Sécurité : ne pas révéler si l'email existe ou non
             $success = true;
-            $msg = "Si cet email correspond à un compte membre actif, un lien de connexion a été envoyé.";
+            $msg = tm('msg_lien_generique');
         }
     }
     end_login:;
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $LANG ?>">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Connexion membre — ça suffit ! ASBL</title>
+  <title><?= tm('login_page') ?></title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Helvetica Neue",Arial,sans-serif;background:linear-gradient(135deg,#0e3d6b,#1673B2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -80,20 +81,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="card">
   <div class="brand">
     <h1>ça suffit ! <span>ASBL</span></h1>
-    <p>Accès espace membre</p>
+    <p><?= tm('login_titre') ?></p>
   </div>
 
   <?php if ($success): ?>
     <div style="text-align:center;font-size:2.5rem;margin-bottom:12px">📧</div>
     <div class="msg-ok"><?= $msg ?></div>
-    <div class="links"><a href="<?= SITE_URL ?>">← Retour au site</a></div>
+    <div class="links"><a href="<?= SITE_URL ?>"><?= tm('retour_site') ?></a></div>
   <?php else: ?>
 
   <?php if ($error): ?><div class="msg-err"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
   <div class="magic-icon">✨</div>
   <div class="explain">
-    Entrez votre email et nous vous enverrons un <strong>lien de connexion sécurisé</strong> valable 24h. Pas de mot de passe à retenir !
+    <?= tm('login_explain') ?>
   </div>
 
   <form method="POST">
@@ -101,14 +102,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div style="display:none" aria-hidden="true">
       <input type="text" name="website" tabindex="-1" autocomplete="off">
     </div>
-    <label for="email">Votre adresse email</label>
+    <label for="email"><?= tm('votre_email') ?></label>
     <input type="email" id="email" name="email" placeholder="votre@email.be" required autofocus>
-    <button type="submit" class="btn">✉ Recevoir mon lien de connexion</button>
+    <button type="submit" class="btn"><?= tm('btn_recevoir_lien') ?></button>
   </form>
 
   <div class="links">
-    Pas encore membre ? <a href="inscription.php">Créer mon espace membre</a><br>
-    <a href="<?= SITE_URL ?>">← Retour au site</a>
+    <?= tm('pas_encore_membre') ?> <a href="inscription.php"><?= tm('creer_espace') ?></a><br>
+    <a href="<?= SITE_URL ?>"><?= tm('retour_site') ?></a>
   </div>
 
   <?php endif; ?>

@@ -5,6 +5,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 
 session_start();
+require_once __DIR__ . '/lang.php';
 $db = getDB();
 
 // Si déjà connecté
@@ -34,20 +35,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ── 1. Honeypot ──────────────────────────────────────────────────────
     if (!empty($_POST['website'])) {
         $success = true;
-        $msg = "Bienvenue ! Un lien de connexion a été envoyé.";
+        $msg = tm('msg_lien_generique');
         goto end_form;
     }
 
     // ── 2. Token CSRF ────────────────────────────────────────────────────
     if (empty($_POST['_csrf']) || !hash_equals($csrf_token, $_POST['_csrf'])) {
-        $error = 'Erreur de sécurité. Rechargez la page et réessayez.';
+        $error = tm('err_securite');
         goto end_form;
     }
 
     // ── 3. Question mathématique ─────────────────────────────────────────
     $captcha_input = intval($_POST['captcha_answer'] ?? -999);
     if ($captcha_input !== $captcha_result) {
-        $error = 'Réponse incorrecte à la vérification anti-robot. Réessayez.';
+        $error = tm('err_captcha');
         $_SESSION['captcha_a'] = rand(2, 9);
         $_SESSION['captcha_b'] = rand(1, 9);
         $captcha_a = $_SESSION['captcha_a'];
@@ -63,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $now = time();
     $_SESSION[$key] = array_filter($_SESSION[$key] ?? [], fn($t) => $now - $t < 3600);
     if (count($_SESSION[$key]) >= 3) {
-        $error = 'Trop de tentatives. Réessayez dans une heure.';
+        $error = tm('err_rate_limit');
         goto end_form;
     }
     $_SESSION[$key][] = $now;
@@ -75,9 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tel      = htmlspecialchars(trim(isset($_POST['telephone'])? $_POST['telephone']: ''), ENT_QUOTES, 'UTF-8');
     $rgpd     = !empty($_POST['rgpd']);
 
-    if (!$email)  { $error = 'Adresse email invalide.'; }
-    elseif (!$prenom || !$nom) { $error = 'Prénom et nom sont obligatoires.'; }
-    elseif (!$rgpd) { $error = 'Vous devez accepter la politique RGPD.'; }
+    if (!\$email)  { \$error = tm('err_email'); }
+    elseif (!\$prenom || !\$nom) { \$error = tm('err_prenom_nom'); }
+    elseif (!\$rgpd) { \$error = tm('err_rgpd'); }
     else {
         // Vérifier si email déjà inscrit
         $check = $db->prepare("SELECT id, statut FROM members WHERE email = ?");
@@ -90,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $membre = $db->query("SELECT * FROM members WHERE id = {$existing['id']}")->fetch();
             envoyerLienMagique($db, $membre);
             $success = true;
-            $msg = "Vous êtes déjà membre ! Un lien de connexion a été envoyé à <strong>$email</strong>.";
+            $msg = tm('msg_deja_membre', $email);
         } else {
             try {
                 // Créer le membre
@@ -129,11 +130,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 envoyerLienMagique($db, $nouveau_membre);
 
                 $success = true;
-                $msg = "Bienvenue ! 🎉 Votre compte membre <strong>$code_membre</strong> a été créé.<br>Un lien de connexion a été envoyé à <strong>$email</strong>. Vérifiez vos spams si nécessaire.";
+                $msg = tm('msg_bienvenue', \$code_membre, \$email);
 
             } catch (Exception $e) {
                 error_log('Inscription membre: ' . $e->getMessage());
-                $error = 'Erreur lors de la création du compte: ' . $e->getMessage();
+                $error = tm('err_creation') . ': ' . \$e->getMessage();
             }
         }
     }
@@ -141,10 +142,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $LANG ?>">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Devenir membre — ça suffit ! ASBL</title>
+  <title><?= htmlspecialchars(tm('inscription_page')) ?></title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Helvetica Neue",Arial,sans-serif;background:linear-gradient(135deg,#0e3d6b,#1673B2);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
@@ -176,8 +177,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="card">
   <div class="brand">
-    <h1>ça suffit ! <span>ASBL</span></h1>
-    <p>Créer votre espace membre</p>
+    <h1>ça suffit ! <span><?= $LANG==='nl'?'VZW':'ASBL' ?></span></h1>
+    <p><?= tm('inscription_titre') ?></p>
+  </div>
+  <div style="text-align:right;margin-bottom:8px;font-size:.75rem">
+    <a href="?lang=fr" style="<?= $LANG==='fr'?'font-weight:700;color:#1673B2':'color:#aaa' ?>">FR</a> |
+    <a href="?lang=nl" style="<?= $LANG==='nl'?'font-weight:700;color:#1673B2':'color:#aaa' ?>">NL</a>
   </div>
 
   <?php if ($success): ?>
@@ -191,11 +196,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <div class="avantages">
     <p>
-      En devenant membre vous obtenez :<br>
-      ✅ <strong>Un QR code personnel</strong> avec communication structurée (+++)<br>
-      ✅ <strong>L'historique de vos dons</strong> dans votre espace privé<br>
-      ✅ <strong>La newsletter</strong> pour rester informé(e) de nos actions<br>
-      ✅ <strong>Accès sécurisé</strong> par lien magique (sans mot de passe)
+      <?= tm('avantages_intro') ?><br>
+      ✅ <strong><?= tm('avantage_qr') ?></strong><br>
+      ✅ <strong><?= tm('avantage_dons') ?></strong><br>
+      ✅ <strong><?= tm('avantage_nl') ?></strong><br>
+      ✅ <strong><?= tm('avantage_acces') ?></strong>
     </p>
   </div>
 
@@ -209,35 +214,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <div class="form-row">
       <div>
-        <label>Prénom *</label>
+        <label><?= tm('prenom') ?></label>
         <input type="text" name="prenom" value="<?= htmlspecialchars(isset($_POST['prenom']) ? $_POST['prenom'] : '') ?>" required>
       </div>
       <div>
-        <label>Nom *</label>
+        <label><?= tm('nom') ?></label>
         <input type="text" name="nom" value="<?= htmlspecialchars(isset($_POST['nom']) ? $_POST['nom'] : '') ?>" required>
       </div>
     </div>
-    <label>Email *</label>
+    <label><?= tm('email') ?></label>
     <input type="email" name="email" value="<?= htmlspecialchars(isset($_POST['email']) ? $_POST['email'] : '') ?>" required>
-    <label>Adresse (rue et numéro)</label>
-    <input type="text" name="adresse" value="<?= htmlspecialchars(isset($_POST['adresse']) ? $_POST['adresse'] : '') ?>" placeholder="Rue des Lilas 42">
+    <label><?= tm('adresse') ?></label>
+    <input type="text" name="adresse" value="<?= htmlspecialchars(isset($_POST['adresse']) ? $_POST['adresse'] : '') ?>" placeholder="<?= tm('adresse_ph') ?>">
     <div class="form-row">
       <div>
-        <label>Commune</label>
+        <label><?= tm('commune') ?></label>
         <input type="text" name="commune" value="<?= htmlspecialchars(isset($_POST['commune']) ? $_POST['commune'] : '') ?>">
       </div>
       <div>
-        <label>Téléphone</label>
+        <label><?= tm('telephone') ?></label>
         <input type="tel" name="telephone" value="<?= htmlspecialchars(isset($_POST['telephone']) ? $_POST['telephone'] : '') ?>">
       </div>
     </div>
     <div class="check-wrap">
       <input type="checkbox" name="rgpd" id="rgpd" required>
-      <label for="rgpd">J'accepte que mes données soient utilisées par l'ASBL <strong>ça suffit !</strong> (Piste 01 · UBCNA) conformément au RGPD. Je peux me désabonner à tout moment depuis mon espace membre.</label>
+      <label for="rgpd"><?= tm('rgpd_label') ?></label>
     </div>
     <div style="background:#f0f7ff;border:1.5px solid #c8dff0;border-radius:8px;padding:14px;margin-bottom:16px">
       <label style="font-size:.82rem;font-weight:600;color:#0e3d6b;display:block;margin-bottom:8px">
-        🤖 Vérification anti-robot *
+        <?= tm('captcha_label') ?>
       </label>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <span style="font-size:1rem;font-weight:700;color:#1673B2"><?= $captcha_a ?> + <?= $captcha_b ?> = ?</span>
@@ -246,12 +251,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                placeholder="?" min="0" max="99" autocomplete="off">
       </div>
     </div>
-    <button type="submit" class="btn">Créer mon espace membre →</button>
+    <button type="submit" class="btn"><?= tm('btn_creer') ?></button>
   </form>
 
   <div class="links">
-    Déjà membre ? <a href="login.php">Recevoir mon lien de connexion</a><br>
-    <a href="<?= SITE_URL ?>">← Retour au site</a>
+    <?= tm('deja_membre') ?> <a href="login.php"><?= tm('recevoir_lien') ?></a><br>
+    <a href="<?= SITE_URL ?>"><?= tm('retour_site') ?></a>
   </div>
 
   <?php endif; ?>

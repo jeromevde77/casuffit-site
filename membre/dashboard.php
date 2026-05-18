@@ -5,6 +5,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 
 session_start();
+require_once __DIR__ . '/lang.php';
 $db     = getDB();
 $membre = requireMembre($db);
 
@@ -150,10 +151,10 @@ if ($rgpd_manquant || $besoin_maj) $tab_actif = 'profil';
 if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','email_pris'])) $tab_actif = 'profil';
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $LANG ?>">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Mon espace — ça suffit ! ASBL</title>
+  <title><?= tm('dashboard_page') ?></title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333;min-height:100vh}
@@ -246,7 +247,11 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
 <header class="site-header">
   <img src="<?= SITE_URL ?>/medias/logo.png" style="width:36px;height:36px;object-fit:contain" alt="" onerror="this.style.display='none'">
   <h1>ça suffit ! <span>ASBL</span></h1>
-  <a href="<?= SITE_URL ?>" class="back">← Site principal</a>
+  <a href="<?= SITE_URL ?>" class="back"><?= tm('back_site') ?></a>
+    <div style="font-size:.72rem;margin-left:auto">
+      <a href="?lang=fr" style="<?= $LANG==='fr'?'font-weight:700;color:#fff':'color:rgba(255,255,255,.5)' ?>">FR</a> |
+      <a href="?lang=nl" style="<?= $LANG==='nl'?'font-weight:700;color:#fff':'color:rgba(255,255,255,.5)' ?>">NL</a>
+    </div>
 </header>
 
 <div class="container">
@@ -284,15 +289,15 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
   <?php endif; ?>
 
   <div class="tabs">
-    <button class="tab-btn <?= $tab_actif==='dons'?'active':'' ?>" id="tab-btn-dons" onclick="showTab('dons')">💶 Mes dons</button>
-    <button class="tab-btn <?= $tab_actif==='profil'?'active':'' ?>" id="tab-btn-profil" onclick="showTab('profil')">👤 Mon profil</button>
+    <button class="tab-btn <?= $tab_actif==='dons'?'active':'' ?>" id="tab-btn-dons" onclick="showTab('dons')"><?= tm('tab_dons') ?></button>
+    <button class="tab-btn <?= $tab_actif==='profil'?'active':'' ?>" id="tab-btn-profil" onclick="showTab('profil')"><?= tm('tab_profil') ?></button>
   </div>
 
   <!-- ══════════ ONGLET DONS ══════════ -->
   <div class="tab-panel <?= $tab_actif==='dons'?'active':'' ?>" id="tab-dons">
     <div class="grid2">
       <div class="card">
-        <h2>💶 Générer un QR de paiement</h2>
+        <h2><?= tm('generer_qr') ?></h2>
         <form method="POST">
           <div class="montant-grid">
             <?php foreach ([20,50,100,250,500] as $m): ?>

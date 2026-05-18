@@ -6,6 +6,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 
 session_start();
+require_once __DIR__ . '/lang.php';
 $db = getDB();
 
 $token = trim(isset($_GET['token']) ? $_GET['token'] : '');
@@ -19,7 +20,7 @@ if (strlen($token) !== 64) {
     $membre = $stmt->fetch();
 
     if (!$membre) {
-        $error = 'Ce lien est invalide ou a expiré. <a href="login.php">Demandez un nouveau lien</a>.';
+        \$error = tm('lien_invalide_msg');
     } else {
         // Connecter le membre
         $_SESSION['membre_id']    = $membre['id'];
@@ -36,10 +37,10 @@ if (strlen($token) !== 64) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $LANG ?>">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Connexion — ça suffit ! ASBL</title>
+  <title><?= tm('magic_page') ?></title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Helvetica Neue",Arial,sans-serif;background:linear-gradient(135deg,#0e3d6b,#1673B2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -54,9 +55,9 @@ if (strlen($token) !== 64) {
 <body>
 <div class="card">
   <div class="icon">⚠️</div>
-  <h1>Lien invalide ou expiré</h1>
+  <h1><?= tm('lien_invalide_titre') ?></h1>
   <p><?= $error ?></p>
-  <a href="login.php" class="btn">Demander un nouveau lien</a>
+  <a href="login.php" class="btn"><?= tm('btn_new_lien') ?></a>
 </div>
 </body>
 </html>

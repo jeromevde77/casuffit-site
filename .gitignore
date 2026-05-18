@@ -17,11 +17,13 @@ logs/
 # ─── Cache local (tokens, réponses API) ─────────────────────────────────
 cache/
 
-# ─── Médias uploadés (trop lourds pour Git) ─────────────────────────────
+# ─── Médias uploadés (trop lourds pour Git, préservés par FTP --exclude) ─
 medias/*.jpg
 medias/*.jpeg
+medias/*.png
 medias/*.gif
 medias/*.webp
+medias/*.svg
 # Le logo est versionné car il fait partie du code
 !medias/logo.png
 

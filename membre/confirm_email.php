@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
+session_start();
+require_once __DIR__ . '/lang.php';
 
 $db    = getDB();
 $token = trim($_GET['token'] ?? '');
@@ -13,11 +15,11 @@ $membre = $stmt->fetch();
 
 if (!$membre) {
 ?>
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Lien invalide</title></head>
+<!DOCTYPE html><html lang="<?= \$LANG ?>"><head><meta charset="UTF-8"><title><?= tm('confirm_invalide_h') ?></title></head>
 <body style="font-family:Arial;text-align:center;padding:60px">
-  <h2 style="color:#c53030">Lien invalide ou expiré</h2>
-  <p style="color:#666;margin-top:12px">Ce lien de confirmation est invalide ou a déjà été utilisé.</p>
-  <a href="<?= SITE_URL ?>/membre/dashboard.php" style="color:#1673B2">← Retour à mon espace</a>
+  <h2 style="color:#c53030"><?= tm('confirm_invalide_h') ?></h2>
+  <p style="color:#666;margin-top:12px"><?= tm('confirm_invalide_p') ?></p>
+  <a href="<?= SITE_URL ?>/membre/dashboard.php" style="color:#1673B2"><?= tm('retour_espace') ?></a>
 </body></html>
 <?php exit; }
 
@@ -31,9 +33,9 @@ if ($membre['subscriber_id']) {
        ->execute([$membre['email_nouveau'], $membre['subscriber_id']]);
 }
 ?>
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Email confirmé</title></head>
+<!DOCTYPE html><html lang="<?= \$LANG ?>"><head><meta charset="UTF-8"><title><?= tm('confirm_ok_h') ?></title></head>
 <body style="font-family:Arial;text-align:center;padding:60px">
-  <h2 style="color:#27ae60">✓ Email confirmé</h2>
-  <p style="color:#555;margin-top:12px">Votre email a été mis à jour vers <strong><?= htmlspecialchars($membre['email_nouveau']) ?></strong>.</p>
-  <a href="<?= SITE_URL ?>/membre/dashboard.php" style="display:inline-block;margin-top:20px;padding:10px 20px;background:#0e3d6b;color:#fff;border-radius:8px;text-decoration:none;font-weight:700">← Mon espace membre</a>
+  <h2 style="color:#27ae60"><?= tm('confirm_ok_h') ?></h2>
+  <p style="color:#555;margin-top:12px"><?= tm('confirm_ok_p', htmlspecialchars(\$membre['email_nouveau'])) ?></p>
+  <a href="<?= SITE_URL ?>/membre/dashboard.php" style="display:inline-block;margin-top:20px;padding:10px 20px;background:#0e3d6b;color:#fff;border-radius:8px;text-decoration:none;font-weight:700"><?= tm('retour_espace_btn') ?></a>
 </body></html>

@@ -42,6 +42,7 @@ jobs:
               --exclude INSTALL\.md \
               --exclude medias/ \
               --exclude LIRE_MOI_UPLOAD\.txt \
+              --exclude medias/ \
               ./ $FTP_SERVER_DIR;
             bye
           "
