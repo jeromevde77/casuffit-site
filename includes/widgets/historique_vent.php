@@ -261,8 +261,8 @@
 /* Desktop : tableau visible, cartes cachées */
 #pmh-cards { display: none; }
 
-/* Mobile (≤600px) : cartes visibles, tableau caché */
-@media (max-width: 600px) {
+/* Mobile et tablette portrait (≤768px) : cartes visibles, tableau caché */
+@media (max-width: 768px) {
   .pmh { font-size: 11px; }
   .pmh-table-wrap, .pmh-scroll-hint { display: none !important; }
   .pmh-actions { flex-wrap: wrap; }
