@@ -5,6 +5,7 @@
     <div class="vbr-title">✈ Vols en cours — Zone Bruxelles</div>
     <div style="display:flex;gap:8px;align-items:center">
       <span class="vbr-badge" id="vbr-count">—</span>
+      <button class="vbr-btn-refresh" onclick="vbrCenter()" title="Centrer sur Bruxelles" style="margin-right:4px">⌂</button>
       <button class="vbr-btn-refresh" onclick="vbrLoad()" title="Actualiser">↺</button>
     </div>
   </div>
@@ -82,6 +83,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 (function(){
+  var HOME = {lat:50.9014, lng:4.4844, zoom:9};
   var map = null;
   var markers = {};
   var selectedCS = null;
@@ -153,13 +155,14 @@
 
   function initMap() {
     if(map) return;
+    window.vbrCenter = function(){ if(map) map.setView([HOME.lat,HOME.lng],HOME.zoom); };
     window.vbrInvalidate = function(){
       if(map){
         map.invalidateSize();
-        setTimeout(function(){ map.invalidateSize(); map.setView([50.9014,4.4844],9); },200);
+        setTimeout(function(){ map.invalidateSize(); map.setView([HOME.lat,HOME.lng],HOME.zoom); },200);
       }
     };
-    map = L.map('vbr-mapbox', { zoomControl: true }).setView([50.9014, 4.4844], 9);
+    map = L.map('vbr-mapbox', { zoomControl: true }).setView([HOME.lat, HOME.lng], HOME.zoom);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© <a href="https://www.openstreetmap.org">OSM</a>',
       maxZoom: 18
