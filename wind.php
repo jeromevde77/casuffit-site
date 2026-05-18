@@ -352,66 +352,6 @@ header('Expires: 0');
 .pmh-wmodal-body { padding: 18px; }
 .pmh-stats-note { font-size: .72rem; color: #888; margin-top: 8px; text-align: right; }
 
-'
-    +'@page{size:A4 landscape;margin:12mm 10mm}'
-    +'*{font-family:Arial,Helvetica,sans-serif;box-sizing:border-box}'
-    +'body{margin:0;padding:0;font-size:8.5pt;color:#222}'
-    +'.header{background:#0e3d6b;color:white;padding:10px 14px;margin-bottom:8px;border-radius:4px;display:flex;justify-content:space-between;align-items:flex-start}'
-    +'.header h1{margin:0;font-size:13pt;font-weight:bold}'
-    +'.header p{margin:3px 0 0;font-size:8pt;opacity:.8}'
-    +'.header .logo{font-size:11pt;font-weight:bold;color:rgba(255,255,255,.7);white-space:nowrap}'
-    +'.meta{display:flex;gap:16px;margin-bottom:8px;padding:7px 10px;background:#f0f4f8;border-radius:4px;font-size:7.5pt;border:1px solid #dde6f0}'
-    +'.meta-col{flex:1}'
-    +'.meta b{color:#0e3d6b;display:block;margin-bottom:2px}'
-    +'.legal{background:#fff8ee;border:1px solid #ffd080;border-radius:4px;padding:7px 10px;margin-bottom:8px;font-size:7.5pt;color:#7a4400;line-height:1.4}'
-    +'.summary{padding:7px 10px;border-radius:4px;margin-bottom:8px;font-size:9pt;font-weight:bold}'
-    +'.sum-viol{background:#fff0f0;border:1.5px solid #fca5a5;color:#7a1a1a}'
-    +'.sum-ok{background:#e8f8f0;border:1.5px solid #b2f0d0;color:#1a5c35}'
-    +'.sum-warn{background:#fff8ee;border:1.5px solid #ffd080;color:#7a4400}'
-    +'table{width:100%;border-collapse:collapse;font-size:7.5pt}'
-    +'th{background:#0e3d6b;color:white;padding:5px 6px;text-align:left;font-size:7pt;line-height:1.3;white-space:nowrap}'
-    +'td{padding:4px 5px;border-bottom:1px solid #e8eef5;vertical-align:top;line-height:1.35}'
-    +'tr:nth-child(even) td{background:#f8fafc}'
-    +'tr.viol-row td{background:#fff0f0!important}'
-    +'tr.div-row td{background:#fff8ee!important}'
-    +'.prs-on{color:#1a7a4a;font-weight:bold}'
-    +'.prs-off{color:#c0392b;font-weight:bold}'
-    +'.ok{color:#1a7a4a;font-weight:bold}'
-    +'.viol{color:#c0392b;font-weight:bold}'
-    +'.warn{color:#c97200;font-weight:bold}'
-    +'.rwy-cell{font-weight:bold;font-size:10pt;color:#0e3d6b;text-align:center}'
-    +'.conf-cell{text-align:center;font-weight:bold}'
-    +'.be{color:#e07000;font-size:7pt}'
-    +'.dt{color:#aaa;font-size:7pt}'
-    +'.comp{color:#888;font-size:6.5pt}'
-    +'.div-lbl{color:#c97200;font-size:6.5pt}'
-    +'.analyse{font-weight:normal;font-size:7pt;color:#555}'
-    +'.note-cell{color:#555;font-style:italic;font-size:7pt;max-width:100px}'
-    +'.footer{margin-top:8px;font-size:6.5pt;color:#999;border-top:1px solid #e0e8f0;padding-top:5px;display:flex;justify-content:space-between}'
-    +'@media print{.no-print{display:none}}'
-    +'@media (max-width: 600px) {
-  .pmh { font-size: 11px; }
-  .pmh-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .pmh-table { font-size: .68rem; min-width: 520px; }
-  .pmh-table th, .pmh-table td { padding: 4px 5px; white-space: nowrap; }
-  /* Modale plein écran sur mobile */
-  .pmh-wmodal-bg { align-items: flex-end; }
-  .pmh-wmodal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; max-height: 85vh; }
-  /* Cartes après analyse */
-  #pmh-cards { margin-top: 10px; }
-  .pmh-card { background:#fff; border:1.5px solid #e0e8f0; border-radius:10px; margin-bottom:10px; }
-  .pmh-card-head { background:#0e3d6b; color:#fff; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; }
-  .pmh-card-time { font-weight:700; font-size:.9rem; }
-  .pmh-card-date { font-size:.72rem; opacity:.75; }
-  .pmh-card-body { padding:10px 12px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .pmh-card-wind { grid-column:1/-1; font-size:1rem; font-weight:700; color:#0e3d6b; }
-  .pmh-card-aip { background:#f5f9ff; border-radius:6px; padding:6px 8px; font-size:.78rem; }
-  .pmh-card-aip-label { font-size:.62rem; color:#888; font-weight:700; text-transform:uppercase; margin-bottom:2px; }
-  .pmh-card-verdict { grid-column:1/-1; padding:6px 8px; border-radius:6px; font-size:.8rem; font-weight:600; text-align:center; }
-  .pmh-card-btn-row { grid-column:1/-1; }
-  .pmh-card-widget-btn { width:100%; background:#1673B2; color:#fff; border:none; border-radius:7px; padding:10px; font-size:.88rem; font-weight:700; cursor:pointer; }
-}
-
   </style>
 </head>
 <body>

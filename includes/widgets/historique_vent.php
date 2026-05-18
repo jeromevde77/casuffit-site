@@ -261,6 +261,20 @@
 /* Desktop : tableau visible, cartes cachées */
 #pmh-cards { display: none; }
 
+/* Styles des cartes (utilisées en mode mobile) */
+.pmh-card { background:#fff; border:1.5px solid #e0e8f0; border-radius:10px; margin-bottom:10px; overflow:hidden; }
+.pmh-card-head { background:#0e3d6b; color:#fff; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; }
+.pmh-card-time { font-weight:700; font-size:.9rem; }
+.pmh-card-date { font-size:.72rem; opacity:.75; }
+.pmh-card-body { padding:10px 12px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.pmh-card-wind { grid-column:1/-1; font-size:1rem; font-weight:700; color:#0e3d6b; }
+.pmh-card-aip { background:#f5f9ff; border-radius:6px; padding:6px 8px; font-size:.78rem; }
+.pmh-card-aip-label { font-size:.62rem; color:#888; font-weight:700; text-transform:uppercase; margin-bottom:2px; }
+.pmh-card-verdict { grid-column:1/-1; padding:6px 8px; border-radius:6px; font-size:.8rem; font-weight:600; text-align:center; }
+.pmh-card-btn-row { grid-column:1/-1; }
+.pmh-card-widget-btn { width:100%; background:#1673B2; color:#fff; border:none; border-radius:7px; padding:10px; font-size:.88rem; font-weight:700; cursor:pointer; font-family:inherit; }
+.pmh-card-widget-btn:active { background:#0e5a96; }
+
 /* Mobile et tablette portrait (≤768px) : cartes visibles, tableau caché */
 @media (max-width: 768px) {
   .pmh { font-size: 11px; }
