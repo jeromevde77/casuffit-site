@@ -952,5 +952,3 @@ window.pmhRenderCards = function() {
   }).join('');
 };
 </script>
-  // ── Vue cartes mobile (dans le scope du 1er IIFE) ────────────────
-
