@@ -690,6 +690,7 @@ if ($edit_page) {
           <button type="button" class="wt-btn" onclick="fmt('insertOrderedList')" title="Liste numérotée">1.</button>
           <div class="wt-sep"></div>
           <button type="button" class="wt-btn" onclick="insertLink()" title="Lien">🔗</button>
+          <button type="button" class="wt-btn" onclick="ouvrirMedias()" title="Insérer une image">🖼</button>
           <button type="button" class="wt-btn" onclick="fmt('removeFormat')" title="Effacer style">Tx</button>
           <button type="button" class="wt-btn" onclick="removeBloc()" title="Supprimer le style du bloc" style="color:#c0392b;font-weight:700">✕ Bloc</button>
           <div class="wt-sep"></div><button type="button" class="wt-btn" onclick="openPalette(this)" style="background:#1673B2;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
@@ -740,6 +741,7 @@ if ($edit_page) {
           <button type="button" class="wt-btn" onclick="fmtNl('insertOrderedList')" title="Numéroté">1.</button>
           <div class="wt-sep"></div>
           <button type="button" class="wt-btn" onclick="insertLinkNl()" title="Lien">🔗</button>
+          <button type="button" class="wt-btn" onclick="ouvrirMediasNl()" title="Insérer une image">🖼</button>
           <button type="button" class="wt-btn" onclick="fmtNl('removeFormat')" title="Effacer">Tx</button>
           <button type="button" class="wt-btn" onclick="removeBlocNl()" title="Supprimer bloc" style="color:#c0392b;font-weight:700">✕ Bloc</button>
           <div class="wt-sep"></div>
@@ -2160,11 +2162,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 var mediaSelected = null;
+var mediaTargetEditor = 'wysiwyg-editor'; // 'wysiwyg-editor' ou 'wysiwyg-editor-nl'
+var mediaSavedRange  = null; // Sauvegarder la sélection avant d'ouvrir la modale
 
 function ouvrirMedias() {
+  mediaTargetEditor = 'wysiwyg-editor';
+  _ouvrirMediasCommun();
+}
+function ouvrirMediasNl() {
+  mediaTargetEditor = 'wysiwyg-editor-nl';
+  _ouvrirMediasCommun();
+}
+function _ouvrirMediasCommun() {
+  // Sauvegarder la sélection courante dans l'éditeur
+  var sel = window.getSelection();
+  mediaSavedRange = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).cloneRange() : null;
   document.getElementById('media-overlay').classList.add('open');
   chargerMedias();
 }
+
 function fermerMedias() {
   document.getElementById('media-overlay').classList.remove('open');
   mediaSelected = null;
@@ -2201,24 +2217,44 @@ function selectMedia(el) {
 
 function insererImage() {
   if (!mediaSelected) return;
-  var alt    = document.getElementById('media-alt').value || '';
-  var width  = document.getElementById('media-width').value;
-  var align  = document.getElementById('media-align').value;
+  var alt   = document.getElementById('media-alt').value || '';
+  var width = document.getElementById('media-width').value;
+  var align = document.getElementById('media-align').value;
 
-  var style = '';
+  var style = 'max-width:100%;height:auto;';
   if (width)  style += 'width:'+width+';';
-  if (align === 'center') style += 'display:block;margin:0 auto;';
+  if (align === 'center') style += 'display:block;margin:10px auto;';
   else if (align === 'left')  style += 'float:left;margin:0 12px 8px 0;';
   else if (align === 'right') style += 'float:right;margin:0 0 8px 12px;';
+  else style += 'display:block;margin:10px 0;';
 
-  var tag = '<img src="'+mediaSelected.url+'" alt="'+alt+'"'+(style?' style="'+style+'"':'')+'>';
+  var tag = '<img src="'+mediaSelected.url+'" alt="'+alt+'" style="'+style+'">';
 
-  // Insérer dans le textarea à la position du curseur
-  var ta = document.getElementById('f-contenu');
-  var start = ta.selectionStart, end = ta.selectionEnd;
-  ta.value = ta.value.substring(0, start) + tag + ta.value.substring(end);
-  ta.selectionStart = ta.selectionEnd = start + tag.length;
-  ta.dispatchEvent(new Event('input'));
+  // Insérer dans l'éditeur contenteditable ciblé
+  var ed = document.getElementById(mediaTargetEditor);
+  if (ed) {
+    ed.focus();
+    var sel = window.getSelection();
+    // Restaurer la sélection sauvegardée si possible
+    if (mediaSavedRange && ed.contains(mediaSavedRange.commonAncestorContainer)) {
+      sel.removeAllRanges();
+      sel.addRange(mediaSavedRange);
+    } else {
+      // Placer le curseur à la fin
+      var range = document.createRange();
+      range.selectNodeContents(ed);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    document.execCommand('insertHTML', false, tag);
+    // Synchroniser le textarea / hidden correspondant
+    if (mediaTargetEditor === 'wysiwyg-editor-nl') {
+      if (typeof syncNl === 'function') syncNl();
+    } else {
+      if (typeof syncEditor === 'function') syncEditor();
+    }
+  }
   fermerMedias();
 }
 
