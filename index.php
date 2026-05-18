@@ -505,6 +505,13 @@ header.site-header {
 .subtab-btn:hover { color: #0e3d6b; background: rgba(22,115,178,.08); }
 .subtab-btn.active { color: #0e3d6b; border-bottom-color: #1673B2; font-weight: 700; }
 
+@media (max-width: 500px) {
+  .subtabs-wrap { padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .subtabs-wrap::-webkit-scrollbar { display: none; }
+  .subtabs { min-width: max-content; padding: 0 8px; gap: 0; }
+  .subtab-btn { padding: 7px 10px; font-size: .7rem; }
+}
+
 /* ══ MAIN LAYOUT ══════════════════════════════════════════════════════ */
 .main-wrap {
   max-width: 960px;
