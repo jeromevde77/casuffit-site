@@ -20,23 +20,37 @@ if (!defined('ANTHROPIC_API_KEY') || ANTHROPIC_API_KEY === '' || strpos(ANTHROPI
     exit;
 }
 
-// ── Récupérer la page ────────────────────────────────────────────────────
+// ── Récupérer la page ou la news ────────────────────────────────────────
 $page_id = (int)($_POST['page_id'] ?? $_GET['page_id'] ?? 0);
-if ($page_id <= 0) {
+$news_id = (int)($_POST['news_id'] ?? $_GET['news_id'] ?? 0);
+$is_news = $news_id > 0;
+
+if ($page_id <= 0 && $news_id <= 0) {
     http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => 'page_id manquant']);
+    echo json_encode(['ok' => false, 'error' => 'page_id ou news_id manquant']);
     exit;
 }
 
 try {
-    $db   = getDB();
-    $stmt = $db->prepare("SELECT id, slug, titre, contenu, meta_description FROM pages WHERE id = ?");
-    $stmt->execute([$page_id]);
-    $page = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$page) {
-        http_response_code(404);
-        echo json_encode(['ok' => false, 'error' => 'Page introuvable']);
-        exit;
+    $db = getDB();
+    if ($is_news) {
+        $stmt = $db->prepare("SELECT id, titre, accroche, contenu FROM news WHERE id = ?");
+        $stmt->execute([$news_id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) { http_response_code(404); echo json_encode(['ok'=>false,'error'=>'News introuvable']); exit; }
+        $page = [
+            'id'               => $row['id'],
+            'slug'             => 'news-'.$row['id'],
+            'titre'            => $row['titre'],
+            'meta_description' => $row['accroche'],
+            'contenu'          => $row['contenu'],
+            'accroche'         => $row['accroche'],
+        ];
+    } else {
+        $stmt = $db->prepare("SELECT id, slug, titre, contenu, meta_description FROM pages WHERE id = ?");
+        $stmt->execute([$page_id]);
+        $page = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$page) { http_response_code(404); echo json_encode(['ok'=>false,'error'=>'Page introuvable']); exit; }
     }
 } catch (Throwable $e) {
     http_response_code(500);
@@ -201,16 +215,28 @@ if (!empty($base64Images) && !empty($out['contenu_nl'])) {
 
 // ── Sauvegarder en BDD (auto, à relire) ─────────────────────────────────
 try {
-    // Vérifier que les colonnes _nl existent
-    $cols = $db->query("SHOW COLUMNS FROM pages LIKE 'titre_nl'")->fetch();
-    if ($cols) {
-        $stmt = $db->prepare("UPDATE pages SET titre_nl=?, meta_description_nl=?, contenu_nl=?, nl_status='auto', nl_translated_at=NOW() WHERE id=?");
-        $stmt->execute([
-            $out['titre_nl']   ?? null,
-            $out['meta_nl']    ?? null,
-            $out['contenu_nl'] ?? null,
-            $page_id,
-        ]);
+    if ($is_news) {
+        $cols = $db->query("SHOW COLUMNS FROM news LIKE 'titre_nl'")->fetch();
+        if ($cols) {
+            $stmt = $db->prepare("UPDATE news SET titre_nl=?, accroche_nl=?, contenu_nl=?, nl_status='auto' WHERE id=?");
+            $stmt->execute([
+                $out['titre_nl']    ?? null,
+                $out['meta_nl']     ?? null, // meta_nl sert d'accroche_nl pour les news
+                $out['contenu_nl']  ?? null,
+                $news_id,
+            ]);
+        }
+    } else {
+        $cols = $db->query("SHOW COLUMNS FROM pages LIKE 'titre_nl'")->fetch();
+        if ($cols) {
+            $stmt = $db->prepare("UPDATE pages SET titre_nl=?, meta_description_nl=?, contenu_nl=?, nl_status='auto', nl_translated_at=NOW() WHERE id=?");
+            $stmt->execute([
+                $out['titre_nl']   ?? null,
+                $out['meta_nl']    ?? null,
+                $out['contenu_nl'] ?? null,
+                $page_id,
+            ]);
+        }
     }
 } catch (Throwable $e) {
     // On renvoie quand même le résultat à l'admin pour qu'il puisse copier-coller
@@ -218,11 +244,12 @@ try {
 
 // ── Renvoyer le résultat ────────────────────────────────────────────────
 echo json_encode([
-    'ok'         => true,
-    'titre_nl'   => $out['titre_nl']   ?? '',
-    'meta_nl'    => $out['meta_nl']    ?? '',
-    'contenu_nl' => $out['contenu_nl'] ?? '',
-    'model'      => $resp['model'] ?? $model,
-    'tokens'     => ($resp['usage']['input_tokens'] ?? 0) + ($resp['usage']['output_tokens'] ?? 0),
-    'images'     => count($base64Images),
+    'ok'          => true,
+    'titre_nl'    => $out['titre_nl']   ?? '',
+    'meta_nl'     => $out['meta_nl']    ?? '',
+    'accroche_nl' => $out['meta_nl']    ?? '', // alias pour les news
+    'contenu_nl'  => $out['contenu_nl'] ?? '',
+    'model'       => $resp['model'] ?? $model,
+    'tokens'      => ($resp['usage']['input_tokens'] ?? 0) + ($resp['usage']['output_tokens'] ?? 0),
+    'images'      => count($base64Images),
 ]);

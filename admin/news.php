@@ -16,18 +16,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_news'])) {
     $statut   = in_array(isset($_POST['statut']) ? $_POST['statut'] : '', array('brouillon','publie','archive')) ? $_POST['statut'] : 'brouillon';
     $epingle  = isset($_POST['epingle']) ? 1 : 0;
     $date_pub = trim(isset($_POST['date_publication']) ? $_POST['date_publication'] : '');
+
+    // ── Champs NL ──
+    $titre_nl    = trim($_POST['titre_nl']    ?? ''); $titre_nl    = $titre_nl    !== '' ? $titre_nl    : null;
+    $accroche_nl = trim($_POST['accroche_nl'] ?? ''); $accroche_nl = $accroche_nl !== '' ? $accroche_nl : null;
+    $contenu_nl  = trim($_POST['contenu_nl']  ?? ''); $contenu_nl  = $contenu_nl  !== '' ? $contenu_nl  : null;
+    $nl_status   = in_array($_POST['nl_status'] ?? '', ['vide','auto','relu']) ? $_POST['nl_status'] : 'vide';
+
+    // Vérifier si colonnes NL existent
+    static $hasNlNews = null;
+    if ($hasNlNews === null) {
+        try { $c = $db->query("SHOW COLUMNS FROM news LIKE 'titre_nl'")->fetch(); $hasNlNews = !empty($c); }
+        catch(Exception $e) { $hasNlNews = false; }
+    }
     $date_pub = $date_pub ? date('Y-m-d H:i:s', strtotime($date_pub)) : date('Y-m-d H:i:s');
 
     if (empty($titre)) {
         $error = 'Le titre est obligatoire.';
     } else {
         if ($id > 0) {
-            $db->prepare("UPDATE news SET titre=?,accroche=?,contenu=?,image_url=?,statut=?,epingle=?,date_publication=? WHERE id=?")
-               ->execute(array($titre,$accroche,$contenu,$image,$statut,$epingle,$date_pub,$id));
+            if ($hasNlNews) {
+                $db->prepare("UPDATE news SET titre=?,accroche=?,contenu=?,image_url=?,statut=?,epingle=?,date_publication=?,titre_nl=?,accroche_nl=?,contenu_nl=?,nl_status=? WHERE id=?")
+                   ->execute(array($titre,$accroche,$contenu,$image,$statut,$epingle,$date_pub,$titre_nl,$accroche_nl,$contenu_nl,$nl_status,$id));
+            } else {
+                $db->prepare("UPDATE news SET titre=?,accroche=?,contenu=?,image_url=?,statut=?,epingle=?,date_publication=? WHERE id=?")
+                   ->execute(array($titre,$accroche,$contenu,$image,$statut,$epingle,$date_pub,$id));
+            }
             $msg = '✅ Actualité mise à jour.';
         } else {
-            $db->prepare("INSERT INTO news (titre,accroche,contenu,image_url,statut,epingle,date_publication,created_by) VALUES (?,?,?,?,?,?,?,?)")
-               ->execute(array($titre,$accroche,$contenu,$image,$statut,$epingle,$date_pub,ADMIN_USER));
+            if ($hasNlNews) {
+                $db->prepare("INSERT INTO news (titre,accroche,contenu,image_url,statut,epingle,date_publication,titre_nl,accroche_nl,contenu_nl,nl_status,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
+                   ->execute(array($titre,$accroche,$contenu,$image,$statut,$epingle,$date_pub,$titre_nl,$accroche_nl,$contenu_nl,$nl_status,ADMIN_USER));
+            } else {
+                $db->prepare("INSERT INTO news (titre,accroche,contenu,image_url,statut,epingle,date_publication,created_by) VALUES (?,?,?,?,?,?,?,?)")
+                   ->execute(array($titre,$accroche,$contenu,$image,$statut,$epingle,$date_pub,ADMIN_USER));
+            }
             $msg = '✅ Actualité créée.';
         }
         header('Location: news.php?msg='.urlencode($msg)); exit;
@@ -237,12 +260,13 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
 .btn-retour-mobile{display:none;font-size:.78rem;color:rgba(255,255,255,.85);text-decoration:none;font-weight:600;margin-bottom:8px;align-items:center;gap:4px}
 .eform-foot,.pedit-foot,.save-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 16px;border-top:1px solid #eee;background:#fafbfc;flex-shrink:0}
 /* Éditeur WYSIWYG contenteditable */
-#wysiwyg-editor {
+#wysiwyg-editor, #wysiwyg-editor-nl {
   min-height: 260px; padding: 14px; border: 1px solid #c8dff0; border-radius: 0 0 6px 6px;
   background: #fff; font-family: "Helvetica Neue",Arial,sans-serif; font-size: .88rem;
   line-height: 1.7; color: #333; outline: none; cursor: text;
 }
 #wysiwyg-editor:focus { border-color: #1673B2; }
+#wysiwyg-editor-nl:focus { border-color: #FF9900; }
 #wysiwyg-toolbar { background: #f8fafc; border: 1px solid #c8dff0; border-bottom: none;
   border-radius: 6px 6px 0 0; padding: 6px 10px; display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
 .wt-btn { background: #fff; border: 1px solid #dde; border-radius: 4px; padding: 3px 8px;
@@ -250,18 +274,44 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
 .wt-btn:hover { background: #e8f3fb; border-color: #1673B2; }
 .wt-btn.active { background: #1673B2; color: #fff; border-color: #1673B2; }
 .wt-sep { width: 1px; background: #dde; margin: 0 4px; align-self: stretch; }
-/* Styles du site DANS l'éditeur */
-#wysiwyg-editor .cadre-bleu   { padding: 12px 16px; background: #e8f3fb; border-left: 4px solid #1673B2; color: #1673B2; margin: 10px 0; border-radius: 4px; display: block; }
-#wysiwyg-editor .cadre-orange { padding: 12px 16px; background: #FF9900; color: #fff; margin: 10px 0; border-radius: 4px; display: block; }
-#wysiwyg-editor .cadre-vert   { padding: 12px 16px; background: #e8f5e9; border-left: 4px solid #2e7d32; margin: 10px 0; border-radius: 4px; display: block; }
-#wysiwyg-editor .alerte       { background: #fff8ee; border: 2px solid #FF9900; padding: 12px 16px; border-radius: 6px; margin: 10px 0; display: block; }
-#wysiwyg-editor .al-titre     { font-weight: 700; color: #FF9900; margin-bottom: 6px; display: block; }
-#wysiwyg-editor .orange, #wysiwyg-editor .section-title { color: #FF9900; font-weight: 600; }
-#wysiwyg-editor h3            { color: #FF9900; font-weight: 600; font-size: 1rem; border-bottom: 1px solid #c8dff0; padding-bottom: 4px; margin: 16px 0 8px; }
-#wysiwyg-editor .content-text { color: #1673B2; }
-#wysiwyg-editor .ac-item      { background: #f0f6fb; border-left: 3px solid #1673B2; padding: 10px 14px; margin: 8px 0; }
-#wysiwyg-editor ul, #wysiwyg-editor ol { padding-left: 20px; }
-#wysiwyg-editor blockquote    { border-left: 4px solid #FF9900; padding: 8px 14px; background: #fff8ee; margin: 10px 0; }
+/* Styles du site DANS l'éditeur — FR et NL */
+#wysiwyg-editor .cadre-bleu,    #wysiwyg-editor-nl .cadre-bleu   { padding: 12px 16px; background: #e8f3fb; border-left: 4px solid #1673B2; color: #1673B2; margin: 10px 0; border-radius: 4px; display: block; }
+#wysiwyg-editor .cadre-orange,  #wysiwyg-editor-nl .cadre-orange { padding: 12px 16px; background: #FF9900; color: #fff; margin: 10px 0; border-radius: 4px; display: block; }
+#wysiwyg-editor .cadre-vert,    #wysiwyg-editor-nl .cadre-vert   { padding: 12px 16px; background: #e8f5e9; border-left: 4px solid #2e7d32; margin: 10px 0; border-radius: 4px; display: block; }
+#wysiwyg-editor .alerte,        #wysiwyg-editor-nl .alerte       { background: #fff8ee; border: 2px solid #FF9900; padding: 12px 16px; border-radius: 6px; margin: 10px 0; display: block; }
+#wysiwyg-editor .al-titre,      #wysiwyg-editor-nl .al-titre     { font-weight: 700; color: #FF9900; margin-bottom: 6px; display: block; }
+#wysiwyg-editor .orange,        #wysiwyg-editor-nl .orange       { color: #FF9900; font-weight: 600; }
+#wysiwyg-editor .section-title, #wysiwyg-editor-nl .section-title { color: #FF9900; font-weight: 400; font-size: 1.05rem; margin: 20px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #c8dff0; }
+#wysiwyg-editor .content-text,  #wysiwyg-editor-nl .content-text { color: #1673B2; margin-bottom: 10px; font-size: 95%; line-height: 1.65; }
+#wysiwyg-editor .ac-item,       #wysiwyg-editor-nl .ac-item      { background: #f0f6fb; border-left: 3px solid #1673B2; padding: 10px 14px; margin: 8px 0; }
+#wysiwyg-editor .lettre-intro,  #wysiwyg-editor-nl .lettre-intro  { background: #0e3d6b; color: #fff; padding: 16px 20px; margin-bottom: 16px; display: block; }
+#wysiwyg-editor .lettre-intro p,#wysiwyg-editor-nl .lettre-intro p { color: #fff; margin: 0; line-height: 1.55; }
+#wysiwyg-editor .citation-box,  #wysiwyg-editor-nl .citation-box  { background: #f5f5f5; border-left: 4px solid #1673B2; padding: 12px 16px; margin: 10px 0; display: block; }
+#wysiwyg-editor .citation-box p,#wysiwyg-editor-nl .citation-box p { font-style: italic; color: #1673B2; margin: 0 0 4px; }
+#wysiwyg-editor .actions-grid,  #wysiwyg-editor-nl .actions-grid  { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 10px; margin: 10px 0; }
+#wysiwyg-editor .action-card,   #wysiwyg-editor-nl .action-card   { background: #e8f3fb; border-top: 3px solid #1673B2; padding: 12px 10px; }
+#wysiwyg-editor .ac-num,        #wysiwyg-editor-nl .ac-num        { font-size: 1.3rem; font-weight: 700; color: #7ec8e3; }
+#wysiwyg-editor .ac-titre,      #wysiwyg-editor-nl .ac-titre      { font-weight: 600; color: #0e3d6b; font-size: .88rem; }
+#wysiwyg-editor .ac-text,       #wysiwyg-editor-nl .ac-text       { font-size: .78rem; color: #555; }
+#wysiwyg-editor .signature,     #wysiwyg-editor-nl .signature     { background: #e8f3fb; border-left: 3px solid #1673B2; padding: 12px 16px; margin-top: 16px; font-size: .88rem; color: #1673B2; display: block; }
+#wysiwyg-editor .cadre-vert .cv-titre, #wysiwyg-editor-nl .cadre-vert .cv-titre { font-weight: 600; color: #1b5e20; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; display: block; }
+#wysiwyg-editor h2,             #wysiwyg-editor-nl h2             { color: #FF9900; font-weight: 600; font-size: 1.2rem; border-bottom: 1px solid #c8dff0; padding-bottom: 4px; margin: 16px 0 8px; }
+#wysiwyg-editor h3,             #wysiwyg-editor-nl h3             { color: #FF9900; font-weight: 600; font-size: 1rem; border-bottom: 1px solid #c8dff0; padding-bottom: 4px; margin: 16px 0 8px; }
+#wysiwyg-editor ul,             #wysiwyg-editor-nl ul             { padding-left: 20px; margin: 8px 0; }
+#wysiwyg-editor ol,             #wysiwyg-editor-nl ol             { padding-left: 20px; margin: 8px 0; }
+#wysiwyg-editor blockquote,     #wysiwyg-editor-nl blockquote     { border-left: 4px solid #FF9900; padding: 8px 14px; background: #fff8ee; margin: 10px 0; font-style: italic; }
+#wysiwyg-editor p,              #wysiwyg-editor-nl p              { margin-bottom: 8px; }
+#wysiwyg-editor strong,         #wysiwyg-editor-nl strong         { font-weight: 700; }
+#wysiwyg-editor a,              #wysiwyg-editor-nl a              { color: #1673B2; }
+#wysiwyg-editor img,            #wysiwyg-editor-nl img            { max-width: 100%; height: auto; display: block; margin: 10px 0; border-radius: 4px; }
+#wysiwyg-editor .chiffre-val,   #wysiwyg-editor-nl .chiffre-val  { font-size: 1.5rem; font-weight: 700; color: #FF9900; }
+#wysiwyg-editor .chiffre-label, #wysiwyg-editor-nl .chiffre-label { font-size: 70%; color: #555; display: block; margin-top: 2px; }
+#wysiwyg-editor .timeline,      #wysiwyg-editor-nl .timeline     { position: relative; padding-left: 24px; margin: 14px 0; }
+#wysiwyg-editor .tl-item,       #wysiwyg-editor-nl .tl-item      { position: relative; margin-bottom: 14px; }
+#wysiwyg-editor .tl-date,       #wysiwyg-editor-nl .tl-date      { font-weight: 600; font-size: 85%; color: #1673B2; }
+#wysiwyg-editor .tl-text,       #wysiwyg-editor-nl .tl-text      { font-size: 90%; color: #555; line-height: 1.5; }
+#wysiwyg-editor .sep,           #wysiwyg-editor-nl .sep          { border: none; border-top: 1px solid #c8dff0; margin: 20px 0; display: block; }
+#wysiwyg-editor .divider,       #wysiwyg-editor-nl .divider      { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: #555; font-size: 72%; text-transform: uppercase; letter-spacing: .08em; }
 .ql-toolbar.ql-snow { border: 1px solid #c8dff0; border-radius: 6px 6px 0 0; background: #f8fafc; }
 .ql-container.ql-snow { border: 1px solid #c8dff0; border-radius: 0 0 6px 6px; }
 
@@ -426,6 +476,12 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
         </label>
       </div>
 
+      <!-- Champs NL soumis avec le form (alimentés par syncNl() depuis le bloc NL ci-dessous) -->
+      <input type="hidden" name="titre_nl"    id="h-titre_nl"    value="<?= htmlspecialchars($edit['titre_nl']    ?? '') ?>">
+      <input type="hidden" name="accroche_nl" id="h-accroche_nl" value="<?= htmlspecialchars($edit['accroche_nl'] ?? '') ?>">
+      <input type="hidden" name="contenu_nl"  id="h-contenu_nl"  value="<?= htmlspecialchars($edit['contenu_nl']  ?? '') ?>">
+      <input type="hidden" name="nl_status"   id="h-nl_status"   value="<?= htmlspecialchars($edit['nl_status']   ?? 'vide') ?>">
+
     </div><!-- /ecol-body -->
     <div class="save-bar">
       <button type="submit" class="btn-save"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Sauvegarder</button>
@@ -462,7 +518,117 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
 </div><!-- /news-editor-wrap -->
 </form>
 
-<?php else: ?>
+<?php if ($edit): ?>
+<?php
+$nl_status_n = $edit['nl_status'] ?? 'vide';
+$has_nl_n    = !empty($edit['titre_nl']) || !empty($edit['contenu_nl']);
+$badges_n = ['vide'=>'⚪ Vide','auto'=>'🤖 Traduction auto','relu'=>'✅ Relu humain'];
+$colors_n = ['vide'=>'#999','auto'=>'#d97706','relu'=>'#27ae60'];
+?>
+<div style="max-width:900px;margin:0 auto;padding:0 20px 30px">
+  <details class="nl-block" <?= $has_nl_n ? 'open' : '' ?> style="background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:10px 14px">
+    <summary style="cursor:pointer;font-weight:700;color:#0e3d6b;display:flex;justify-content:space-between;align-items:center">
+      <span>🇳🇱 Version néerlandaise (NL)</span>
+      <span style="font-size:.7rem;color:<?= $colors_n[$nl_status_n] ?>;font-weight:600"><?= $badges_n[$nl_status_n] ?></span>
+    </summary>
+    <div style="margin-top:12px">
+
+      <label>Titre (NL)</label>
+      <input type="text" id="v-titre_nl" value="<?= htmlspecialchars($edit['titre_nl'] ?? '') ?>" placeholder="Laisser vide pour utiliser le titre FR" oninput="syncNl()" style="width:100%;padding:8px 10px;border:1px solid #f0c060;border-radius:5px;font-size:.88rem;box-sizing:border-box;margin-bottom:10px">
+
+      <label>Accroche (NL)</label>
+      <textarea id="v-accroche_nl" rows="2" placeholder="Résumé en néerlandais..." oninput="syncNl()" style="width:100%;padding:8px;border:1px solid #f0c060;border-radius:5px;font-size:.88rem;box-sizing:border-box;margin-bottom:10px"><?= htmlspecialchars($edit['accroche_nl'] ?? '') ?></textarea>
+
+      <label>Contenu (NL)</label>
+      <!-- Toolbar NL -->
+      <div style="background:#fff8ee;border:1px solid #f0c060;border-bottom:none;border-radius:6px 6px 0 0;padding:6px 10px;display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+        <button type="button" class="wt-btn" onclick="fmtNl('bold')"><b>G</b></button>
+        <button type="button" class="wt-btn" onclick="fmtNl('italic')"><i>I</i></button>
+        <button type="button" class="wt-btn" onclick="fmtNl('underline')"><u>S</u></button>
+        <div class="wt-sep"></div>
+        <button type="button" class="wt-btn" onclick="fmtBlockNl('h2')">H2</button>
+        <button type="button" class="wt-btn" onclick="fmtBlockNl('h3')">H3</button>
+        <button type="button" class="wt-btn" onclick="fmtBlockNl('p')">¶</button>
+        <div class="wt-sep"></div>
+        <button type="button" class="wt-btn" onclick="fmtNl('insertUnorderedList')">• —</button>
+        <button type="button" class="wt-btn" onclick="fmtNl('insertOrderedList')">1.</button>
+        <div class="wt-sep"></div>
+        <button type="button" class="wt-btn" onclick="insertLinkNl()">🔗</button>
+        <button type="button" class="wt-btn" onclick="fmtNl('removeFormat')">Tx</button>
+        <button type="button" class="wt-btn" onclick="removeBlocNl()" style="color:#c0392b;font-weight:700">✕ Bloc</button>
+        <div class="wt-sep"></div>
+        <button type="button" class="wt-btn" onclick="openPaletteNl(this)" style="background:#FF9900;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
+      </div>
+      <div id="wysiwyg-editor-nl" contenteditable="true" oninput="syncNl()"
+           style="min-height:180px;max-height:50vh;overflow-y:auto;padding:14px;border:1px solid #f0c060;border-radius:0 0 6px 6px;background:#fffdf5;font-family:'Helvetica Neue',Arial,sans-serif;font-size:.88rem;line-height:1.7;color:#333;outline:none;cursor:text"></div>
+      <div style="font-size:.63rem;color:#aaa;margin-top:2px">Laisser vide → fallback automatique sur le contenu FR</div>
+
+      <div style="display:flex;gap:14px;margin-top:10px;align-items:center;flex-wrap:wrap">
+        <div>
+          <label style="display:block;margin-bottom:4px;font-size:.8rem">État</label>
+          <select id="v-nl_status" onchange="syncNl()" style="min-width:200px;padding:6px;border:1px solid #ddd;border-radius:5px">
+            <option value="vide"  <?= $nl_status_n==='vide' ?'selected':'' ?>>⚪ Vide / brouillon</option>
+            <option value="auto"  <?= $nl_status_n==='auto' ?'selected':'' ?>>🤖 Auto (à relire)</option>
+            <option value="relu"  <?= $nl_status_n==='relu' ?'selected':'' ?>>✅ Relu par humain</option>
+          </select>
+        </div>
+        <button type="button" onclick="autoTranslateNews(<?= $edit['id'] ?>)" style="background:#1673B2;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.82rem;margin-top:18px">🤖 Traduire automatiquement</button>
+      </div>
+    </div>
+  </details>
+</div>
+
+<script>
+// ── Bloc NL : sync hidden fields ────────────────────────────────────────
+function syncNl() {
+  document.getElementById('h-titre_nl').value    = document.getElementById('v-titre_nl')?.value    || '';
+  document.getElementById('h-accroche_nl').value = document.getElementById('v-accroche_nl')?.value || '';
+  var edNl = document.getElementById('wysiwyg-editor-nl');
+  document.getElementById('h-contenu_nl').value  = edNl ? edNl.innerHTML : '';
+  document.getElementById('h-nl_status').value   = document.getElementById('v-nl_status')?.value   || 'vide';
+}
+// Initialiser le wysiwyg NL
+(function() {
+  var edNl = document.getElementById('wysiwyg-editor-nl');
+  var h = document.getElementById('h-contenu_nl');
+  if (edNl && h && h.value) edNl.innerHTML = h.value;
+  syncNl();
+})();
+
+// ── Fonctions wysiwyg NL ────────────────────────────────────────────────
+function fmtNl(cmd,val){ document.getElementById('wysiwyg-editor-nl')?.focus(); document.execCommand(cmd,false,val||null); syncNl(); }
+function fmtBlockNl(tag){ document.getElementById('wysiwyg-editor-nl')?.focus(); document.execCommand('formatBlock',false,tag); syncNl(); }
+function insertLinkNl(){ var u=prompt('URL :'); if(u) fmtNl('createLink',u); }
+function removeBlocNl(){
+  var ed=document.getElementById('wysiwyg-editor-nl'); if(!ed) return;
+  ed.focus(); var sel=window.getSelection(); if(!sel.rangeCount) return;
+  var n=sel.getRangeAt(0).commonAncestorContainer;
+  while(n&&n!==ed){ if(n.nodeType===1&&n.className){n.className='';n.removeAttribute('style');break;} n=n.parentNode; }
+  syncNl();
+}
+function openPaletteNl(btn){ window._paletteTargetNl=true; openPalette(btn); }
+
+// ── autoTranslate news ────────────────────────────────────────────────
+function autoTranslateNews(newsId) {
+  if (!confirm('Traduire automatiquement en néerlandais ? Remplace le contenu NL actuel.')) return;
+  var btn = event.target; btn.textContent='⏳ Traduction…'; btn.disabled=true;
+  fetch('/admin/translate_auto.php?news_id='+newsId, {method:'POST'})
+    .then(r=>r.json())
+    .then(d=>{
+      if (d.ok) {
+        document.getElementById('v-titre_nl').value    = d.titre_nl    || '';
+        document.getElementById('v-accroche_nl').value = d.accroche_nl || '';
+        var edNl = document.getElementById('wysiwyg-editor-nl');
+        if (edNl) edNl.innerHTML = d.contenu_nl || '';
+        document.getElementById('v-nl_status').value = 'auto';
+        syncNl();
+        btn.textContent='✅ Traduit'; setTimeout(()=>{btn.textContent='🤖 Re-traduire';btn.disabled=false;},2500);
+      } else { alert('Erreur : '+(d.error||'inconnue')); btn.textContent='🤖 Traduire automatiquement'; btn.disabled=false; }
+    })
+    .catch(e=>{ alert('Erreur réseau'); btn.textContent='🤖 Traduire automatiquement'; btn.disabled=false; });
+}
+</script>
+<?php endif; ?>
 <!-- ═══ LISTE ═══ -->
 <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e0e8f0;background:#fff">
   <h2 style="margin:0;font-size:1rem;color:#0e3d6b"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z"/></svg>Actualités</h2>
@@ -641,7 +807,8 @@ var BLOCS = {
 
 function insBloc(k) {
   if (!k || !BLOCS[k]) return;
-  var ed = document.getElementById('wysiwyg-editor');
+  var edId = window._paletteTargetNl ? 'wysiwyg-editor-nl' : 'wysiwyg-editor';
+  var ed = document.getElementById(edId);
   if (!ed) return;
   ed.focus();
 
@@ -664,8 +831,9 @@ function insBloc(k) {
         newEl.innerHTML = selectedHTML;
         range.insertNode(newEl);
         sel.removeAllRanges();
-        syncEditor();
+        if (edId === 'wysiwyg-editor-nl') syncNl(); else syncEditor();
         if (typeof closePalette === 'function') closePalette();
+        window._paletteTargetNl = false;
         return;
       }
     }
@@ -682,7 +850,13 @@ function insBloc(k) {
             var t2 = document.createElement('div');
             t2.innerHTML = BLOCS[k];
             var n2 = t2.firstElementChild;
-            if (n2) { node.className = n2.className; syncEditor(); if (typeof closePalette==='function') closePalette(); return; }
+            if (n2) {
+              node.className = n2.className;
+              if (edId === 'wysiwyg-editor-nl') syncNl(); else syncEditor();
+              if (typeof closePalette==='function') closePalette();
+              window._paletteTargetNl = false;
+              return;
+            }
           }
         }
       }
@@ -692,7 +866,8 @@ function insBloc(k) {
 
   // ── Cas 3 : curseur libre → insérer un bloc vide ─────────────────────
   document.execCommand('insertHTML', false, BLOCS[k]);
-  syncEditor();
+  if (edId === 'wysiwyg-editor-nl') syncNl(); else syncEditor();
+  window._paletteTargetNl = false;
 }
 
 function openPalette(btn) {
