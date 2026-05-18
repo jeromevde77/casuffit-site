@@ -342,7 +342,7 @@ window.pmhLoad = function(){
       if(d.error){pmhShowError(d.error);return;}
       pmhData=d.results||[];
       pmhRender(d);
-      pmhRenderCards();
+      pmhRenderCards(pmhData);
     })
     .catch(function(e){pmhShowError('Erreur: '+e.message);});
 };
@@ -919,7 +919,7 @@ function pmhRenderWidgetModal(wrap, d) {
 
 
 // ── Vue cartes mobile ─────────────────────────────────────────────────
-function pmhRenderCards() {
+function pmhRenderCards(pmhData) {
   var wrap = document.getElementById('pmh-cards');
   if (!wrap) return;
   if (!pmhData.length) { wrap.innerHTML = ''; return; }
