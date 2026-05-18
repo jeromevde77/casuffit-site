@@ -181,6 +181,7 @@
 .pmh-table td{padding:7px 8px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
 .pmh-table tr.pmh-div td{background:#fff8ee}
 .pmh-table tr.pmh-viol td{background:#fff0f0}
+.pmh-table tr.pmh-warn td{background:#fffbf0}
 .pmh-table tr:hover td{background:#f5f9ff}
 .pmh-time{font-weight:700;color:#0e3d6b;white-space:nowrap;font-family:"Courier New",monospace;font-size:.8rem}
 .pmh-wind{font-weight:600;color:#1673B2}
@@ -390,14 +391,18 @@ function updateConformity(idx){
   var isPref=config.indexOf('25')>-1;
   var meteoSays25=a2013.prs;
   var txt,cls,verdict='';
+  var row2=document.getElementById('pmh-row-'+idx);
+  if(row2){row2.classList.remove('pmh-viol','pmh-warn');}
   if(isPref&&meteoSays25){
     cls='pmh-ok-cell';txt='✓';verdict='Conforme — configuration préférentielle ('+config+') autorisée par AIP 2013';
   }else if(!isPref&&!meteoSays25){
     cls='pmh-ok-cell';txt='✓';verdict='Conforme — configuration alternative ('+config+') justifiée (arr:'+a2013.tw+'kt lat:'+a2013.xw+'kt)';
   }else if(isPref&&!meteoSays25){
+    if(row2)row2.classList.add('pmh-viol');
     cls='pmh-ko-cell';txt='⚠ VIOLATION';
     verdict='VIOLATION AIP 2013 — config '+config+' maintenue malgré vent arrière '+a2013.tw+'kt (seuil 7kt) et/ou latéral '+a2013.xw+'kt (seuil 15kt).';
   }else{
+    if(row2)row2.classList.add('pmh-warn');
     cls='pmh-ko-cell';txt='⚡ Écart';
     verdict='Config '+config+' sans justification météo — PRS applicable (arr:'+a2013.tw+'kt<7kt, lat:'+a2013.xw+'kt<15kt).';
   }
@@ -948,8 +953,8 @@ window.pmhRenderCards = function() {
       +'</div></div>'
       +'<div class="pmh-card-body">'
         +'<div class="pmh-card-wind">🌬 '+windTxt+'</div>'
-        +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP 2013</div>'+(s13.prs?'PRS':'Hors PRS')+' · '+(s13.runways||[]).join('/')+'</div>'
-        +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP actuel</div>'+(snow.prs?'PRS':'Hors PRS')+' · '+(snow.runways||[]).join('/')+'</div>'
+        +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP 2013</div>'+(s13.prs?'<span style="color:#1a7a4a;font-weight:700">✓ PRS</span>':'<span style="color:#c0392b;font-weight:700">✕ Hors PRS</span>')+' · '+(s13.runways||[]).join('/')+'</div>'
+        +'<div class="pmh-card-aip"><div class="pmh-card-aip-label">AIP actuel</div>'+(snow.prs?'<span style="color:#1a7a4a;font-weight:700">✓ PRS</span>':'<span style="color:#c0392b;font-weight:700">✕ Hors PRS</span>')+' · '+(snow.runways||[]).join('/')+'</div>'
         +(m.divergence?'<div class="pmh-card-verdict" style="background:#fff0f0;color:#c00;grid-column:1/-1;padding:6px;border-radius:6px;font-weight:600">⚡ Divergence</div>':'')
         +'<div style="grid-column:1/-1"><button type="button" class="pmh-card-widget-btn" onclick="pmhOpenWidget('+idx+')">▶ Voir widget</button></div>'
       +'</div></div>';
