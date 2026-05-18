@@ -303,6 +303,11 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
             <span style="color:#bbb">○ inactif</span>
             <?php endif; ?>
             · <?= intval($w['nb_pages']) ?> page(s)
+            <?php if (file_exists(__DIR__ . '/../includes/widgets/' . $w['slug'] . '_nl.php')): ?>
+            · <span style="background:#fff3cd;color:#856404;border-radius:4px;padding:1px 5px;font-size:.62rem;font-weight:700">🇳🇱 NL</span>
+            <?php else: ?>
+            · <span style="background:#f8f9fa;color:#aaa;border-radius:4px;padding:1px 5px;font-size:.62rem">FR only</span>
+            <?php endif; ?>
           </div>
         </div>
         <div class="witem-acts" onclick="event.stopPropagation()">
