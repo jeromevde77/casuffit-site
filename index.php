@@ -1575,24 +1575,24 @@ foreach ($header_widgets as $w_slug) {
 
     <!-- ── MOBILISATION ── -->
         <div class="tab-panel <?= $first_tab_slug==='mobilisation' ? 'active' : '' ?>" id="tab-mobilisation">
-      <?= $tabs_content['mobilisation']['contenu'] ?? '' ?>
+      <?= tdb($tabs_content['mobilisation'] ?? [], 'contenu') ?? '' ?>
     </div>
 <!-- ── POURQUOI LA 01 ── -->
         <div class="tab-panel <?= $first_tab_slug==='pourquoi' ? 'active' : '' ?>" id="tab-pourquoi">
-      <?= $tabs_content['pourquoi']['contenu'] ?? '' ?>
+      <?= tdb($tabs_content['pourquoi'] ?? [], 'contenu') ?? '' ?>
     </div>
 <!-- ── INFORMATIONS ── -->
         <div class="tab-panel <?= $first_tab_slug==='informations' ? 'active' : '' ?>" id="tab-informations">
-      <?= $tabs_content['informations']['contenu'] ?? '' ?>
+      <?= tdb($tabs_content['informations'] ?? [], 'contenu') ?? '' ?>
     </div>
 <!-- ── NOS DEMANDES ── -->
     <div class="tab-panel <?= $first_tab_slug==='demandes' ? 'active' : '' ?>" id="tab-demandes">
-      <?= $tabs_content['demandes']['contenu'] ?? '' ?>
+      <?= tdb($tabs_content['demandes'] ?? [], 'contenu') ?? '' ?>
     </div>
 
 <!-- ── NOS ALLIÉS ── -->
         <div class="tab-panel <?= $first_tab_slug==='allies' ? 'active' : '' ?>" id="tab-allies">
-      <?= $tabs_content['allies']['contenu'] ?? '' ?>
+      <?= tdb($tabs_content['allies'] ?? [], 'contenu') ?? '' ?>
     </div>
 <!-- ── NEWSLETTER ── -->
     <div class="tab-panel <?= $first_tab_slug==='newsletter' ? 'active' : '' ?>" id="tab-newsletter">
