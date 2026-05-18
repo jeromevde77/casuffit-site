@@ -164,16 +164,20 @@ if ($edit_page) {
     .plist-body{flex:1;overflow-y:auto}
     .btn-new{display:block;padding:10px 14px;background:#FF9900;color:#fff;font-size:.8rem;font-weight:700;text-align:center;text-decoration:none;border-bottom:1px solid #e68800}
     .btn-new:hover{background:#e68800;color:#fff;text-decoration:none}
-    .pitem{display:flex;align-items:flex-start;padding:9px 12px;border-bottom:1px solid #f5f5f5;gap:8px;font-size:.8rem;cursor:pointer}
-    .pitem.active,.pitem:hover{background:#e6f1fb}
-    .pitem-icon{font-size:.9rem;width:20px;text-align:center;flex-shrink:0;padding-top:2px}
-    .pitem-name{flex:1;font-weight:500;color:#333;word-break:break-word;line-height:1.35}
-    .pitem-flags{display:flex;gap:3px;margin-top:3px;flex-wrap:wrap}
-    .pitem-flag{font-size:.58rem;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.4}
+    .pitem{padding:10px 12px;cursor:pointer;border-bottom:1px solid #f0f4f8;transition:background .1s;display:flex;align-items:center;gap:10px}
+    .pitem:hover{background:#f5f8fc}
+    .pitem.active{background:#e8f3fb;border-left:3px solid #1673B2}
+    .pitem.child{padding-left:26px;background:#fafbfc}
+    .pitem-ordre{font-size:.7rem;font-weight:700;color:#bbb;flex-shrink:0;width:20px;text-align:center}
+    .pitem-info{flex:1;min-width:0}
+    .pitem-name{font-size:.82rem;font-weight:600;color:#0e3d6b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .pitem-meta{font-size:.68rem;color:#aaa;margin-top:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+    .pitem-flag{font-size:.65rem;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.4}
     .pitem-flag-fr{background:#e8f3fb;color:#1673B2}
-    .pitem-flag-nl{background:#fff3cd;color:#856404}
-    .pitem-flag-nl-empty{background:#f8f9fa;color:#aaa}
-    .pitem-acts{display:flex;gap:4px;flex-shrink:0;padding-top:2px}
+    .pitem-flag-nl-ok{background:#fff3cd;color:#856404}
+    .pitem-flag-nl-auto{background:#fff7e6;color:#d97706}
+    .pitem-flag-nl-no{background:#f0f0f0;color:#bbb}
+    .pitem-acts{display:flex;gap:3px;flex-shrink:0}
     .badge{display:inline-block;padding:1px 5px;border-radius:8px;font-size:.6rem;font-weight:600}
     .b-on{background:#e8f8f0;color:#27ae60}
     .b-off{background:#f0f0f0;color:#888}
@@ -499,26 +503,47 @@ if ($edit_page) {
     <div class="plist-head"><h2>Pages</h2></div>
     <div class="plist-body">
       <a href="pages.php" class="btn-new" onclick="if(window.innerWidth<768){event.preventDefault();mobileEdit('pages.php')}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nouvelle page</a>
-      <?php foreach ($pages as $p): ?>
       <?php
-        $has_fr = !empty($p['contenu']);
-        $has_nl = !empty($p['titre_nl']) || !empty($p['contenu_nl']);
+      // Trier : parents d'abord, puis enfants juste après leur parent
+      $parents  = array_filter($pages, fn($p) => !$p['parent_id']);
+      $children = [];
+      foreach ($pages as $p) { if ($p['parent_id']) $children[$p['parent_id']][] = $p; }
+      $sorted = [];
+      foreach ($parents as $p) {
+          $sorted[] = ['page' => $p, 'is_child' => false];
+          foreach ($children[$p['id']] ?? [] as $c) {
+              $sorted[] = ['page' => $c, 'is_child' => true];
+          }
+      }
+      foreach ($sorted as $item):
+        $p = $item['page'];
+        $is_child  = $item['is_child'];
+        $has_nl    = !empty($p['titre_nl']) || !empty($p['contenu_nl']);
         $nl_status = $p['nl_status'] ?? 'vide';
       ?>
-      <div class="pitem <?= ($edit_page && $edit_page['id'] == $p['id']) ? 'active' : '' ?>" onclick="mobileEdit('pages.php?edit=<?= $p['id'] ?>')">
-        <span class="pitem-icon"><?= htmlspecialchars($p['icone']) ?></span>
-        <div class="pitem-name">
-          <?= htmlspecialchars($p['titre']) ?>
-          <div class="pitem-flags">
-            <span class="pitem-flag pitem-flag-fr" title="Version FR disponible">🇫🇷</span>
+      <div class="pitem <?= ($edit_page && $edit_page['id'] == $p['id']) ? 'active' : '' ?> <?= $is_child ? 'child' : '' ?>"
+           onclick="mobileEdit('pages.php?edit=<?= $p['id'] ?>')">
+        <span class="pitem-ordre"><?= $is_child ? '↳' : $p['ordre'] ?></span>
+        <div class="pitem-info">
+          <div class="pitem-name"><?= htmlspecialchars($p['titre']) ?></div>
+          <div class="pitem-meta">
+            <?php if (!$p['visible']): ?>
+              <span style="color:#e53e3e">○ caché</span> ·
+            <?php endif; ?>
+            <span class="pitem-flag pitem-flag-fr">🇫🇷 FR</span>
             <?php if ($has_nl): ?>
-              <span class="pitem-flag pitem-flag-nl" title="Version NL : <?= $nl_status ?>">🇳🇱<?= $nl_status === 'relu' ? ' ✓' : ($nl_status === 'auto' ? ' ~' : '') ?></span>
+              <?php if ($nl_status === 'relu'): ?>
+                <span class="pitem-flag pitem-flag-nl-ok">🇳🇱 ✓</span>
+              <?php elseif ($nl_status === 'auto'): ?>
+                <span class="pitem-flag pitem-flag-nl-auto">🇳🇱 ~</span>
+              <?php else: ?>
+                <span class="pitem-flag pitem-flag-nl-ok">🇳🇱</span>
+              <?php endif; ?>
             <?php else: ?>
-              <span class="pitem-flag pitem-flag-nl-empty" title="Pas de version NL">NL?</span>
+              <span class="pitem-flag pitem-flag-nl-no">NL ?</span>
             <?php endif; ?>
           </div>
         </div>
-        <span class="badge <?= $p['visible'] ? 'b-on' : 'b-off' ?>"><?= $p['visible'] ? '✓' : '✗' ?></span>
         <div class="pitem-acts" onclick="event.stopPropagation()">
           <a href="pages.php?edit=<?= $p['id'] ?>" class="act-btn edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></a>
           <a href="pages.php?delete=<?= $p['id'] ?>" class="act-btn del" title="Supprimer"
