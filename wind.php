@@ -193,9 +193,6 @@
     .app-view { display: none; }
     .app-view.active { display: block; min-height: 100%; padding: 12px; }
     #view-historique.active { padding: 0; }
-    #view-historique .pmh { display: block !important; visibility: visible !important; }
-    #view-historique .pmh-body { display: flex !important; }
-    #view-historique .pmh-form { display: flex !important; }
 
 
     /* Footer liens discrets */
