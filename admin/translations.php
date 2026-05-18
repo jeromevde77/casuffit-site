@@ -41,7 +41,8 @@ $total = count($pages);
   <style>
   <?php include dirname(__DIR__) . '/includes/admin_sidebar_css.php'; ?>
     body { font-family: -apple-system, sans-serif; background: #f0f4f8; margin: 0; }
-    .main { padding: 24px; max-width: 1200px; }
+    .main { margin-left: 240px; padding: 24px; max-width: 1200px; min-height: 100vh; }
+    @media (max-width: 768px) { .main { margin-left: 0; padding-top: 64px; } }
     h1 { color: #0e3d6b; }
     .stats { display: flex; gap: 14px; margin: 18px 0 28px; flex-wrap: wrap; }
     .stat-card { background: #fff; padding: 16px 22px; border-radius: 10px; border-left: 4px solid #ddd; min-width: 140px; }
