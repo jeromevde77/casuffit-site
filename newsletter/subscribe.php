@@ -28,6 +28,7 @@ $commune  = htmlspecialchars(trim((isset($_POST['commune']) ? $_POST['commune'] 
 $telephone = htmlspecialchars(trim((isset($_POST['telephone']) ? $_POST['telephone'] : '')), ENT_QUOTES, 'UTF-8');
 $benevole = !empty($_POST['benevole']) ? 1 : 0;
 $rgpd     = !empty($_POST['rgpd'])    ? 1 : 0;
+$lang     = in_array($_POST['lang'] ?? '', ['fr','nl']) ? $_POST['lang'] : 'fr';
 
 if (!$email) { echo json_encode(['ok' => false, 'msg' => 'Adresse email invalide.']); exit; }
 if (!$rgpd)  { echo json_encode(['ok' => false, 'msg' => 'Vous devez accepter la politique RGPD.']); exit; }
@@ -46,14 +47,14 @@ try {
             echo json_encode(['ok' => false, 'msg' => 'Cette adresse est déjà inscrite.']);
             exit;
         }
-        $db->prepare("UPDATE subscribers SET prenom=?,nom=?,commune=?,telephone=?,benevole=?,
+        $db->prepare("UPDATE subscribers SET prenom=?,nom=?,commune=?,telephone=?,benevole=?,lang=?,
             rgpd_accepte=1,statut='en_attente',token_confirm=?,date_inscription=NOW(),date_confirmation=NULL
-            WHERE email=?")->execute([$prenom,$nom,$commune,$telephone,$benevole,$token_confirm,$email]);
+            WHERE email=?")->execute([$prenom,$nom,$commune,$telephone,$benevole,$lang,$token_confirm,$email]);
     } else {
         $db->prepare("INSERT INTO subscribers
-            (email,prenom,nom,commune,telephone,benevole,rgpd_accepte,statut,token_confirm,token_unsub)
-            VALUES (?,?,?,?,?,?,1,'en_attente',?,?)")
-            ->execute([$email,$prenom,$nom,$commune,$telephone,$benevole,$token_confirm,$token_unsub]);
+            (email,prenom,nom,commune,telephone,benevole,lang,rgpd_accepte,statut,token_confirm,token_unsub)
+            VALUES (?,?,?,?,?,?,?,1,'en_attente',?,?)")
+            ->execute([$email,$prenom,$nom,$commune,$telephone,$benevole,$lang,$token_confirm,$token_unsub]);
     }
 
     $_SESSION['sub_attempts'][] = $now;

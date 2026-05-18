@@ -70,6 +70,7 @@
       if (!email || !rgpd) { msg.textContent = 'Email et consentement requis.'; msg.className='form-msg error'; return; }
       btn.disabled = true; btn.textContent = 'Envoi...';
       var data = new FormData(form);
+      data.append('lang', 'fr');
       try {
         var resp = await fetch('newsletter/subscribe.php', {method:'POST', body:data});
         var json = await resp.json();
