@@ -255,6 +255,15 @@
 .pmh-wmodal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #fff; line-height: 1; }
 .pmh-wmodal-body { padding: 18px; }
 .pmh-stats-note { font-size: .72rem; color: #888; margin-top: 8px; text-align: right; }
+
+@media (max-width: 600px) {
+  .pmh { font-size: 11px; }
+  .pmh-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .pmh-table { font-size: .68rem; min-width: 520px; }
+  .pmh-table th, .pmh-table td { padding: 4px 5px; white-space: nowrap; }
+  .pmh-wmodal-bg { align-items: flex-end; }
+  .pmh-wmodal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; max-height: 85vh; }
+}
 </style>
 
 <script>
@@ -592,16 +601,7 @@ window.pmhExport = function(){
     +'.note-cell{color:#555;font-style:italic;font-size:7pt;max-width:100px}'
     +'.footer{margin-top:8px;font-size:6.5pt;color:#999;border-top:1px solid #e0e8f0;padding-top:5px;display:flex;justify-content:space-between}'
     +'@media print{.no-print{display:none}}'
-    +'
-@media (max-width: 600px) {
-  .pmh { font-size: 11px; }
-  .pmh-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .pmh-table { font-size: .68rem; min-width: 520px; }
-  .pmh-table th, .pmh-table td { padding: 4px 5px; white-space: nowrap; }
-  .pmh-wmodal-bg { align-items: flex-end; }
-  .pmh-wmodal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; max-height: 85vh; }
-}
-</style></head><body>'
+    +'</style></head><body>'
     +'<div class="header">'
     +'<div><h1>Analyse conditions de vent — Brussels Airport (EBBR)</h1>'
     +'<p>Période : <b>'+dateStr+'</b> → <b>'+dateFin+'</b> UTC · Source : IRM Station 6451 Zaventem/EBBR (mesures officielles)</p></div>'
