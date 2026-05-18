@@ -23,7 +23,7 @@ if ($id > 0) {
 $r = $row->fetch(PDO::FETCH_ASSOC);
 if (!$r) { echo json_encode(['error' => 'Enregistrement introuvable']); exit; }
 
-// ── Constantes pistes EBBR ────────────────────────────────────────────────
+// ── Constantes pistes EBBR (QFU Jeppesen, Mag Var 1.5°W) ──────────────────
 const PISTES = [
     '25L' => ['qfu' => 251, 'type' => 'principale'],
     '25R' => ['qfu' => 246, 'type' => 'principale'],

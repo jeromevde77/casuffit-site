@@ -816,13 +816,22 @@ window.pmhOpenWidget = function(idx) {
   var wgi  = m.wgst_irm  || null;
 
   // Composantes pour chaque piste
+  // Composantes vent pour une piste donnée
+  //   qfu = cap magnétique de la piste à l'atterrissage (°)
+  //   wd  = direction d'où vient le vent (°)
+  //   tw > 0 : vent arrière ; tw < 0 : vent de face
+  //   xw     : composante traversière (toujours positive)
   function calcComp(qfu) {
-    if (wd === null) return {tw_moy:0, tw_gst:0, xw_moy:0, xw_gst:0};
+    if (wd === null) return {tw_moy:0, tw_gst:null, xw_moy:0, xw_gst:null};
     var d = (wd - qfu) * Math.PI / 180;
-    var tw = Math.round(ws * Math.cos(d) * 10) / 10;
-    var tg = wg ? Math.round(wg * Math.cos(d) * 10) / 10 : tw;
+    var tw = Math.round(-ws * Math.cos(d) * 10) / 10;   // ← signe inversé : tw>0 = arrière
+    var tg = (wg !== null && wg !== undefined)
+              ? Math.round(-wg * Math.cos(d) * 10) / 10
+              : null;
     var xw = Math.round(Math.abs(ws * Math.sin(d)) * 10) / 10;
-    var xg = wg ? Math.round(Math.abs(wg * Math.sin(d)) * 10) / 10 : xw;
+    var xg = (wg !== null && wg !== undefined)
+              ? Math.round(Math.abs(wg * Math.sin(d)) * 10) / 10
+              : null;
     return {tw_moy: tw, tw_gst: tg, xw_moy: xw, xw_gst: xg};
   }
 
@@ -839,6 +848,7 @@ window.pmhOpenWidget = function(idx) {
     tw_25_max: m.aip_now ? m.aip_now.tw : null,
     xw_25_max: m.aip_now ? m.aip_now.xw : null,
     runways: m.aip_now ? m.aip_now.runways : [],
+    // QFU réels EBBR (Jeppesen, Mag Var 1.5°W)
     components: {
       '25L': calcComp(251), '25R': calcComp(246),
       '07R': calcComp(71),  '07L': calcComp(66),
@@ -867,15 +877,39 @@ function pmhRenderWidgetModal(wrap, d) {
   if (d.wgst_irm   !== null && d.wgst_irm   !== undefined) gstTxt += 'IRM: '+d.wgst_irm+' kt';
   if (!gstTxt && wg) gstTxt = wg + ' kt';
 
+  // Affichage d'une ligne piste — tw>0 = arrière (rouge si >7kt), tw<0 = face (vert)
   function twRow(rwy, comp) {
     if (!comp) return '';
-    var tw = comp.tw_gst !== undefined ? comp.tw_gst : comp.tw_moy;
-    var xw = comp.xw_gst !== undefined ? comp.xw_gst : comp.xw_moy;
-    var col = tw > 7 ? '#c00' : '#080';
+    var twM = comp.tw_moy, twG = comp.tw_gst;
+    var xwM = comp.xw_moy, xwG = comp.xw_gst;
+
+    // Valeur max retenue pour le code couleur (rafale si dispo, sinon moyenne)
+    var twMax = (twG !== null && twG !== undefined) ? Math.max(twM, twG) : twM;
+    var xwMax = (xwG !== null && xwG !== undefined) ? Math.max(xwM, xwG) : xwM;
+
+    // Texte vent arrière/face
+    var twTxt, twCol;
+    if (twMax > 0) {
+      // Vent arrière
+      twTxt = 'Arrière : ' + twM.toFixed(1) + ' kt';
+      if (twG !== null && twG !== undefined && twG !== twM) twTxt += ' (raf. ' + twG.toFixed(1) + ')';
+      twCol = twMax > 7 ? '#c00' : (twMax > 3 ? '#d97706' : '#080');
+    } else {
+      // Vent de face
+      twTxt = 'Face : ' + (-twM).toFixed(1) + ' kt';
+      if (twG !== null && twG !== undefined && twG !== twM) twTxt += ' (raf. ' + (-twG).toFixed(1) + ')';
+      twCol = '#080';
+    }
+
+    // Texte traversier
+    var xwTxt = 'Traversier : ' + xwM.toFixed(1) + ' kt';
+    if (xwG !== null && xwG !== undefined && xwG !== xwM) xwTxt += ' (raf. ' + xwG.toFixed(1) + ')';
+    var xwCol = xwMax > 15 ? '#c00' : (xwMax > 10 ? '#d97706' : '#555');
+
     return '<tr>'
       + '<td style="padding:5px 10px;font-weight:700;color:#0e3d6b">'+rwy+'</td>'
-      + '<td style="padding:5px 10px;color:'+col+';font-weight:'+(Math.abs(tw)>7?'700':'400')+'">Arrière: '+tw+' kt</td>'
-      + '<td style="padding:5px 10px;color:'+(xw>15?'#c00':'#555')+'">Traversier: '+xw+' kt</td>'
+      + '<td style="padding:5px 10px;color:'+twCol+';font-weight:'+(twMax>7?'700':'400')+'">'+twTxt+'</td>'
+      + '<td style="padding:5px 10px;color:'+xwCol+';font-weight:'+(xwMax>15?'700':'400')+'">'+xwTxt+'</td>'
       + '</tr>';
   }
 
@@ -916,6 +950,8 @@ function pmhRenderWidgetModal(wrap, d) {
       + '</tr></thead><tbody>'
       + twRow('25L', d.components?.['25L'])
       + twRow('25R', d.components?.['25R'])
+      + twRow('07L', d.components?.['07L'])
+      + twRow('07R', d.components?.['07R'])
       + twRow('01',  d.components?.['01'])
       + twRow('19',  d.components?.['19'])
       + '</tbody></table>'
