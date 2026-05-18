@@ -12,6 +12,7 @@
   <nav>
     <div class="nav-section">Contenu</div>
     <a href="dashboard.php"   <?= basename($_SERVER['PHP_SELF'])==='dashboard.php'   ?'class="active"':'' ?>>Dashboard</a>
+    <a href="stats.php"      <?= basename($_SERVER['PHP_SELF'])==='stats.php'      ?'class="active"':'' ?>>Statistiques</a>
     <a href="pages.php"       <?= basename($_SERVER['PHP_SELF'])==='pages.php'       ?'class="active"':'' ?>>Pages</a>
     <a href="news.php"        <?= basename($_SERVER['PHP_SELF'])==='news.php'        ?'class="active"':'' ?>>Actualités</a>
     <a href="medias.php"      <?= basename($_SERVER['PHP_SELF'])==='medias.php'      ?'class="active"':'' ?>>Médias</a>
