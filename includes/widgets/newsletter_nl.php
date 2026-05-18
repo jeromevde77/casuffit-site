@@ -9,6 +9,10 @@
     </div>
 
     <form class="newsletter-form" id="newsletter-form-widget" novalidate>
+      <!-- Honeypot anti-bot -->
+      <div style="display:none" aria-hidden="true">
+        <input type="text" name="website" tabindex="-1" autocomplete="off">
+      </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
         <div>

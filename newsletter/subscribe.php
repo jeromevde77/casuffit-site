@@ -21,6 +21,12 @@ if (count($_SESSION['sub_attempts']) >= 3) {
 }
 
 // Validation
+// Honeypot anti-bot : si le champ website est rempli, c'est un bot
+if (!empty($_POST['website'])) {
+    echo json_encode(['ok' => true, 'msg' => '✓ Inscription enregistrée !']);
+    exit;
+}
+
 $email    = filter_var(trim((isset($_POST['email']) ? $_POST['email'] : '')), FILTER_VALIDATE_EMAIL);
 $prenom   = htmlspecialchars(trim((isset($_POST['prenom']) ? $_POST['prenom'] : '')), ENT_QUOTES, 'UTF-8');
 $nom      = htmlspecialchars(trim((isset($_POST['nom']) ? $_POST['nom'] : '')), ENT_QUOTES, 'UTF-8');
