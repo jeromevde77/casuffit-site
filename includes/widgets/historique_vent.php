@@ -20,14 +20,14 @@
         <label class="pmh-lbl">Date de début (UTC)</label>
         <div class="pmh-dt-wrap">
           <input type="date" id="pmh-start-date" class="pmh-input pmh-dt-part">
-          <select id="pmh-start-hour" class="pmh-input pmh-dt-part pmh-sel"></select>
+          <input type="time" id="pmh-start-hour" class="pmh-input pmh-dt-part" value="06:00" step="1800">
         </div>
       </div>
       <div class="pmh-form-row">
         <label class="pmh-lbl">Date de fin (UTC)</label>
         <div class="pmh-dt-wrap">
           <input type="date" id="pmh-end-date" class="pmh-input pmh-dt-part">
-          <select id="pmh-end-hour" class="pmh-input pmh-dt-part pmh-sel"></select>
+          <input type="time" id="pmh-end-hour" class="pmh-input pmh-dt-part" value="12:00" step="1800">
         </div>
       </div>
       <div class="pmh-form-btns">
@@ -310,34 +310,13 @@ function dirText(d){if(!d||d===0)return'Variable';return['N','NNE','NE','ENE','E
 function rwyBadge(r){var c=r.indexOf('25')>-1?'pmh-r25':r.indexOf('07')>-1?'pmh-r07':r.indexOf('19')>-1?'pmh-r19':'pmh-r01';return'<span class="pmh-rwy-badge '+c+'">'+r+'</span>';}
 
 // ── Chargement ──────────────────────────────────────────────────────────
-// Initialiser les selects d'heures dès le chargement (avant interaction)
-(function initHourSelectsEarly() {
-  function doInit() {
-    ['pmh-start-hour','pmh-end-hour'].forEach(function(id) {
-      var sel = document.getElementById(id);
-      if (!sel || sel.options.length) return;
-      for (var h = 0; h < 24; h++) {
-        for (var m = 0; m < 60; m += 30) {
-          var val = (h < 10 ? '0' : '') + h + ':' + (m === 0 ? '00' : '30');
-          var opt = document.createElement('option');
-          opt.value = opt.textContent = val;
-          sel.appendChild(opt);
-        }
-      }
-      // Valeur par défaut : 06:00 pour start, 12:00 pour end
-      sel.value = (id === 'pmh-start-hour') ? '06:00' : '12:00';
-    });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', doInit);
-  } else { doInit(); }
-})();
+// Heures via input[type=time] natif
 
 window.pmhLoad = function(){
   var startDate=document.getElementById('pmh-start-date').value;
-  var startHour=document.getElementById('pmh-start-hour').value;
+  var startHour=document.getElementById('pmh-start-hour').value||'00:00';
   var endDate=document.getElementById('pmh-end-date').value;
-  var endHour=document.getElementById('pmh-end-hour').value;
+  var endHour=document.getElementById('pmh-end-hour').value||'23:30';
   if(!startDate||!endDate){alert('Veuillez saisir une date de début et de fin.');return;}
   var start=startDate+'T'+startHour;
   var end=endDate+'T'+endHour;
