@@ -313,30 +313,44 @@ function rwyBadge(r){var c=r.indexOf('25')>-1?'pmh-r25':r.indexOf('07')>-1?'pmh-
 // Heures via input[type=time] natif
 
 window.pmhLoad = function(){
-  var startDate=document.getElementById('pmh-start-date').value;
-  var startHour=document.getElementById('pmh-start-hour').value||'00:00';
-  var endDate=document.getElementById('pmh-end-date').value;
-  var endHour=document.getElementById('pmh-end-hour').value||'23:30';
-  if(!startDate||!endDate){alert('Veuillez saisir une date de début et de fin.');return;}
-  var start=startDate+'T'+startHour;
-  var end=endDate+'T'+endHour;
-  var startISO=startDate+'T'+startHour+':00Z';
-  var endISO=endDate+'T'+endHour+':00Z';
-  pmhPeriod={start:start,end:end,startISO:startISO,endISO:endISO};
-  pmhRealRwys={};pmhNotes={};pmhData=[];
-  document.getElementById('pmh-loading').style.display='flex';
-  document.getElementById('pmh-results').style.display='none';
-  document.getElementById('pmh-error').style.display='none';
-  // Charger les données
-  fetch('/api/metar_history.php?start='+encodeURIComponent(startISO)+'&end='+encodeURIComponent(endISO))
-    .then(function(r){return r.json();})
-    .then(function(d){
-      document.getElementById('pmh-loading').style.display='none';
-      if(d.error){pmhShowError(d.error);return;}
-      pmhData=d.results||[];
-      pmhRender(d);
-    })
-    .catch(function(e){pmhShowError('Erreur: '+e.message);});
+  try {
+    var startDate=document.getElementById('pmh-start-date').value;
+    var startHour=(document.getElementById('pmh-start-hour').value||'00:00').substring(0,5);
+    var endDate=document.getElementById('pmh-end-date').value;
+    var endHour=(document.getElementById('pmh-end-hour').value||'23:30').substring(0,5);
+    if(!startDate||!endDate){alert('Veuillez saisir une date de début et de fin.');return;}
+    // Valider format heure
+    if(!/^\d{2}:\d{2}$/.test(startHour)) startHour='00:00';
+    if(!/^\d{2}:\d{2}$/.test(endHour)) endHour='23:30';
+    var startISO=startDate+'T'+startHour+':00Z';
+    var endISO=endDate+'T'+endHour+':00Z';
+    pmhPeriod={start:startDate+'T'+startHour,end:endDate+'T'+endHour,startISO:startISO,endISO:endISO};
+    pmhRealRwys={};pmhNotes={};pmhData=[];
+    var elLoad=document.getElementById('pmh-loading');
+    var elRes=document.getElementById('pmh-results');
+    var elErr=document.getElementById('pmh-error');
+    if(elLoad) elLoad.style.display='flex';
+    if(elRes) elRes.style.display='none';
+    if(elErr) elErr.style.display='none';
+    fetch('/api/metar_history.php?start='+encodeURIComponent(startISO)+'&end='+encodeURIComponent(endISO))
+      .then(function(r){
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        return r.json();
+      })
+      .then(function(d){
+        if(elLoad) elLoad.style.display='none';
+        if(d.error){pmhShowError(d.error);return;}
+        pmhData=d.results||[];
+        if(!pmhData.length){pmhShowError('Aucune donnée pour cette période.');return;}
+        pmhRender(d);
+      })
+      .catch(function(e){
+        if(elLoad) elLoad.style.display='none';
+        pmhShowError('Erreur réseau: '+e.message);
+      });
+  } catch(ex) {
+    alert('Erreur pmhLoad: '+ex.message);
+  }
 };
 
 // ── Saisie par ligne ────────────────────────────────────────────────────
