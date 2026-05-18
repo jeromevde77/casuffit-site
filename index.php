@@ -43,7 +43,7 @@ try {
 // Pages du menu (pour tabs desktop + select mobile + burger)
 $menu_pages = array();
 try {
-    $all_menu = $db->query("SELECT id, slug, titre, icone, css_class, btn_style, parent_id, menu_position, lien_url, affichage_menu FROM pages WHERE dans_menu=1 AND visible=1 ORDER BY COALESCE(parent_id,0) ASC, ordre ASC")->fetchAll();
+    $all_menu = $db->query("SELECT id, slug, titre, titre_nl, icone, css_class, btn_style, parent_id, menu_position, lien_url, affichage_menu FROM pages WHERE dans_menu=1 AND visible=1 ORDER BY COALESCE(parent_id,0) ASC, ordre ASC")->fetchAll();
     // Organiser en parents / enfants
     $menu_pages    = array(); // items racine
     $menu_children = array(); // parent_id => [enfants]
@@ -58,7 +58,7 @@ try {
     $menu_children = array();
     $menu_by_id = array();
     try {
-        $rows = $db->query("SELECT id, slug, titre, icone, css_class, menu_position, lien_url, affichage_menu FROM pages WHERE dans_menu=1 AND visible=1 ORDER BY ordre ASC")->fetchAll();
+        $rows = $db->query("SELECT id, slug, titre, titre_nl, icone, css_class, menu_position, lien_url, affichage_menu FROM pages WHERE dans_menu=1 AND visible=1 ORDER BY ordre ASC")->fetchAll();
         foreach ($rows as $r) {
             $menu_pages[] = array_merge(array('btn_style'=>'','parent_id'=>null,'css_class'=>'','menu_position'=>'all','lien_url'=>''), $r);
         }
