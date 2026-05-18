@@ -1805,6 +1805,8 @@ function updateColonneDroite(slug) {
 }
 
 function showTab(id, el) {
+  // Forcer Leaflet à recalculer la taille si le widget vols est visible
+  setTimeout(function(){ if(typeof window.vbrInvalidate==='function') window.vbrInvalidate(); }, 150);
   // Si pas de tab-panel pour ce slug → scroll vers #don
   var panel = document.getElementById('tab-' + id);
   if (!panel) {

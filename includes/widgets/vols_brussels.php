@@ -126,6 +126,7 @@
 
   function initMap() {
     if(map) return;
+    window.vbrInvalidate = function(){ if(map){ map.invalidateSize(); } };
     map = L.map('vbr-mapbox', { zoomControl: true }).setView([50.9014, 4.4844], 9);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© <a href="https://www.openstreetmap.org">OSM</a>',
@@ -175,6 +176,7 @@
     if(btn)    btn.style.opacity='.5';
     initMap();
 
+    setTimeout(function(){ if(map) map.invalidateSize(); }, 100);
     fetch('/api/flights.php')
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(d){
