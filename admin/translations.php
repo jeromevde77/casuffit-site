@@ -31,8 +31,8 @@ $total = count($pages);
   <meta charset="UTF-8">
   <title>Traductions NL — Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <?php include dirname(__DIR__) . '/includes/admin_sidebar_css.php'; ?>
   <style>
+  <?php include dirname(__DIR__) . '/includes/admin_sidebar_css.php'; ?>
     body { font-family: -apple-system, sans-serif; background: #f0f4f8; margin: 0; }
     .main { padding: 24px; max-width: 1200px; }
     h1 { color: #0e3d6b; }
