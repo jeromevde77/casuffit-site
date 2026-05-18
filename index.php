@@ -1585,12 +1585,6 @@ foreach ($header_widgets as $w_slug) {
       if (!isset($menu_children[$pid]) || count($menu_children[$pid]) === 0) continue;
     ?>
     <div class="subtabs-group" id="subtabs-<?= $p['slug'] ?>" style="display:none">
-      <?php // Le parent lui-même est le premier sous-tab avec son propre slug ?>
-      <button class="subtab-btn active"
-              data-slug="<?= $p['slug'] ?>"
-              onclick="showSubTab('<?= $p['slug'] ?>', this)">
-        <?= menuLabel($p) ?>
-      </button>
       <?php foreach ($menu_children[$pid] as $c): ?>
       <button class="subtab-btn"
               data-slug="<?= $c['slug'] ?>"
