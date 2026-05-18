@@ -267,8 +267,18 @@
   .pmh-table-wrap, .pmh-scroll-hint { display: none !important; }
   .pmh-actions { flex-wrap: wrap; }
   #pmh-cards { display: block; }
+  /* Modal en bottom-sheet, sans dépasser le viewport, en gardant la safe-area iOS */
   .pmh-wmodal-bg { align-items: flex-end; }
-  .pmh-wmodal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; max-height: 85vh; }
+  .pmh-wmodal {
+    width: 100%; max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    /* Hauteur max = 90% de viewport - safe-area bas (home indicator iOS) */
+    max-height: calc(90vh - env(safe-area-inset-bottom, 0px));
+  }
+  /* Padding bas pour que la dernière ligne reste visible même avec safe-area */
+  .pmh-wmodal-body {
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  }
 }
 </style>
 
