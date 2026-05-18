@@ -1929,7 +1929,16 @@ function showTab(id, el) {
       }
     });
     var parentBtn = myGroup.querySelector('[data-slug="'+id+'"]');
-    if (parentBtn) parentBtn.classList.add('active');
+    if (parentBtn) {
+      parentBtn.classList.add('active');
+    } else {
+      // Pas de bouton parent → activer le premier sous-tab
+      var firstBtn = myGroup.querySelector('.subtab-btn');
+      if (firstBtn) {
+        firstBtn.classList.add('active');
+        showSubTab(firstBtn.dataset.slug, firstBtn, true);
+      }
+    }
     // Sync select mobile sous-tabs
     var stSel = document.getElementById('subtabs-sel');
     if(stSel) {
