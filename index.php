@@ -6,6 +6,13 @@ header('Expires: 0');
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/lang.php';
 
+// ── Token API pour les appels JS (flights, track) ─────────────────────────
+if (!session_id()) session_start();
+if (empty($_SESSION['api_token'])) {
+    $_SESSION['api_token'] = bin2hex(random_bytes(24));
+}
+$api_token = $_SESSION['api_token'];
+
 // ── Mode maintenance ──────────────────────────────────────────────────────
 (function() {
     try {
@@ -159,6 +166,7 @@ $don_texte   = cfgLang('don_texte', 'Action en référé contre l Etat belge');
 
   <!-- ── RGPD : consentement cookies ── -->
   <script>
+  window._API_TOKEN = '<?= htmlspecialchars($api_token) ?>';
   (function(){
     var GA_ID = '<?= htmlspecialchars(cfg("ga_id","G-7LKP0KC1SD")) ?>';
 

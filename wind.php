@@ -4,6 +4,12 @@ header('Pragma: no-cache');
 header('Expires: 0');
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/lang.php';
+// Token API pour les appels JS
+if (!session_id()) session_start();
+if (empty($_SESSION['api_token'])) {
+    $_SESSION['api_token'] = bin2hex(random_bytes(24));
+}
+$api_token = $_SESSION['api_token'];
 // Page standalone PWA — widget météo EBBR — page publique
 ?>
 <!DOCTYPE html>
@@ -469,7 +475,7 @@ require_once __DIR__ . '/includes/lang.php';
 </nav>
 
 <script>
-function switchView(view) {
+window._API_TOKEN = '<?= htmlspecialchars($api_token) ?>';function switchView(view) {
   ['meteo','historique','rose','vols'].forEach(function(v) {
     var el = document.getElementById('view-' + v);
     if (v === view) {

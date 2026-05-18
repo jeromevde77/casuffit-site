@@ -12,6 +12,42 @@ require_once __DIR__ . '/../config.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache');
 
+// ── Protection : seuls les visiteurs du site peuvent appeler cette API ───
+// Vérification du token de session passé par le widget JS
+if (!session_id()) session_start();
+
+$token_header = $_SERVER['HTTP_X_API_TOKEN'] ?? '';
+$session_token = $_SESSION['api_token'] ?? '';
+
+// Rate limiting : max 60 appels/minute par IP (le widget recharge toutes les 60s)
+$ip      = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$rk      = 'flights_' . md5($ip);
+$now     = time();
+$_SESSION[$rk] = array_filter($_SESSION[$rk] ?? [], fn($t) => $now - $t < 60);
+if (count($_SESSION[$rk]) >= 10) {
+    http_response_code(429);
+    echo json_encode(['error' => 'Too many requests']);
+    exit;
+}
+$_SESSION[$rk][] = $now;
+
+// Vérifier le token si présent (non bloquant si absent pour compatibilité)
+// mais bloquer si token invalide
+if ($token_header && $session_token && !hash_equals($session_token, $token_header)) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Invalid token']);
+    exit;
+}
+
+// Referer doit pointer vers le site (protection basique)
+$referer = $_SERVER['HTTP_REFERER'] ?? '';
+$allowed = defined('SITE_URL') ? SITE_URL : 'https://www.casuffit.be';
+if ($referer && !str_starts_with($referer, $allowed) && !str_starts_with($referer, 'http://localhost')) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Forbidden']);
+    exit;
+}
+
 // ── Paramètres bounding box ──────────────────────────────────────────────
 $lamin = isset($_GET['lamin']) ? floatval($_GET['lamin']) : 50.1;
 $lomin = isset($_GET['lomin']) ? floatval($_GET['lomin']) : 3.5;

@@ -348,7 +348,10 @@
     setTimeout(function(){if(map)map.invalidateSize();},100);
 
     var bb=AIRPORTS[currentAirport].bb;
-    fetch('/api/flights.php?lamin='+bb[0]+'&lomin='+bb[1]+'&lamax='+bb[2]+'&lomax='+bb[3])
+    var apiToken = window._API_TOKEN || '';
+    fetch('/api/flights.php?lamin='+bb[0]+'&lomin='+bb[1]+'&lamax='+bb[2]+'&lomax='+bb[3], {
+      headers: {'X-Api-Token': apiToken}
+    })
       .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
       .then(function(d){
         if(elL)elL.style.display='none';
