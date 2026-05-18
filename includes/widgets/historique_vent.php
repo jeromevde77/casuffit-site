@@ -272,26 +272,7 @@
 }
 .pmh-scroll-hint { display: none; text-align: center; font-size: .7rem; color: #aaa;
   padding: 4px; }
-@media (max-width: 600px) {
-  .pmh-table-wrap, .pmh-scroll-hint { display: none !important; }
-  #pmh-cards { display: block !important; }
-  .pmh-card { background:#fff; border:1.5px solid #e0e8f0; border-radius:10px;
-    margin-bottom:10px; overflow:hidden; }
-  .pmh-card-head { background:#0e3d6b; color:#fff; padding:8px 12px;
-    display:flex; justify-content:space-between; align-items:center; }
-  .pmh-card-time { font-weight:700; font-size:.9rem; }
-  .pmh-card-date { font-size:.72rem; opacity:.75; }
-  .pmh-card-body { padding:10px 12px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .pmh-card-wind { grid-column:1/-1; font-size:1.1rem; font-weight:700; color:#0e3d6b; }
-  .pmh-card-aip { background:#f5f9ff; border-radius:6px; padding:6px 8px; font-size:.78rem; }
-  .pmh-card-aip-label { font-size:.62rem; color:#888; font-weight:700; text-transform:uppercase; margin-bottom:2px; }
-  .pmh-card-verdict { grid-column:1/-1; padding:6px 8px; border-radius:6px;
-    font-size:.8rem; font-weight:600; text-align:center; }
-  .pmh-card-btn-row { grid-column:1/-1; display:flex; gap:8px; }
-  .pmh-card-widget-btn { flex:1; background:#1673B2; color:#fff; border:none;
-    border-radius:7px; padding:9px; font-size:.85rem; font-weight:700; cursor:pointer; }
-  .pmh-card-widget-btn:active { background:#0e5a96; }
-}
+
 .pmh-wmodal-head { padding: 12px 18px; border-bottom: 1px solid #eee;
   display: flex; align-items: center; justify-content: space-between; background: #0e3d6b; border-radius: 12px 12px 0 0; }
 .pmh-wmodal-head h3 { margin: 0; color: #fff; font-size: .95rem; }
@@ -664,7 +645,29 @@ window.pmhExport = function(){
     +'.note-cell{color:#555;font-style:italic;font-size:7pt;max-width:100px}'
     +'.footer{margin-top:8px;font-size:6.5pt;color:#999;border-top:1px solid #e0e8f0;padding-top:5px;display:flex;justify-content:space-between}'
     +'@media print{.no-print{display:none}}'
-    +'</style></head><body>'
+    +'@media (max-width: 600px) {
+  .pmh { font-size: 11px; }
+  .pmh-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .pmh-table { font-size: .68rem; min-width: 520px; }
+  .pmh-table th, .pmh-table td { padding: 4px 5px; white-space: nowrap; }
+  /* Modale plein écran sur mobile */
+  .pmh-wmodal-bg { align-items: flex-end; }
+  .pmh-wmodal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; max-height: 85vh; }
+  /* Cartes après analyse */
+  #pmh-cards { margin-top: 10px; }
+  .pmh-card { background:#fff; border:1.5px solid #e0e8f0; border-radius:10px; margin-bottom:10px; }
+  .pmh-card-head { background:#0e3d6b; color:#fff; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; }
+  .pmh-card-time { font-weight:700; font-size:.9rem; }
+  .pmh-card-date { font-size:.72rem; opacity:.75; }
+  .pmh-card-body { padding:10px 12px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .pmh-card-wind { grid-column:1/-1; font-size:1rem; font-weight:700; color:#0e3d6b; }
+  .pmh-card-aip { background:#f5f9ff; border-radius:6px; padding:6px 8px; font-size:.78rem; }
+  .pmh-card-aip-label { font-size:.62rem; color:#888; font-weight:700; text-transform:uppercase; margin-bottom:2px; }
+  .pmh-card-verdict { grid-column:1/-1; padding:6px 8px; border-radius:6px; font-size:.8rem; font-weight:600; text-align:center; }
+  .pmh-card-btn-row { grid-column:1/-1; }
+  .pmh-card-widget-btn { width:100%; background:#1673B2; color:#fff; border:none; border-radius:7px; padding:10px; font-size:.88rem; font-weight:700; cursor:pointer; }
+}
+</style></head><body>'
     +'<div class="header">'
     +'<div><h1>Analyse conditions de vent — Brussels Airport (EBBR)</h1>'
     +'<p>Période : <b>'+dateStr+'</b> → <b>'+dateFin+'</b> UTC · Source : IRM Station 6451 Zaventem/EBBR (mesures officielles)</p></div>'
