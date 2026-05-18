@@ -388,6 +388,13 @@ if ($edit_page) {
 #wysiwyg-editor .ac-text       { font-size: .78rem; color: #555; }
 #wysiwyg-editor .cadre-vert .cv-titre { font-weight: 600; color: #1b5e20; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; display: block; }
 #wysiwyg-editor .signature     { background: #e8f3fb; border-left: 3px solid #1673B2; padding: 12px 16px; margin-top: 16px; font-size: .88rem; color: #1673B2; display: block; }
+#wysiwyg-editor .section-title { color: #FF9900; font-weight: 400; font-size: 1.1rem; margin: 20px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #c8dff0; }
+#wysiwyg-editor .orange.section-title, #wysiwyg-editor div.orange.section-title { color: #FF9900; font-weight: 400; font-size: 1.05rem; margin: 20px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #c8dff0; }
+#wysiwyg-editor .content-text  { color: #1673B2; margin-bottom: 10px; font-size: 95%; line-height: 1.65; }
+#wysiwyg-editor img             { max-width: 100%; height: auto; display: block; margin: 10px 0; border-radius: 4px; }
+#wysiwyg-editor p               { margin-bottom: 8px; }
+#wysiwyg-editor strong          { font-weight: 700; }
+#wysiwyg-editor a               { color: #1673B2; }
 /* ── Palette de styles flottante ──────────────────────────────────── */
 #style-palette {
   display: none; position: fixed; z-index: 9999;
