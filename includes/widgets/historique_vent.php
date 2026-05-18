@@ -648,21 +648,25 @@ function pmhShowError(msg){
 }
 
 // Initialiser les dates par défaut : hier 06h-12h UTC
-window.addEventListener('DOMContentLoaded',function(){
+(function initDates() {
   var now=new Date();
   var d=new Date(now);d.setUTCDate(d.getUTCDate()-1);d.setUTCHours(6,0,0,0);
   var e=new Date(d);e.setUTCHours(12,0,0,0);
   function fmtDate(dt){return dt.toISOString().slice(0,10);}
   function fmtHour(dt){return dt.toISOString().slice(11,16);}
-
-  // Initialiser les input[type=time]
-  var sh = document.getElementById('pmh-start-hour');
-  var eh = document.getElementById('pmh-end-hour');
-  if (sh) sh.value = fmtHour(d).slice(0,5);
-  if (eh) eh.value = fmtHour(e).slice(0,5);
-  document.getElementById('pmh-start-date').value = fmtDate(d);
-  document.getElementById('pmh-end-date').value   = fmtDate(e);
-});
+  function doInit() {
+    var sd=document.getElementById('pmh-start-date');
+    var ed=document.getElementById('pmh-end-date');
+    var sh=document.getElementById('pmh-start-hour');
+    var eh=document.getElementById('pmh-end-hour');
+    if(sd && !sd.value) sd.value=fmtDate(d);
+    if(ed && !ed.value) ed.value=fmtDate(e);
+    if(sh && !sh.value) sh.value=fmtHour(d).slice(0,5);
+    if(eh && !eh.value) eh.value=fmtHour(e).slice(0,5);
+  }
+  doInit(); // Immédiat (fonctionne si le script est après le HTML)
+  document.addEventListener('DOMContentLoaded', doInit); // Fallback
+})();
 
 })();
 
