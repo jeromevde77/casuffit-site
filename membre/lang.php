@@ -3,6 +3,7 @@
 // Inclure après session_start()
 
 // Priorité : param GET ?lang= > session membre_lang > session LANG (site principal) > FR
+if (session_status() === PHP_SESSION_NONE) session_start();
 if (!empty($_GET['lang']) && in_array($_GET['lang'], ['fr','nl'])) {
     $_SESSION['membre_lang'] = $_GET['lang'];
 }
