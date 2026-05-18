@@ -306,20 +306,36 @@
   };
 
   function startWidget(){
-    // ResizeObserver : s'initialise dès que le container est visible
     var mapEl = document.getElementById('vbr-mapbox');
     if(!mapEl) return;
     var initialized = false;
+
+    function tryInit(){
+      // Le container est visible seulement si son parent n'est pas display:none
+      var el = mapEl;
+      while(el){ if(getComputedStyle(el).display==='none') return false; el=el.parentElement; }
+      return mapEl.offsetWidth > 50;
+    }
+
+    function doInit(){
+      if(initialized) return;
+      initialized = true;
+      vbrLoad();
+      // Forcer Leaflet à recalculer la taille après rendu complet
+      [100,300,600,1000].forEach(function(t){
+        setTimeout(function(){
+          if(map){ map.invalidateSize(); map.setView([HOME.lat,HOME.lng],HOME.zoom); }
+        }, t);
+      });
+    }
+
+    // ResizeObserver détecte quand le container devient réellement visible
     var ro = new ResizeObserver(function(){
-      var w = mapEl.offsetWidth, h = mapEl.offsetHeight;
-      if(w > 50 && h > 50){
-        if(!initialized){ initialized=true; vbrLoad(); }
-        else if(map){ map.invalidateSize(); map.setView([HOME.lat,HOME.lng],HOME.zoom); }
-      }
+      if(tryInit()) doInit();
     });
     ro.observe(mapEl);
-    // Fallback si déjà visible
-    if(mapEl.offsetWidth > 50){ vbrLoad(); }
+    // Si déjà visible au chargement
+    if(tryInit()) doInit();
   }
 
   if(document.readyState!=='loading'){ startWidget(); }
