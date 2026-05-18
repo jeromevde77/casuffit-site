@@ -31,7 +31,7 @@
         </div>
       </div>
       <div class="pmh-form-btns">
-        <button class="pmh-btn" onclick="pmhLoad()">
+        <button type="button" class="pmh-btn" onclick="pmhLoad()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           Analyser
         </button>
@@ -313,6 +313,10 @@ function rwyBadge(r){var c=r.indexOf('25')>-1?'pmh-r25':r.indexOf('07')>-1?'pmh-
 // Heures via input[type=time] natif
 
 window.pmhLoad = function(){
+  // Feedback immédiat
+  var _btn = document.querySelector('.pmh-btn');
+  if(_btn) { _btn.textContent = '⏳ Chargement...'; _btn.disabled = true; }
+  var _resetBtn = function(){ if(_btn){ _btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Analyser'; _btn.disabled = false; }};
   try {
     var startDate=document.getElementById('pmh-start-date').value;
     var startHour=(document.getElementById('pmh-start-hour').value||'00:00').substring(0,5);
@@ -339,16 +343,19 @@ window.pmhLoad = function(){
       })
       .then(function(d){
         if(elLoad) elLoad.style.display='none';
-        if(d.error){pmhShowError(d.error);return;}
+        _resetBtn();
+      if(d.error){pmhShowError(d.error);return;}
         pmhData=d.results||[];
         if(!pmhData.length){pmhShowError('Aucune donnée pour cette période.');return;}
         pmhRender(d);
       })
       .catch(function(e){
         if(elLoad) elLoad.style.display='none';
-        pmhShowError('Erreur réseau: '+e.message);
+        _resetBtn();
+      pmhShowError('Erreur réseau: '+e.message);
       });
   } catch(ex) {
+    _resetBtn();
     alert('Erreur pmhLoad: '+ex.message);
   }
 };
