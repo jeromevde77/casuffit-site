@@ -204,20 +204,6 @@
     }
     .app-footer-links a { color: #1673B2; text-decoration: none; }
   </style>
-<?php
-// Extraire et injecter le CSS du widget historique dans le <head>
-// pour éviter que Safari ignore les <style> dans un display:none
-ob_start();
-include __DIR__ . '/includes/widgets/historique_vent.php';
-$_hist_html = ob_get_clean();
-// Extraire les blocs <style>
-preg_match_all('/<style>(.*?)<\/style>/s', $_hist_html, $_hist_styles);
-foreach ($_hist_styles[1] as $_s) {
-    echo '<style>' . $_s . '</style>' . "\n";
-}
-// Stocker le HTML sans les styles pour l'inclusion plus bas
-$_hist_html_clean = preg_replace('/<style>.*?<\/style>/s', '', $_hist_html);
-?>
 </head>
 <body>
 
@@ -293,7 +279,7 @@ $_hist_html_clean = preg_replace('/<style>.*?<\/style>/s', '', $_hist_html);
 
   <!-- Vue : Historique -->
   <div class="app-view" id="view-historique">
-    <?php echo $_hist_html_clean; ?>
+    <?php include __DIR__ . '/includes/widgets/historique_vent.php'; ?>
   </div>
 
   <!-- Vue : Rose des vents -->
