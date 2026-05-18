@@ -420,6 +420,12 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
       <button type="submit" form="wf" name="save_widget" class="btn btn-p"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Sauvegarder</button>
       <a href="widgets.php" class="btn btn-g"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nouveau</a>
       <?php if ($edit_widget): ?>
+      <?php $has_nl_file = file_exists(__DIR__ . '/../includes/widgets/' . $edit_widget['slug'] . '_nl.php'); ?>
+      <button type="button" id="btn-create-nl"
+              onclick="createNlVersion('<?= htmlspecialchars($edit_widget['slug'], ENT_QUOTES) ?>', <?= $has_nl_file ? 'true' : 'false' ?>)"
+              style="background:<?= $has_nl_file ? '#d97706' : '#1673B2' ?>;color:#fff;border:none;padding:7px 14px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px">
+        <?= $has_nl_file ? '🔄 Re-traduire en NL' : '🇳🇱 Créer version NL' ?>
+      </button>
       <a href="widgets.php?delete=<?= $edit_widget['id'] ?>" class="btn btn-r"
          onclick="return confirm('Supprimer ce widget ?')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Supprimer</a>
       <?php endif; ?>
@@ -730,5 +736,47 @@ document.addEventListener('click', function(e) {
   </div>
 </div>
 
+<script>
+function createNlVersion(slug, alreadyExists) {
+  var msg = alreadyExists
+    ? 'Une version NL existe déjà pour ce widget.\nVoulez-vous la remplacer par une nouvelle traduction automatique ?'
+    : 'Créer une version NL de ce widget par traduction automatique (Claude) ?\n\nLe fichier ' + slug + '_nl.php sera créé. Il sera à relire avant mise en production.';
+  if (!confirm(msg)) return;
+
+  var btn = document.getElementById('btn-create-nl');
+  var origText = btn.textContent;
+  btn.textContent = '⏳ Traduction en cours…';
+  btn.disabled = true;
+
+  // Récupérer le contenu actuel de l'éditeur
+  var contenu = document.getElementById('w-contenu')?.value || '';
+
+  fetch('/admin/translate_widget.php', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: 'slug=' + encodeURIComponent(slug) + '&contenu=' + encodeURIComponent(contenu)
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.ok) {
+      btn.textContent = '✅ Version NL créée !';
+      btn.style.background = '#27ae60';
+      setTimeout(() => {
+        // Recharger la page pour mettre à jour le badge et le bouton
+        window.location.href = 'widgets.php?edit=' + encodeURIComponent(document.querySelector('input[name=widget_id]')?.value || '') + '&msg=' + encodeURIComponent('Version NL créée avec succès — à relire avant mise en production.');
+      }, 1200);
+    } else {
+      alert('Erreur : ' + (d.error || 'inconnue'));
+      btn.textContent = origText;
+      btn.disabled = false;
+    }
+  })
+  .catch(e => {
+    alert('Erreur réseau : ' + e.message);
+    btn.textContent = origText;
+    btn.disabled = false;
+  });
+}
+</script>
 </body>
 </html>
