@@ -603,8 +603,16 @@ if ($edit_page) {
           <button type="button" class="wt-btn" onclick="removeBloc()" title="Supprimer le style du bloc" style="color:#c0392b;font-weight:700">✕ Bloc</button>
           <div class="wt-sep"></div><button type="button" class="wt-btn" onclick="openPalette(this)" style="background:#1673B2;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
         </div>
-        <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor()"><?= $edit_page ? ($edit_page['contenu'] ?? '') : '' ?></div>
+        <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor()"></div>
         <textarea name="contenu" id="f-contenu" style="display:none"><?= htmlspecialchars($edit_page ? ($edit_page['contenu'] ?? '') : '') ?></textarea>
+        <script>
+        // Injecter le contenu via JS pour éviter les conflits de parsing HTML
+        (function() {
+          var ta = document.getElementById('f-contenu');
+          var ed = document.getElementById('wysiwyg-editor');
+          if (ta && ed) ed.innerHTML = ta.value;
+        })();
+        </script>
         <div style="font-size:.63rem;color:#aaa;margin-top:2px">Aperçu → en temps réel</div>
 
         <!-- ── Version néerlandaise (NL) ────────────────────────────────── -->
