@@ -1,208 +1,232 @@
-<?php /* Widget vols en temps réel — Brussels Area (OpenSky Network) */ ?>
+<?php /* Widget vols en temps réel — Leaflet + OpenSky */ ?>
 
 <div class="vbr" id="vbr">
   <div class="vbr-header">
-    <div class="vbr-title">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 16v-2a4 4 0 0 0-4-4H5"/>
-        <polyline points="1 12 5 8 9 12"/>
-        <path d="M3 8v2a4 4 0 0 0 4 4h12"/>
-        <polyline points="23 12 19 16 15 12"/>
-      </svg>
-      Vols en cours — Zone Bruxelles
-    </div>
+    <div class="vbr-title">✈ Vols en cours — Zone Bruxelles</div>
     <div style="display:flex;gap:8px;align-items:center">
-      <span class="vbr-count" id="vbr-count">—</span>
-      <button class="vbr-refresh" id="vbr-refresh-btn" onclick="vbrLoad()" title="Actualiser">↺</button>
+      <span class="vbr-badge" id="vbr-count">—</span>
+      <button class="vbr-btn-refresh" onclick="vbrLoad()" title="Actualiser">↺</button>
     </div>
   </div>
 
-  <!-- Carte SVG -->
-  <div class="vbr-map-wrap">
-    <svg class="vbr-map" id="vbr-map" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-      <!-- Fond -->
-      <rect width="400" height="300" fill="#e8f0f8"/>
-      <!-- Grille légère -->
-      <g stroke="#c8d8e8" stroke-width="0.5">
-        <line x1="100" y1="0" x2="100" y2="300"/>
-        <line x1="200" y1="0" x2="200" y2="300"/>
-        <line x1="300" y1="0" x2="300" y2="300"/>
-        <line x1="0" y1="100" x2="400" y2="100"/>
-        <line x1="0" y1="200" x2="400" y2="200"/>
-      </g>
-      <!-- EBBR marker -->
-      <g id="vbr-ebbr">
-        <!-- Piste 07/25 (cap ~280°) -->
-        <line x1="168" y1="122" x2="220" y2="116" stroke="#0e3d6b" stroke-width="3" stroke-linecap="round"/>
-        <!-- Piste 01/19 (cap ~012°) -->
-        <line x1="193" y1="108" x2="195" y2="132" stroke="#0e3d6b" stroke-width="3" stroke-linecap="round"/>
-        <circle cx="194" cy="120" r="5" fill="none" stroke="#F5A623" stroke-width="1.5"/>
-        <text x="204" y="115" font-size="8" fill="#0e3d6b" font-weight="700" font-family="Arial,sans-serif">EBBR</text>
-      </g>
-      <!-- Avions injectés dynamiquement -->
-      <g id="vbr-planes"></g>
-    </svg>
-    <div class="vbr-map-labels">
-      <span>50.5°N 3.8°E</span>
-      <span>51.3°N 5.2°E</span>
+  <!-- Panneau détails vol -->
+  <div id="vbr-panel" style="display:none">
+    <div class="vbr-panel-close" onclick="document.getElementById('vbr-panel').style.display='none'">✕</div>
+    <div class="vbr-panel-cs" id="vp-cs">—</div>
+    <div class="vbr-panel-grid">
+      <div class="vbr-panel-item"><div class="vbr-panel-lbl">ALTITUDE</div><div class="vbr-panel-val" id="vp-alt">—</div></div>
+      <div class="vbr-panel-item"><div class="vbr-panel-lbl">VITESSE</div><div class="vbr-panel-val" id="vp-spd">—</div></div>
+      <div class="vbr-panel-item"><div class="vbr-panel-lbl">CAP</div><div class="vbr-panel-val" id="vp-hdg">—</div></div>
+      <div class="vbr-panel-item"><div class="vbr-panel-lbl">V/S</div><div class="vbr-panel-val" id="vp-vs">—</div></div>
+      <div class="vbr-panel-item"><div class="vbr-panel-lbl">SQUAWK</div><div class="vbr-panel-val" id="vp-sq">—</div></div>
+      <div class="vbr-panel-item"><div class="vbr-panel-lbl">PAYS</div><div class="vbr-panel-val" id="vp-country">—</div></div>
+      <div class="vbr-panel-item"><div class="vbr-panel-lbl">ICAO24</div><div class="vbr-panel-val" id="vp-icao">—</div></div>
+      <div class="vbr-panel-item"><div class="vbr-panel-lbl">SOURCE</div><div class="vbr-panel-val" id="vp-src">—</div></div>
     </div>
   </div>
 
-  <!-- Liste des vols -->
+  <!-- Légende altitude -->
+  <div class="vbr-legend">
+    <span style="color:#e74c3c">■</span> 0-2k
+    <span style="color:#e67e22">■</span> 2-5k
+    <span style="color:#f1c40f">■</span> 5-10k
+    <span style="color:#2ecc71">■</span> 10-20k
+    <span style="color:#3498db">■</span> 20-35k
+    <span style="color:#9b59b6">■</span> 35k+ ft
+    <span style="float:right;font-size:.65rem" id="vbr-update">—</span>
+  </div>
+
+  <!-- Carte Leaflet -->
+  <div id="vbr-mapbox"></div>
+
   <div class="vbr-loading" id="vbr-loading">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="vbr-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-    Chargement des données...
+    <span class="vbr-spin">⟳</span> Chargement des données...
   </div>
   <div class="vbr-error" id="vbr-error" style="display:none"></div>
-  <div id="vbr-list" style="display:none">
-    <div class="vbr-list-header">
-      <span>VOL</span><span>ALTITUDE</span><span>VITESSE</span><span>CAP</span><span>PAYS</span>
-    </div>
-    <div id="vbr-list-body"></div>
-  </div>
+
   <div class="vbr-footer">
-    Source : <a href="https://opensky-network.org" target="_blank">OpenSky Network</a> · ADS-B temps réel ·
-    <span id="vbr-last-update">—</span>
+    Source : <a href="https://opensky-network.org" target="_blank">OpenSky Network</a> ADS-B · Carte <a href="https://www.openstreetmap.org" target="_blank">OpenStreetMap</a>
   </div>
 </div>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <style>
 .vbr { font-family:"Helvetica Neue",Arial,sans-serif; background:#fff; border-radius:10px; border:1.5px solid #dde6f0; overflow:hidden; font-size:13px; }
 .vbr-header { background:#0e3d6b; color:#fff; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; }
-.vbr-title { display:flex; align-items:center; gap:7px; font-weight:700; font-size:.85rem; }
-.vbr-count { background:rgba(255,255,255,.2); border-radius:10px; padding:2px 8px; font-size:.72rem; font-weight:700; }
-.vbr-refresh { background:none; border:1px solid rgba(255,255,255,.4); color:#fff; border-radius:5px; padding:2px 8px; cursor:pointer; font-size:.85rem; }
-.vbr-refresh:hover { background:rgba(255,255,255,.15); }
-.vbr-map-wrap { position:relative; padding:8px; background:#f5f8fc; border-bottom:1px solid #e0e8f0; }
-.vbr-map { width:100%; display:block; border-radius:6px; }
-.vbr-map-labels { display:flex; justify-content:space-between; font-size:.6rem; color:#999; padding:0 4px; margin-top:2px; }
-.vbr-loading { display:flex; align-items:center; gap:8px; padding:16px; color:#888; font-size:.8rem; }
-.vbr-error { background:#fff0f0; border-top:1px solid #fca5a5; padding:10px 14px; color:#c0392b; font-size:.8rem; }
-.vbr-list-header { display:grid; grid-template-columns:2fr 1.5fr 1.5fr 1fr 1.5fr; padding:6px 12px; font-size:.65rem; font-weight:700; color:#888; text-transform:uppercase; border-bottom:1px solid #e8f0f8; background:#f8fafb; }
-.vbr-row { display:grid; grid-template-columns:2fr 1.5fr 1.5fr 1fr 1.5fr; padding:6px 12px; border-bottom:1px solid #f0f4f8; cursor:pointer; transition:background .15s; align-items:center; }
-.vbr-row:hover { background:#f0f7ff; }
-.vbr-callsign { font-weight:700; font-size:.82rem; color:#0e3d6b; }
-.vbr-alt { font-size:.75rem; color:#555; }
-.vbr-spd { font-size:.75rem; color:#555; }
-.vbr-cap { font-size:.75rem; color:#555; }
-.vbr-pays { font-size:.7rem; color:#888; }
-.vbr-footer { padding:6px 12px; font-size:.62rem; color:#aaa; border-top:1px solid #e8f0f8; }
+.vbr-title { font-weight:700; font-size:.88rem; }
+.vbr-badge { background:rgba(255,255,255,.2); border-radius:10px; padding:2px 8px; font-size:.72rem; font-weight:700; }
+.vbr-btn-refresh { background:none; border:1px solid rgba(255,255,255,.4); color:#fff; border-radius:5px; padding:2px 8px; cursor:pointer; font-size:1rem; line-height:1; }
+.vbr-legend { padding:5px 12px; font-size:.68rem; color:#666; background:#f8fafb; border-bottom:1px solid #e8f0f8; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+#vbr-mapbox { height:420px; }
+.vbr-loading { padding:12px 14px; color:#888; font-size:.8rem; display:flex; align-items:center; gap:6px; }
+.vbr-error { background:#fff0f0; padding:10px 14px; color:#c0392b; font-size:.8rem; border-top:1px solid #fca5a5; }
+.vbr-footer { padding:6px 12px; font-size:.6rem; color:#aaa; border-top:1px solid #e8f0f8; }
 .vbr-footer a { color:#1673B2; text-decoration:none; }
 @keyframes vbr-rotate { to { transform: rotate(360deg); } }
-.vbr-spin { animation: vbr-rotate 1s linear infinite; transform-origin: center; }
-/* Avion SVG */
-.vbr-plane { cursor:pointer; transition:opacity .2s; }
-.vbr-plane:hover { opacity:.7; }
+.vbr-spin { display:inline-block; animation: vbr-rotate .8s linear infinite; }
+/* Panneau détails */
+.vbr-panel { position:relative; background:#f0f7ff; border-bottom:1px solid #c8dff0; padding:10px 14px 10px; }
+.vbr-panel-close { position:absolute; top:8px; right:12px; cursor:pointer; color:#888; font-size:.9rem; font-weight:700; }
+.vbr-panel-close:hover { color:#333; }
+.vbr-panel-cs { font-size:1.3rem; font-weight:800; color:#0e3d6b; margin-bottom:8px; }
+.vbr-panel-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.vbr-panel-item { background:#fff; border-radius:6px; padding:5px 8px; border:1px solid #dde6f0; }
+.vbr-panel-lbl { font-size:.55rem; color:#999; font-weight:700; text-transform:uppercase; }
+.vbr-panel-val { font-size:.82rem; font-weight:700; color:#0e3d6b; margin-top:1px; }
+@media(max-width:500px){
+  .vbr-panel-grid { grid-template-columns:repeat(2,1fr); }
+  #vbr-mapbox { height:300px; }
+}
 </style>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 (function(){
-  // Coordonnées bounding box
-  var LAT_MIN=50.5, LAT_MAX=51.3, LON_MIN=3.8, LON_MAX=5.2;
-  var SVG_W=400, SVG_H=300;
+  var map = null;
+  var markers = {};
+  var selectedCS = null;
 
-  function latToY(lat){ return SVG_H - ((lat-LAT_MIN)/(LAT_MAX-LAT_MIN))*SVG_H; }
-  function lonToX(lon){ return ((lon-LON_MIN)/(LON_MAX-LON_MIN))*SVG_W; }
+  var ALT_COLORS = [
+    [0,     '#e74c3c'],
+    [600,   '#e67e22'],
+    [1500,  '#f1c40f'],
+    [3000,  '#2ecc71'],
+    [6000,  '#3498db'],
+    [10500, '#9b59b6'],
+  ];
 
-  function mToFt(m){ return m ? Math.round(m*3.28084/100)*100 : null; }
-  function msToKt(ms){ return ms ? Math.round(ms*1.94384) : null; }
-
-  function capToArrow(deg){
-    if(deg===null||deg===undefined) return '—';
-    var dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
-    return dirs[Math.round(deg/22.5)%16];
+  function altColor(m) {
+    if(m === null || m === undefined) return '#aaa';
+    var ft = m * 3.28084;
+    var col = ALT_COLORS[0][1];
+    for(var i=0; i<ALT_COLORS.length; i++){
+      if(ft >= ALT_COLORS[i][0]) col = ALT_COLORS[i][1];
+    }
+    return col;
   }
 
-  function planeSVG(x, y, cap, callsign, selected){
+  function makePlaneIcon(cap, color, selected) {
     cap = cap || 0;
-    var col = selected ? '#F5A623' : '#1673B2';
-    var tip = callsign ? callsign.trim() : '?';
-    return '<g class="vbr-plane" onclick="vbrSelect(\''+tip+'\')" transform="translate('+x+','+y+') rotate('+cap+')">'
-      +'<title>'+tip+'</title>'
-      +'<polygon points="0,-8 4,6 0,3 -4,6" fill="'+col+'" stroke="#fff" stroke-width="0.8"/>'
-      +'</g>';
+    var size = selected ? 28 : 22;
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="-12 -12 24 24">'
+      + '<g transform="rotate('+(cap - 0)+')">'
+      + '<polygon points="0,-10 5,8 0,5 -5,8" fill="'+color+'" stroke="#fff" stroke-width="1.5"/>'
+      + '</g></svg>';
+    return L.divIcon({
+      html: svg,
+      className: '',
+      iconSize: [size, size],
+      iconAnchor: [size/2, size/2]
+    });
   }
 
-  window.vbrLoad = function(){
-    var loading = document.getElementById('vbr-loading');
-    var err     = document.getElementById('vbr-error');
-    var list    = document.getElementById('vbr-list');
-    var btn     = document.getElementById('vbr-refresh-btn');
-    if(loading) loading.style.display='flex';
-    if(err)     err.style.display='none';
-    if(list)    list.style.display='none';
-    if(btn)     btn.style.opacity='.5';
+  function mToFt(m){ return m ? Math.round(m * 3.28084 / 100) * 100 : null; }
+  function msToKt(ms){ return ms ? Math.round(ms * 1.94384) : null; }
+  function srcLabel(n){ return ['ADS-B','ASTERIX','MLAT','FLARM'][n]||'?'; }
 
-    var url='/api/flights.php';
+  function initMap() {
+    if(map) return;
+    map = L.map('vbr-mapbox', { zoomControl: true }).setView([50.9014, 4.4844], 9);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org">OSM</a>',
+      maxZoom: 18
+    }).addTo(map);
+    // Marker EBBR
+    L.marker([50.9014, 4.4844], {
+      icon: L.divIcon({
+        html: '<div style="background:#0e3d6b;color:#fff;font-size:9px;font-weight:700;padding:2px 4px;border-radius:3px;white-space:nowrap;border:1px solid #F5A623">EBBR</div>',
+        className: '', iconAnchor: [20, 10]
+      })
+    }).addTo(map);
+  }
 
-    fetch(url)
+  function showPanel(s) {
+    selectedCS = (s[1]||'?').trim();
+    document.getElementById('vp-cs').textContent = selectedCS;
+    var alt = mToFt(s[7]);
+    var spd = msToKt(s[9]);
+    var vs  = s[11] ? Math.round(s[11]*196.85) : null;
+    document.getElementById('vp-alt').textContent = alt ? alt.toLocaleString()+' ft' : '—';
+    document.getElementById('vp-spd').textContent = spd ? spd+' kt' : '—';
+    document.getElementById('vp-hdg').textContent = s[10] ? Math.round(s[10])+'°' : '—';
+    document.getElementById('vp-vs').textContent  = vs  ? (vs>0?'+':'')+vs+' ft/min' : '—';
+    document.getElementById('vp-sq').textContent  = s[14] || '—';
+    document.getElementById('vp-country').textContent = s[2] || '—';
+    document.getElementById('vp-icao').textContent = (s[0]||'').toUpperCase();
+    document.getElementById('vp-src').textContent = srcLabel(s[16]);
+    document.getElementById('vbr-panel').style.display = 'block';
+    // Refresh marker colors
+    Object.keys(markers).forEach(function(cs){
+      var m = markers[cs];
+      if(m._vbrData) {
+        m.setIcon(makePlaneIcon(m._vbrData[10], altColor(m._vbrData[7]), cs === selectedCS));
+      }
+    });
+    // Pan to aircraft
+    if(s[6] && s[5]) map.panTo([s[6], s[5]]);
+  }
+
+  window.vbrLoad = function() {
+    var elLoad = document.getElementById('vbr-loading');
+    var elErr  = document.getElementById('vbr-error');
+    var btn    = document.querySelector('.vbr-btn-refresh');
+    if(elLoad) elLoad.style.display='flex';
+    if(elErr)  elErr.style.display='none';
+    if(btn)    btn.style.opacity='.5';
+    initMap();
+
+    fetch('/api/flights.php')
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(d){
-        if(loading) loading.style.display='none';
-        if(btn) btn.style.opacity='1';
-        var states = d.states || [];
-        // Filtrer: en vol seulement, avec position
-        states = states.filter(function(s){ return s[8]===false && s[5]!==null && s[6]!==null; });
-        // Trier par altitude décroissante
-        states.sort(function(a,b){ return (b[7]||0)-(a[7]||0); });
+        if(elLoad) elLoad.style.display='none';
+        if(btn)    btn.style.opacity='1';
+        var states = (d.states||[]).filter(function(s){ return s[8]===false && s[5]&&s[6]; });
+        document.getElementById('vbr-count').textContent = states.length+' vols';
+        document.getElementById('vbr-update').textContent =
+          'MàJ '+new Date().toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'});
 
-        document.getElementById('vbr-count').textContent = states.length + ' vols';
-        document.getElementById('vbr-last-update').textContent =
-          'MàJ ' + new Date().toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'});
+        // Supprimer anciens marqueurs disparus
+        var seen = {};
+        states.forEach(function(s){ seen[s[1]||s[0]] = true; });
+        Object.keys(markers).forEach(function(k){
+          if(!seen[k]){ map.removeLayer(markers[k]); delete markers[k]; }
+        });
 
-        // Carte SVG
-        var planesG = document.getElementById('vbr-planes');
-        if(planesG){
-          var html='';
-          states.forEach(function(s){
-            var x=lonToX(s[5]), y=latToY(s[6]);
-            if(x>=0&&x<=SVG_W&&y>=0&&y<=SVG_H){
-              html+=planeSVG(x,y,s[10],s[1],false);
-            }
-          });
-          planesG.innerHTML=html;
+        // Ajouter/mettre à jour marqueurs
+        states.forEach(function(s) {
+          var cs = (s[1]||s[0]||'?').trim();
+          var color = altColor(s[7]);
+          var icon = makePlaneIcon(s[10], color, cs===selectedCS);
+          if(markers[cs]) {
+            markers[cs].setLatLng([s[6], s[5]]);
+            markers[cs].setIcon(icon);
+            markers[cs]._vbrData = s;
+          } else {
+            var m = L.marker([s[6], s[5]], {icon: icon});
+            m._vbrData = s;
+            m.on('click', function(){ showPanel(s); });
+            m.bindTooltip(cs, {permanent:false, direction:'top', offset:[0,-8], className:'vbr-tt'});
+            m.addTo(map);
+            markers[cs] = m;
+          }
+        });
+
+        // Rafraîchir panneau si sélectionné
+        if(selectedCS && states.some(function(s){return (s[1]||'').trim()===selectedCS;})){
+          var sel = states.find(function(s){return (s[1]||'').trim()===selectedCS;});
+          if(sel) showPanel(sel);
         }
-
-        // Liste
-        var body = document.getElementById('vbr-list-body');
-        if(body){
-          body.innerHTML = states.slice(0,30).map(function(s){
-            var cs=(s[1]||'???').trim();
-            var alt=mToFt(s[7]);
-            var spd=msToKt(s[9]);
-            return '<div class="vbr-row" onclick="vbrSelect(\''+cs+'\')">'
-              +'<span class="vbr-callsign">✈ '+cs+'</span>'
-              +'<span class="vbr-alt">'+(alt?alt.toLocaleString()+' ft':'—')+'</span>'
-              +'<span class="vbr-spd">'+(spd?spd+' kt':'—')+'</span>'
-              +'<span class="vbr-cap">'+capToArrow(s[10])+'</span>'
-              +'<span class="vbr-pays">'+( s[2]||'—')+'</span>'
-              +'</div>';
-          }).join('');
-        }
-        if(list) list.style.display='block';
       })
       .catch(function(e){
-        if(loading) loading.style.display='none';
-        if(btn) btn.style.opacity='1';
-        if(err){ err.textContent='Erreur : '+e.message; err.style.display='block'; }
+        if(elLoad) elLoad.style.display='none';
+        if(btn)    btn.style.opacity='1';
+        if(elErr){ elErr.textContent='Erreur : '+e.message; elErr.style.display='block'; }
       });
   };
 
-  window.vbrSelect = function(cs){
-    // Highlight l'avion sélectionné sur la carte
-    document.querySelectorAll('.vbr-plane polygon').forEach(function(p){
-      p.setAttribute('fill', p.closest('.vbr-plane').querySelector('title').textContent===cs ? '#F5A623' : '#1673B2');
-    });
-    document.querySelectorAll('.vbr-row').forEach(function(r){
-      r.style.background = r.querySelector('.vbr-callsign').textContent.includes(cs) ? '#fff8ee' : '';
-    });
-  };
-
-  // Chargement initial
-  document.addEventListener('DOMContentLoaded', function(){ vbrLoad(); });
-  if(document.readyState!=='loading') vbrLoad();
-
-  // Rafraîchissement automatique toutes les 60s
-  setInterval(function(){ vbrLoad(); }, 60000);
+  // Init au chargement
+  if(document.readyState!=='loading') { vbrLoad(); }
+  else { document.addEventListener('DOMContentLoaded', vbrLoad); }
+  setInterval(vbrLoad, 60000);
 })();
 </script>
