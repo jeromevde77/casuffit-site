@@ -205,6 +205,32 @@
       }).catch(function(){img.style.opacity='.2';});
   }
 
+  function fetchRoute(callsign){
+    var el = document.getElementById('vi-route');
+    el.textContent = '';
+    var cs = callsign.replace(/\s/g,'').toUpperCase();
+    if(!cs || cs==='???') return;
+    fetch('https://api.adsbdb.com/v0/callsign/'+encodeURIComponent(cs))
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(d){
+        if(!d||!d.response||!d.response.flightroute) return;
+        var fr = d.response.flightroute;
+        var orig = fr.origin ? (fr.origin.iata_code||fr.origin.icao_code) : null;
+        var dest = fr.destination ? (fr.destination.iata_code||fr.destination.icao_code) : null;
+        var airline = fr.airline ? fr.airline.name : null;
+        var parts = [];
+        if(orig && dest) parts.push(orig+' ✈ '+dest);
+        if(airline) parts.push('('+airline+')');
+        if(parts.length) {
+          el.textContent = parts.join(' ');
+          el.title = (fr.origin?fr.origin.name+' ('+fr.origin.municipality+')':'') +
+                     (orig&&dest?' → ':'') +
+                     (fr.destination?fr.destination.name+' ('+fr.destination.municipality+')':'');
+        }
+      })
+      .catch(function(){});
+  }
+
   function fetchTrack(icao24){
     if(trackLine){map.removeLayer(trackLine);trackLine=null;}
     fetch('/api/track.php?icao24='+encodeURIComponent(icao24))
@@ -233,6 +259,7 @@
     document.getElementById('vi-icao').textContent=(s[0]||'').toUpperCase();
     document.getElementById('vbr-info').style.display='flex';
     fetchPhoto(selectedIcao);
+    fetchRoute(cs);
     fetchTrack(selectedIcao);
     // Highlight
     refreshMarkers();
