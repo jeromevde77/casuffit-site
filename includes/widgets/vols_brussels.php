@@ -85,6 +85,8 @@
   var map = null;
   var markers = {};
   var selectedCS = null;
+  var trackLine = null;
+  var trackIcao = null;
 
   var ALT_COLORS = [
     [0,     '#e74c3c'],
@@ -103,6 +105,31 @@
       if(ft >= ALT_COLORS[i][0]) col = ALT_COLORS[i][1];
     }
     return col;
+  }
+
+  function fetchTrack(icao24, cs) {
+    // Supprimer l'ancienne trajectoire
+    if(trackLine) { map.removeLayer(trackLine); trackLine = null; }
+    trackIcao = icao24;
+    fetch('/api/track.php?icao24=' + encodeURIComponent(icao24))
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if(!d || !d.path || !d.path.length) return;
+        // d.path = [[time, lat, lon, baro_alt, true_track, on_ground], ...]
+        var pts = d.path
+          .filter(function(p){ return p[1]&&p[2]; })
+          .map(function(p){ return [p[1], p[2]]; });
+        if(pts.length < 2) return;
+        trackLine = L.polyline(pts, {
+          color: '#F5A623',
+          weight: 2.5,
+          opacity: 0.85,
+          dashArray: null
+        }).addTo(map);
+        // Marqueur départ
+        L.circleMarker(pts[0], {radius:4, color:'#F5A623', fill:true, fillColor:'#fff', fillOpacity:1, weight:2}).addTo(map);
+      })
+      .catch(function(){});
   }
 
   function makePlaneIcon(cap, color, selected) {
@@ -161,6 +188,7 @@
     document.getElementById('vp-icao').textContent = (s[0]||'').toUpperCase();
     document.getElementById('vp-src').textContent = srcLabel(s[16]);
     document.getElementById('vbr-panel').style.display = 'block';
+    fetchTrack((s[0]||'').toLowerCase(), selectedCS);
     // Refresh marker colors
     Object.keys(markers).forEach(function(cs){
       var m = markers[cs];
