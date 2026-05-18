@@ -256,35 +256,35 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
 
 <div class="container">
 
-  <div class="welcome">Bonjour <?= htmlspecialchars($prenom) ?> 👋</div>
-  <div><span class="code-badge">Membre <?= htmlspecialchars($membre['code_membre']) ?></span></div>
+  <div class="welcome"><?= tm("bonjour") ?> <?= htmlspecialchars($prenom) ?> 👋</div>
+  <div><span class="code-badge"><?= tm('membre_depuis') ?> <?= htmlspecialchars($membre['code_membre']) ?></span></div>
 
   <?php if ($msg_flash === 'profil_ok'): ?>
-    <div class="flash flash-ok">✓ Vos données ont été enregistrées.</div>
+    <div class="flash flash-ok"><?= tm('msg_profil_maj') ?></div>
   <?php elseif ($msg_flash === 'don_cree'): ?>
-    <div class="flash flash-ok">✓ QR code généré — scannez pour payer.</div>
+    <div class="flash flash-ok"><?= tm('msg_qr_genere') ?></div>
   <?php elseif ($msg_flash === 'desabonne'): ?>
-    <div class="flash flash-info">✓ Désabonné(e) de la newsletter.</div>
+    <div class="flash flash-info"><?= tm('msg_desabonne') ?></div>
   <?php elseif ($msg_flash === 'reabonne'): ?>
-    <div class="flash flash-ok">✓ Réabonné(e) à la newsletter.</div>
+    <div class="flash flash-ok"><?= tm('msg_reabonne') ?></div>
   <?php elseif ($msg_flash === 'email_confirm_envoye'): ?>
-    <div class="flash flash-info">📧 Un lien de confirmation a été envoyé à votre nouvel email. Cliquez dessus pour valider le changement.</div>
+    <div class="flash flash-info"><?= tm('msg_email_confirm') ?></div>
   <?php elseif ($msg_flash === 'email_invalide'): ?>
-    <div class="flash flash-err">✗ Adresse email invalide.</div>
+    <div class="flash flash-err"><?= tm('err_email_inv') ?></div>
   <?php elseif ($msg_flash === 'email_pris'): ?>
-    <div class="flash flash-err">✗ Cette adresse email est déjà utilisée par un autre compte.</div>
+    <div class="flash flash-err"><?= tm('err_email_pris2') ?></div>
   <?php endif; ?>
 
   <?php if ($rgpd_manquant): ?>
   <div class="banner-rgpd">
-    <strong>⚠ Consentement RGPD requis</strong>
-    <p style="font-size:.8rem;color:#555;margin-top:4px">Merci de lire et d'accepter les conditions d'enregistrement de vos données dans l'onglet <strong>Mon profil</strong>.</p>
+    <strong><?= tm('err_rgpd_req') ?></strong>
+    <p style="font-size:.8rem;color:#555;margin-top:4px"><?= tm('banner_rgpd_txt') ?></p>
   </div>
   <?php elseif ($besoin_maj): ?>
   <div class="banner-maj">
     <span style="font-size:1.3rem">📋</span>
-    <div class="bm-txt">Vos données n'ont pas été vérifiées depuis plus d'un an. Merci de les confirmer ou mettre à jour.</div>
-    <button class="btn-blue" onclick="showTab('profil')" style="flex-shrink:0">Mettre à jour</button>
+    <div class="bm-txt"><?= tm('banner_maj_txt') ?></div>
+    <button class="btn-blue" onclick="showTab('profil')" style="flex-shrink:0"><?= tm('btn_maj') ?></button>
   </div>
   <?php endif; ?>
 
@@ -303,17 +303,17 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
             <?php foreach ([20,50,100,250,500] as $m): ?>
             <button type="button" class="mbtn <?= $m===50?'active':'' ?>" onclick="selectM(this,'<?= $m ?>')"><?= $m ?> €</button>
             <?php endforeach; ?>
-            <button type="button" class="mbtn" onclick="selectM(this,'libre')">Libre</button>
+            <button type="button" class="mbtn" onclick="selectM(this,'libre')"><?= tm('libre') ?></button>
           </div>
-          <input type="number" name="montant_libre" id="input-libre" class="input-libre" placeholder="Montant €" min="1" step="0.01">
+          <input type="number" name="montant_libre" id="input-libre" class="input-libre" placeholder="<?= tm('montant_ph') ?>" min="1" step="0.01">
           <input type="hidden" name="montant" id="input-montant" value="50">
-          <button type="submit" name="creer_don" class="btn-orange">✨ Générer mon QR code</button>
+          <button type="submit" name="creer_don" class="btn-orange"><?= tm('btn_generer_qr') ?></button>
         </form>
-        <div style="margin-top:10px;font-size:.72rem;color:#aaa;line-height:1.5">Un QR code avec votre communication structurée unique est généré. Scannez avec votre app bancaire.</div>
+        <div style="margin-top:10px;font-size:.72rem;color:#aaa;line-height:1.5"><?= tm('qr_hint') ?></div>
       </div>
 
       <div class="card">
-        <h2>📱 QR code actif</h2>
+        <h2><?= tm('qr_actif') ?></h2>
         <?php if ($don_actif): ?>
         <div class="qr-section">
           <div class="montant-display"><?= number_format($don_actif['montant'],2,',',' ') ?> €</div>
@@ -321,13 +321,13 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
           <div class="ogm-display"><?= htmlspecialchars($don_actif['ogm_don']?:$membre['ogm']) ?></div>
           <div class="iban-mini"><strong><?= htmlspecialchars($iban) ?></strong><br>BIC : <?= htmlspecialchars($bic) ?><br><?= htmlspecialchars(cfg('beneficiaire','ça suffit ! ASBL')) ?></div>
           <div style="font-size:.7rem;color:#aaa;margin-top:4px">Réf. don #<?= $don_actif['id'] ?></div>
-          <button class="btn-green" onclick="genererQR(ogm_actif,montant_actif)">🔄 Actualiser</button>
-          <button class="btn-gray" onclick="telechargerQR()">⬇ Télécharger</button>
+          <button class="btn-green" onclick="genererQR(ogm_actif,montant_actif)"><?= tm('actualiser_qr') ?></button>
+          <button class="btn-gray" onclick="telechargerQR()"><?= tm('telecharger_qr') ?></button>
         </div>
         <?php else: ?>
         <div style="text-align:center;padding:30px 10px;color:#aaa">
           <div style="font-size:2rem;margin-bottom:10px">💳</div>
-          <div style="font-size:.85rem">Choisissez un montant<br>et générez votre QR →</div>
+          <div style="font-size:.85rem"><?= tm('qr_placeholder') ?></div>
         </div>
         <?php endif; ?>
       </div>
@@ -335,9 +335,9 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
 
     <div class="grid2">
       <div class="card">
-        <h2>📋 Historique de mes dons</h2>
+        <h2><?= tm('historique_dons') ?></h2>
         <?php if (empty($historique)): ?>
-          <div style="color:#aaa;font-size:.82rem;text-align:center;padding:16px">Aucun don enregistré.</div>
+          <div style="color:#aaa;font-size:.82rem;text-align:center;padding:16px"><?= tm('aucun_don') ?></div>
         <?php else: ?>
           <?php foreach ($historique as $d): ?>
           <div class="don-row <?= ($don_actif&&$don_actif['id']==$d['id'])?'active-don':'' ?>"
@@ -348,34 +348,34 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
             <span class="badge <?= $d['statut']==='confirme'?'b-ok':'b-wait' ?>"><?= $d['statut']==='confirme'?'✓':'⏳' ?></span>
           </div>
           <?php endforeach; ?>
-          <div style="font-size:.68rem;color:#aaa;text-align:center;padding:8px;font-style:italic">Cliquez pour afficher le QR</div>
+          <div style="font-size:.68rem;color:#aaa;text-align:center;padding:8px;font-style:italic"><?= tm('clic_qr') ?></div>
         <?php endif; ?>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:16px">
         <div class="card">
-          <h2>📊 Mes contributions</h2>
+          <h2><?= tm('mes_contributions') ?></h2>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div><div class="stat-val"><?= number_format($total,0,',',' ') ?> €</div><div class="stat-lab">Total confirmé</div></div>
-            <div><div class="stat-val"><?= count($historique) ?></div><div class="stat-lab">Don(s)</div></div>
+            <div><div class="stat-val"><?= number_format($total,0,',',' ') ?> €</div><div class="stat-lab"><?= tm('total_confirme') ?></div></div>
+            <div><div class="stat-val"><?= count($historique) ?></div><div class="stat-lab"><?= tm('dons_count') ?></div></div>
           </div>
           <?php if ($objectif > 0 && $total > 0): ?>
           <div style="background:#eee;border-radius:4px;height:5px;margin-top:12px">
             <div style="background:linear-gradient(90deg,#1673B2,#FF9900);height:5px;border-radius:4px;width:<?= min(100,round($total/$objectif*100)) ?>%"></div>
           </div>
-          <div style="font-size:.68rem;color:#aaa;margin-top:3px"><?= round($total/$objectif*100) ?>% de l'objectif</div>
+          <div style="font-size:.68rem;color:#aaa;margin-top:3px"><?= round($total/$objectif*100) ?>% <?= tm('objectif_pct') ?></div>
           <?php endif; ?>
         </div>
         <div class="card">
-          <h2>📧 Newsletter</h2>
+          <h2><?= tm('newsletter_titre') ?></h2>
           <div class="nl-row">
             <div class="nl-dot <?= $membre['newsletter']?'on':'off' ?>"></div>
-            <div class="nl-txt"><?= $membre['newsletter']?'Abonné(e)':'Non abonné(e)' ?></div>
+            <div class="nl-txt"><?= $membre['newsletter'] ? tm('abonne') : tm('non_abonne') ?></div>
           </div>
           <?php if ($membre['newsletter']): ?>
-            <a href="dashboard.php?desabonner=1" onclick="return confirm('Se désabonner ?')" style="display:block;text-align:center;background:#fde8e8;color:#c53030;border-radius:7px;padding:7px;font-size:.78rem;font-weight:700;text-decoration:none">Se désabonner</a>
+            <a href="dashboard.php?desabonner=1" onclick="return confirm('<?= tm(\'confirm_desabo\') ?>')" style="display:block;text-align:center;background:#fde8e8;color:#c53030;border-radius:7px;padding:7px;font-size:.78rem;font-weight:700;text-decoration:none"><?= tm('se_desabonner') ?></a>
           <?php else: ?>
-            <a href="dashboard.php?reabonner=1" style="display:block;text-align:center;background:#e8f8f0;color:#27ae60;border-radius:7px;padding:7px;font-size:.78rem;font-weight:700;text-decoration:none">Se réabonner</a>
+            <a href="dashboard.php?reabonner=1" style="display:block;text-align:center;background:#e8f8f0;color:#27ae60;border-radius:7px;padding:7px;font-size:.78rem;font-weight:700;text-decoration:none"><?= tm('se_reabonner') ?></a>
           <?php endif; ?>
         </div>
       </div>
@@ -385,33 +385,33 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
   <!-- ══════════ ONGLET PROFIL ══════════ -->
   <div class="tab-panel <?= $tab_actif==='profil'?'active':'' ?>" id="tab-profil">
     <div class="card">
-      <h2>👤 Mes données personnelles</h2>
+      <h2><?= tm('mes_donnees') ?></h2>
       <form method="POST">
 
-        <div class="section-title">Identité</div>
+        <div class="section-title"><?= tm('section_identite') ?></div>
         <div class="form-row-2">
-          <div class="form-group"><label>Prénom *</label><input type="text" name="prenom" value="<?= htmlspecialchars($membre['prenom']??'') ?>" required></div>
-          <div class="form-group"><label>Nom</label><input type="text" name="nom" value="<?= htmlspecialchars($membre['nom']??'') ?>"></div>
+          <div class="form-group"><label><?= tm('label_prenom') ?></label><input type="text" name="prenom" value="<?= htmlspecialchars($membre['prenom']??'') ?>" required></div>
+          <div class="form-group"><label><?= tm('label_nom') ?></label><input type="text" name="nom" value="<?= htmlspecialchars($membre['nom']??'') ?>"></div>
         </div>
-        <div class="form-group"><label>Téléphone</label><input type="tel" name="telephone" value="<?= htmlspecialchars($membre['telephone']??'') ?>" placeholder="+32 ..."></div>
+        <div class="form-group"><label><?= tm('label_tel') ?></label><input type="tel" name="telephone" value="<?= htmlspecialchars($membre['telephone']??'') ?>" placeholder="+32 ..."></div>
 
-        <div class="section-title">Adresse</div>
+        <div class="section-title"><?= tm('section_adresse') ?></div>
         <div class="form-row-3">
-          <div class="form-group"><label>Rue</label><input type="text" name="rue" value="<?= htmlspecialchars($membre['rue']??'') ?>" placeholder="Nom de la rue"></div>
-          <div class="form-group"><label>N°</label><input type="text" name="numero" value="<?= htmlspecialchars($membre['numero']??'') ?>" placeholder="12"></div>
-          <div class="form-group"><label>Boîte</label><input type="text" name="boite" value="<?= htmlspecialchars($membre['boite']??'') ?>" placeholder="B3"></div>
+          <div class="form-group"><label><?= tm('label_rue') ?></label><input type="text" name="rue" value="<?= htmlspecialchars($membre['rue']??'') ?>" placeholder="Nom de la rue"></div>
+          <div class="form-group"><label><?= tm('label_numero') ?></label><input type="text" name="numero" value="<?= htmlspecialchars($membre['numero']??'') ?>" placeholder="12"></div>
+          <div class="form-group"><label><?= tm('label_boite') ?></label><input type="text" name="boite" value="<?= htmlspecialchars($membre['boite']??'') ?>" placeholder="B3"></div>
         </div>
         <div class="form-row-cp">
-          <div class="form-group"><label>Code postal</label><input type="text" name="code_postal" value="<?= htmlspecialchars($membre['code_postal']??'') ?>" placeholder="1420"></div>
-          <div class="form-group"><label>Commune</label><input type="text" name="commune" value="<?= htmlspecialchars($membre['commune']??'') ?>" placeholder="Braine-l'Alleud"></div>
+          <div class="form-group"><label><?= tm('label_cp') ?></label><input type="text" name="code_postal" value="<?= htmlspecialchars($membre['code_postal']??'') ?>" placeholder="1420"></div>
+          <div class="form-group"><label><?= tm('label_commune') ?></label><input type="text" name="commune" value="<?= htmlspecialchars($membre['commune']??'') ?>" placeholder="Braine-l'Alleud"></div>
         </div>
 
         <!-- IBAN volontaire -->
         <div class="iban-box">
-          <div class="ib-title">🏦 Numéro de compte (optionnel — sur base volontaire)</div>
-          <p>Si vous avez effectué des dons antérieurs par virement simple, vous pouvez indiquer votre IBAN ici. Cela nous permet de relier ces versements à votre compte membre. Cette information est strictement confidentielle et ne sera jamais transmise à des tiers.</p>
+          <div class="ib-title"><?= tm('iban_titre') ?></div>
+          <p><?= tm('iban_txt') ?></p>
           <div class="form-group" style="margin:0">
-            <label>IBAN</label>
+            <label><?= tm('label_iban') ?></label>
             <input type="text" name="iban_membre"
                    value="<?= htmlspecialchars($membre['iban_membre']??'') ?>"
                    placeholder="BE41 0689 0149 6910"
@@ -423,53 +423,53 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
         <div class="rgpd-box">
           <label class="rgpd-label">
             <input type="checkbox" name="rgpd_accepte" <?= ($membre['rgpd_accepte']??0)?'checked':'' ?>>
-            <span>J'autorise <strong>ça suffit ! ASBL</strong> à enregistrer et traiter mes données personnelles (nom, adresse, email, téléphone, IBAN si fourni) dans le cadre de la gestion des membres et de la newsletter. Ces données ne sont pas transmises à des tiers. Je peux en demander la suppression à tout moment.</span>
+            <span><?= tm('rgpd_dash_label') ?></span>
           </label>
           <?php if (!empty($membre['rgpd_date'])): ?>
-            <div style="font-size:.7rem;color:#888;margin-top:6px">✓ Accepté le <?= date('d/m/Y',strtotime($membre['rgpd_date'])) ?></div>
+            <div style="font-size:.7rem;color:#888;margin-top:6px"><?= tm('rgpd_accepte_le', date('d/m/Y', strtotime($membre['rgpd_date']))) ?></div>
           <?php endif; ?>
         </div>
 
         <?php if (!empty($membre['donnees_verifiees_at'])): ?>
-          <div style="font-size:.72rem;color:#aaa;margin-bottom:12px">Dernière vérification : <?= date('d/m/Y',strtotime($membre['donnees_verifiees_at'])) ?></div>
+          <div style="font-size:.72rem;color:#aaa;margin-bottom:12px"><?= tm('derniere_verif', date('d/m/Y', strtotime($membre['donnees_verifiees_at']))) ?></div>
         <?php endif; ?>
 
-        <button type="submit" name="update_profil" class="btn-dark">💾 Enregistrer mes données</button>
+        <button type="submit" name="update_profil" class="btn-dark"><?= tm('btn_enregistrer_donnees') ?></button>
       </form>
 
       <!-- Changement d'email -->
       <div class="email-change-box" style="margin-top:20px">
-        <div class="ec-title">📧 Modifier mon adresse email</div>
+        <div class="ec-title"><?= tm('modifier_email') ?></div>
         <p style="font-size:.75rem;color:#555;margin-bottom:10px">
-          Email actuel : <strong><?= htmlspecialchars($membre['email']) ?></strong>
+          <?= tm('email_actuel') ?> <strong><?= htmlspecialchars($membre['email']) ?></strong>
           <?php if (!empty($membre['email_nouveau'])): ?>
-            <br><em style="color:#856404">En attente de validation : <?= htmlspecialchars($membre['email_nouveau']) ?></em>
+            <br><em style="color:#856404"><?= tm('email_en_attente') ?> <?= htmlspecialchars($membre['email_nouveau']) ?></em>
           <?php endif; ?>
         </p>
         <form method="POST">
-          <input type="email" name="email_nouveau" placeholder="Nouvel email" required>
-          <button type="submit" name="changer_email" class="btn-blue" style="width:100%">Envoyer le lien de confirmation</button>
+          <input type="email" name="email_nouveau" placeholder="<?= tm('email_nouveau_ph') ?>" required>
+          <button type="submit" name="changer_email" class="btn-blue" style="width:100%"><?= tm('btn_envoyer_confirm') ?></button>
         </form>
-        <div style="font-size:.7rem;color:#aaa;margin-top:6px">Un email de confirmation sera envoyé à la nouvelle adresse. Le changement sera effectif après validation.</div>
+        <div style="font-size:.7rem;color:#aaa;margin-top:6px"><?= tm('email_confirm_hint') ?></div>
       </div>
     </div>
 
     <!-- Suppression de compte -->
     <div class="danger-zone">
-      <h3>⚠ Supprimer mon compte</h3>
-      <p>Vos données personnelles (nom, adresse, téléphone, IBAN) seront effacées. Votre historique de dons sera conservé de façon anonyme pour nos obligations comptables légales. <strong>Cette action est irréversible.</strong></p>
-      <button class="btn-gray" onclick="this.style.display='none';document.getElementById('suppression-form').style.display='block'">Demander la suppression de mon compte</button>
+      <h3><?= tm('danger_titre') ?></h3>
+      <p><?= tm('danger_txt') ?></p>
+      <button class="btn-gray" onclick="this.style.display='none';document.getElementById('suppression-form').style.display='block'"><?= tm('btn_demander_suppression') ?></button>
       <div id="suppression-form">
         <form method="POST" onsubmit="return confirm('Supprimer définitivement votre compte ?')">
-          <div style="font-size:.8rem;font-weight:700;color:#c53030;margin-bottom:6px">Tapez SUPPRIMER pour confirmer :</div>
-          <input type="text" name="confirm_suppression" placeholder="SUPPRIMER" autocomplete="off">
-          <button type="submit" name="supprimer_compte" class="btn-red">🗑 Supprimer définitivement</button>
-          <button type="button" class="btn-gray" onclick="document.getElementById('suppression-form').style.display='none'">Annuler</button>
+          <div style="font-size:.8rem;font-weight:700;color:#c53030;margin-bottom:6px"><?= tm('confirm_suppression_label') ?></div>
+          <input type="text" name="confirm_suppression" placeholder="<?= tm('confirm_suppression_ph') ?>" autocomplete="off">
+          <button type="submit" name="supprimer_compte" class="btn-red"><?= tm('btn_supprimer') ?></button>
+          <button type="button" class="btn-gray" onclick="document.getElementById('suppression-form').style.display='none'"><?= tm('btn_annuler') ?></button>
         </form>
       </div>
     </div>
 
-    <a href="logout.php" class="logout-link">⎋ Se déconnecter</a>
+    <a href="logout.php" class="logout-link"><?= tm('btn_deconnecter') ?></a>
   </div>
 
 </div>
