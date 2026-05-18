@@ -4,6 +4,7 @@ header('Pragma: no-cache');
 header('Expires: 0');
 // index.php — Site ça suffit ! ASBL (v2 - look ancien site)
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/lang.php';
 
 // ── Mode maintenance ──────────────────────────────────────────────────────
 (function() {
@@ -144,9 +145,19 @@ $don_texte   = cfg('don_texte', 'Action en référé contre l Etat belge');
 // Logo chargé depuis medias/logo.png
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= LANG ?>">
 <head>
   <meta charset="UTF-8">
+  <?php
+  // Balises hreflang pour SEO multilingue
+  $_currentPath = strtok($_SERVER['REQUEST_URI'], '?');
+  $_currentPath = preg_replace('#^/nl(/|$)#', '/', $_currentPath);
+  $_currentPath = $_currentPath ?: '/';
+  $_pageParam   = !empty($_GET['page']) ? '?page=' . urlencode($_GET['page']) : '';
+  ?>
+  <link rel="alternate" hreflang="fr"        href="https://www.casuffit.be<?= htmlspecialchars($_currentPath . $_pageParam) ?>">
+  <link rel="alternate" hreflang="nl"        href="https://www.casuffit.be/nl<?= htmlspecialchars(rtrim($_currentPath,'/') . $_pageParam) ?>">
+  <link rel="alternate" hreflang="x-default" href="https://www.casuffit.be/">
 
   <!-- ── RGPD : consentement cookies ── -->
   <script>
@@ -399,6 +410,29 @@ header.site-header {
   border-radius: 7px; margin-left: 6px; padding: 0 13px;
 }
 .header-nav a.nav-outline:hover { background: rgba(255,255,255,0.15); }
+
+/* ── Sélecteur de langue ─────────────────────────────────────────────── */
+.lang-switch {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 34px; height: 28px;
+  margin: 0 8px 0 6px;
+  padding: 0 8px;
+  border: 1.5px solid rgba(255,255,255,0.6);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.72rem; font-weight: 700;
+  text-decoration: none;
+  letter-spacing: .04em;
+  transition: background .15s, border-color .15s;
+}
+.lang-switch:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: #FF9900;
+  color: #FF9900;
+}
+@media (max-width: 768px) {
+  .lang-switch { margin: 0 6px; min-width: 30px; height: 26px; font-size: .68rem; }
+}
 /* ── Dropdown sous-menu ── */
 .nav-dropdown { position: relative; display: flex; align-items: stretch; }
 .nav-dropdown > .nav-parent {
@@ -1340,7 +1374,7 @@ blockquote {
 function menuLabel($p) {
     $aff   = $p['affichage_menu'] ?? 'texte';
     $icone = htmlspecialchars($p['icone'] ?? '');
-    $titre = htmlspecialchars($p['titre']);
+    $titre = htmlspecialchars(tdb($p, 'titre') ?? '');
     if ($aff === 'icone')       return $icone ? $icone : $titre;
     if ($aff === 'icone_texte') return $icone ? $icone . ' ' . $titre : $titre;
     return $titre;
@@ -1399,6 +1433,11 @@ function navBtnClass($p) {
       <?php endif; ?>
       <?php endforeach; ?>
     </nav>
+      <a href="?setlang=<?= LANG === 'fr' ? 'nl' : 'fr' ?>"
+         class="lang-switch"
+         title="<?= LANG === 'fr' ? 'Schakel naar Nederlands' : 'Passer en français' ?>">
+        <?= LANG === 'fr' ? 'NL' : 'FR' ?>
+      </a>
       <button class="burger" id="burger" onclick="toggleBurger()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
@@ -1591,8 +1630,9 @@ foreach ($header_widgets as $w_slug) {
     <div class="tab-panel <?= $first_tab_slug===$p['slug'] ? 'active' : '' ?>" id="tab-<?= htmlspecialchars($p['slug']) ?>">
       <?php
       // Contenu texte uniquement — les widgets sont gérés par updateColonneDroite() en JS
-      if (!empty($p['contenu'])): ?>
-        <?= $p['contenu'] ?>
+      $contenu = tdb($p, 'contenu');
+      if (!empty($contenu)): ?>
+        <?= $contenu ?>
       <?php endif; ?>
     </div><!-- /tab-<?= htmlspecialchars($p['slug']) ?> -->
     <?php endforeach; ?>

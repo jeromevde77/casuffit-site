@@ -43,6 +43,14 @@ AddDefaultCharset UTF-8
 
     # Médias : autoriser uniquement les images
     RewriteRule ^medias/.*\.(php|sql|htaccess|env|sh)$ - [F,L]
+
+    # ── Multilingue : /nl/... → index.php?lang=nl&... ─────────────────
+    # /nl/         → /index.php?lang=nl
+    # /nl          → /index.php?lang=nl
+    # /nl/?page=X  → /index.php?lang=nl&page=X  (le QSA garde les autres params)
+    RewriteRule ^nl/?$           index.php?lang=nl [L,QSA]
+    # /nl/<chemin> → /<chemin>?lang=nl  (les autres routes : api, admin, wind, etc.)
+    RewriteRule ^nl/(.+)$        $1?lang=nl [L,QSA]
 </IfModule>
 
 # ── En-têtes de sécurité ─────────────────────────────────────────────

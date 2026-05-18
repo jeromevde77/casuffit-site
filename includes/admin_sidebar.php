@@ -19,6 +19,7 @@
     <a href="site_config.php" <?= basename($_SERVER['PHP_SELF'])==='site_config.php' ?'class="active"':'' ?>>Paramètres</a>
     <div class="nav-section">Contenu & Widgets</div>
     <a href="widgets.php"     <?= basename($_SERVER['PHP_SELF'])==='widgets.php'     ?'class="active"':'' ?>>Widgets</a>
+    <a href="translations.php" <?= basename($_SERVER['PHP_SELF'])==='translations.php' ?'class="active"':'' ?>>🌐 Traductions NL</a>
     <div class="nav-section">Membres & Dons</div>
     <a href="members.php"     <?= basename($_SERVER['PHP_SELF'])==='members.php'     ?'class="active"':'' ?>>Membres</a>
     <a href="dons_all.php"    <?= basename($_SERVER['PHP_SELF'])==='dons_all.php'    ?'class="active"':'' ?>>Tous les dons</a>

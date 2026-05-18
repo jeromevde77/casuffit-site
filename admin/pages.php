@@ -28,15 +28,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_page'])) {
     if (!in_array($btn_style, array('','cta','white','outline'))) $btn_style = '';
     $parent_id = isset($_POST['parent_id']) && intval($_POST['parent_id']) > 0 ? intval($_POST['parent_id']) : null;
 
+    // ── Champs NL ──────────────────────────────────────────────────────
+    $titre_nl    = trim(isset($_POST['titre_nl']) ? $_POST['titre_nl'] : '');
+    $titre_nl    = $titre_nl !== '' ? htmlspecialchars($titre_nl, ENT_QUOTES, 'UTF-8') : null;
+    $contenu_nl  = isset($_POST['contenu_nl']) && trim($_POST['contenu_nl']) !== ''
+                   ? $_POST['contenu_nl'] : null;
+    $meta_nl     = trim(isset($_POST['meta_description_nl']) ? $_POST['meta_description_nl'] : '');
+    $meta_nl     = $meta_nl !== '' ? htmlspecialchars($meta_nl, ENT_QUOTES, 'UTF-8') : null;
+    $nl_status   = $_POST['nl_status'] ?? 'vide';
+    if (!in_array($nl_status, ['vide','auto','relu'], true)) $nl_status = 'vide';
+
     if (empty($slug) || empty($titre)) {
         $error = 'Le slug et le titre sont obligatoires.';
     } else {
+        // Détecter si les colonnes _nl existent (compatibilité avant migration SQL)
+        static $hasNl = null;
+        if ($hasNl === null) {
+            try {
+                $cols = $db->query("SHOW COLUMNS FROM pages LIKE 'titre_nl'")->fetch();
+                $hasNl = !empty($cols);
+            } catch (Exception $e) { $hasNl = false; }
+        }
+
         if ($id > 0) {
-            $db->prepare("UPDATE pages SET slug=?,titre=?,contenu=?,meta_description=?,ordre=?,visible=?,dans_menu=?,icone=?,css_class=?,menu_position=?,lien_url=?,affichage_menu=?,btn_style=?,parent_id=?,updated_by=? WHERE id=?")
-               ->execute(array($slug,$titre,$contenu,$meta,$ordre,$visible,$menu,$icone,$css_class,$menu_position,$lien_url,$affichage_menu,$btn_style,$parent_id,ADMIN_USER,$id));
+            if ($hasNl) {
+                $db->prepare("UPDATE pages SET slug=?,titre=?,titre_nl=?,contenu=?,contenu_nl=?,meta_description=?,meta_description_nl=?,nl_status=?,ordre=?,visible=?,dans_menu=?,icone=?,css_class=?,menu_position=?,lien_url=?,affichage_menu=?,btn_style=?,parent_id=?,updated_by=? WHERE id=?")
+                   ->execute(array($slug,$titre,$titre_nl,$contenu,$contenu_nl,$meta,$meta_nl,$nl_status,$ordre,$visible,$menu,$icone,$css_class,$menu_position,$lien_url,$affichage_menu,$btn_style,$parent_id,ADMIN_USER,$id));
+            } else {
+                $db->prepare("UPDATE pages SET slug=?,titre=?,contenu=?,meta_description=?,ordre=?,visible=?,dans_menu=?,icone=?,css_class=?,menu_position=?,lien_url=?,affichage_menu=?,btn_style=?,parent_id=?,updated_by=? WHERE id=?")
+                   ->execute(array($slug,$titre,$contenu,$meta,$ordre,$visible,$menu,$icone,$css_class,$menu_position,$lien_url,$affichage_menu,$btn_style,$parent_id,ADMIN_USER,$id));
+            }
         } else {
-            $db->prepare("INSERT INTO pages (slug,titre,contenu,meta_description,ordre,visible,dans_menu,icone,css_class,menu_position,lien_url,affichage_menu,btn_style,parent_id,updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-               ->execute(array($slug,$titre,$contenu,$meta,$ordre,$visible,$menu,$icone,$css_class,$menu_position,$lien_url,$affichage_menu,$btn_style,$parent_id,ADMIN_USER));
+            if ($hasNl) {
+                $db->prepare("INSERT INTO pages (slug,titre,titre_nl,contenu,contenu_nl,meta_description,meta_description_nl,nl_status,ordre,visible,dans_menu,icone,css_class,menu_position,lien_url,affichage_menu,btn_style,parent_id,updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                   ->execute(array($slug,$titre,$titre_nl,$contenu,$contenu_nl,$meta,$meta_nl,$nl_status,$ordre,$visible,$menu,$icone,$css_class,$menu_position,$lien_url,$affichage_menu,$btn_style,$parent_id,ADMIN_USER));
+            } else {
+                $db->prepare("INSERT INTO pages (slug,titre,contenu,meta_description,ordre,visible,dans_menu,icone,css_class,menu_position,lien_url,affichage_menu,btn_style,parent_id,updated_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                   ->execute(array($slug,$titre,$contenu,$meta,$ordre,$visible,$menu,$icone,$css_class,$menu_position,$lien_url,$affichage_menu,$btn_style,$parent_id,ADMIN_USER));
+            }
             $id = $db->lastInsertId();
             $slug_for_widgets = $slug;
         }
@@ -570,6 +599,84 @@ if ($edit_page) {
         <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor()"><?= $edit_page ? ($edit_page['contenu'] ?? '') : '' ?></div>
         <textarea name="contenu" id="f-contenu" style="display:none"><?= htmlspecialchars($edit_page ? ($edit_page['contenu'] ?? '') : '') ?></textarea>
         <div style="font-size:.63rem;color:#aaa;margin-top:2px">Aperçu → en temps réel</div>
+
+        <!-- ── Version néerlandaise (NL) ────────────────────────────────── -->
+        <?php
+        $nl_status  = $edit_page['nl_status'] ?? 'vide';
+        $has_nl     = $edit_page && (!empty($edit_page['titre_nl']) || !empty($edit_page['contenu_nl']));
+        $badges = ['vide'=>'⚪ Vide','auto'=>'🤖 Traduction auto','relu'=>'✅ Relu humain'];
+        $colors = ['vide'=>'#999','auto'=>'#d97706','relu'=>'#27ae60'];
+        ?>
+        <details class="nl-block" <?= $has_nl ? 'open' : '' ?> style="margin-top:18px;background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:10px 14px">
+          <summary style="cursor:pointer;font-weight:700;color:#0e3d6b;display:flex;justify-content:space-between;align-items:center">
+            <span>🇳🇱 Version néerlandaise (NL)</span>
+            <span style="font-size:.7rem;color:<?= $colors[$nl_status] ?>;font-weight:600">
+              <?= $badges[$nl_status] ?>
+            </span>
+          </summary>
+          <div style="margin-top:12px">
+            <label>Titre (NL)</label>
+            <input type="text" name="titre_nl" value="<?= htmlspecialchars($edit_page['titre_nl'] ?? '') ?>" placeholder="Laisser vide pour utiliser le titre FR">
+
+            <label style="margin-top:10px">Meta description (NL)</label>
+            <input type="text" name="meta_description_nl" value="<?= htmlspecialchars($edit_page['meta_description_nl'] ?? '') ?>" placeholder="Pour Google (NL)">
+
+            <label style="margin-top:10px">Contenu HTML (NL)</label>
+            <textarea name="contenu_nl" rows="14" style="width:100%;font-family:monospace;font-size:.78rem;padding:8px;border:1px solid #ddd;border-radius:5px;line-height:1.5"><?= htmlspecialchars($edit_page['contenu_nl'] ?? '') ?></textarea>
+            <div style="font-size:.65rem;color:#888;margin-top:4px">
+              💡 Mêmes balises HTML que la version FR (h2, h3, p, ul, etc.). Laisser vide → fallback automatique sur le contenu FR.
+            </div>
+
+            <div style="display:flex;gap:14px;margin-top:10px;align-items:center;flex-wrap:wrap">
+              <div>
+                <label style="display:block;margin-bottom:4px">État</label>
+                <select name="nl_status" style="min-width:200px">
+                  <option value="vide"  <?= $nl_status==='vide' ?'selected':'' ?>>⚪ Vide / brouillon</option>
+                  <option value="auto"  <?= $nl_status==='auto' ?'selected':'' ?>>🤖 Auto (à relire)</option>
+                  <option value="relu"  <?= $nl_status==='relu' ?'selected':'' ?>>✅ Relu par humain</option>
+                </select>
+              </div>
+              <?php if ($edit_page): ?>
+              <button type="button" onclick="autoTranslate(<?= $edit_page['id'] ?>)" style="background:#1673B2;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.82rem">
+                🤖 Traduire automatiquement
+              </button>
+              <a href="<?= SITE_URL ?>/nl/?page=<?= $edit_page['slug'] ?>" target="_blank" style="font-size:.78rem;color:#1673B2;text-decoration:underline">
+                👁 Aperçu NL
+              </a>
+              <?php endif; ?>
+            </div>
+          </div>
+        </details>
+
+        <script>
+        function autoTranslate(pageId) {
+          if (!confirm('Traduire automatiquement le titre, la meta description et le contenu en néerlandais ? Cela remplacera le contenu NL actuel.')) return;
+          var btn = event.target;
+          btn.textContent = '⏳ Traduction en cours…';
+          btn.disabled = true;
+          fetch('/admin/translate_auto.php?page_id=' + pageId, { method: 'POST' })
+            .then(r => r.json())
+            .then(d => {
+              if (d.ok) {
+                document.querySelector('input[name=titre_nl]').value = d.titre_nl || '';
+                document.querySelector('input[name=meta_description_nl]').value = d.meta_nl || '';
+                document.querySelector('textarea[name=contenu_nl]').value = d.contenu_nl || '';
+                document.querySelector('select[name=nl_status]').value = 'auto';
+                btn.textContent = '✅ Traduit (à relire)';
+                setTimeout(() => { btn.textContent = '🤖 Re-traduire'; btn.disabled = false; }, 2000);
+              } else {
+                alert('Erreur : ' + (d.error || 'inconnue'));
+                btn.textContent = '🤖 Traduire automatiquement';
+                btn.disabled = false;
+              }
+            })
+            .catch(e => {
+              alert('Erreur réseau : ' + e.message);
+              btn.textContent = '🤖 Traduire automatiquement';
+              btn.disabled = false;
+            });
+        }
+        </script>
       </form>
     </div><!-- /eform-body -->
     <div class="eform-foot">

@@ -2,10 +2,12 @@
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/lang.php';
 // Page standalone PWA — widget météo EBBR — page publique
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= LANG ?>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -363,7 +365,14 @@ header('Expires: 0');
     <img src="/assets/img/wind-icon-180.png" alt="">
     <span>ça suffit !</span>&nbsp;Wind
   </div>
-  <button class="app-refresh" onclick="location.reload()">↺ Actualiser</button>
+  <div style="display:flex;gap:6px;align-items:center">
+    <a href="?setlang=<?= LANG === 'fr' ? 'nl' : 'fr' ?>"
+       style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:6px;color:#fff;font-size:.7rem;padding:4px 8px;text-decoration:none;font-weight:700;letter-spacing:.04em"
+       title="<?= LANG === 'fr' ? 'NL' : 'FR' ?>">
+      <?= LANG === 'fr' ? 'NL' : 'FR' ?>
+    </a>
+    <button class="app-refresh" onclick="location.reload()">↺ <?= LANG === 'nl' ? 'Vernieuwen' : 'Actualiser' ?></button>
+  </div>
 </header>
 
 <main class="app-body">
@@ -446,16 +455,16 @@ header('Expires: 0');
 
 <nav class="app-nav-bar">
   <button class="app-nav-bar-btn active" id="nav-meteo" onclick="switchView('meteo')">
-    <span class="nav-icon">🌤</span>Météo
+    <span class="nav-icon">🌤</span><?= t('wind.tab.meteo') ?>
   </button>
   <button class="app-nav-bar-btn" id="nav-historique" onclick="switchView('historique')">
-    <span class="nav-icon">📊</span>Historique
+    <span class="nav-icon">📊</span><?= t('wind.tab.history') ?>
   </button>
   <button class="app-nav-bar-btn" id="nav-rose" onclick="switchView('rose')">
-    <span class="nav-icon">🌬</span>Rose des vents
+    <span class="nav-icon">🌬</span><?= t('wind.tab.rose') ?>
   </button>
   <button class="app-nav-bar-btn" id="nav-vols" onclick="switchView('vols')">
-    <span class="nav-icon">✈</span>Vols
+    <span class="nav-icon">✈</span><?= t('wind.tab.flights') ?>
   </button>
 </nav>
 
