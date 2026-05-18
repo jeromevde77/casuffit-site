@@ -4,8 +4,8 @@
 //  Reçoit page_id en POST, traduit titre + meta + contenu, renvoie JSON
 // ═══════════════════════════════════════════════════════════════════════
 
-require_once dirname(__DIR__) . '/includes/auth_admin.php';
-require_once dirname(__DIR__) . '/config.php';
+require_once __DIR__ . '/../config.php';
+session_start(); requireAdmin();
 
 header('Content-Type: application/json; charset=utf-8');
 

@@ -1,8 +1,7 @@
 <?php
 // admin/translations.php — Dashboard de suivi des traductions FR/NL
-require_once dirname(__DIR__) . '/includes/auth_admin.php';
-require_once dirname(__DIR__) . '/config.php';
-
+require_once __DIR__ . '/../config.php';
+session_start(); requireAdmin();
 $db = getDB();
 
 // Vérifier que les colonnes _nl existent
