@@ -24,11 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_news'])) {
     $nl_status   = in_array($_POST['nl_status'] ?? '', ['vide','auto','relu']) ? $_POST['nl_status'] : 'vide';
 
     // Vérifier si colonnes NL existent
-    static $hasNlNews = null;
-    if ($hasNlNews === null) {
-        try { $c = $db->query("SHOW COLUMNS FROM news LIKE 'titre_nl'")->fetch(); $hasNlNews = !empty($c); }
-        catch(Exception $e) { $hasNlNews = false; }
-    }
+    $hasNlNews = false;
+    try { $c = $db->query("SHOW COLUMNS FROM news LIKE 'titre_nl'")->fetch(); $hasNlNews = !empty($c); }
+    catch(Exception $e) { $hasNlNews = false; }
     $date_pub = $date_pub ? date('Y-m-d H:i:s', strtotime($date_pub)) : date('Y-m-d H:i:s');
 
     if (empty($titre)) {
