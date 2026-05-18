@@ -1,5 +1,6 @@
 <?php
 // admin/medias.php — Upload et gestion des images
+if (!defined('MEDIAS_DIR')) define('MEDIAS_DIR', __DIR__ . '/../medias/');
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 $db = getDB();

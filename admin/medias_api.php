@@ -3,6 +3,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 // admin/medias_api.php — API JSON pour la modale médias de l'éditeur de pages
 require_once __DIR__ . '/../config.php';
+if (!defined('MEDIAS_DIR')) define('MEDIAS_DIR', __DIR__ . '/../medias/');
 // session_start() déjà géré par config.php via requireAdmin/requireMembre
 if (session_status() === PHP_SESSION_NONE) session_start();
 header('Content-Type: application/json; charset=utf-8');
@@ -50,10 +51,10 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $ext_map  = ['image/jpeg'=>'jpg','image/png'=>'png','image/gif'=>'gif','image/webp'=>'webp','image/svg+xml'=>'svg'];
     $ext      = $ext_map[$file['type']];
-    $filename = uniqid('img_') . '.' . $ext;
-    $dest     = __DIR__ . '/../medias/' . $filename;
+    $filename = date('Ymd_His') . '_' . preg_replace('/[^a-z0-9]/', '', strtolower(pathinfo($file['name'], PATHINFO_FILENAME))) . '.' . $ext;
+    $dest     = MEDIAS_DIR . $filename;
 
-    if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0755, true);
+    if (!is_dir(MEDIAS_DIR)) mkdir(MEDIAS_DIR, 0755, true);
 
     if (move_uploaded_file($file['tmp_name'], $dest)) {
         $db->prepare("INSERT INTO medias (fichier, nom, type, taille) VALUES (?,?,?,?)")
