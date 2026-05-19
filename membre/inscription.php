@@ -15,6 +15,29 @@ if (getMembre($db)) {
 
 $msg = ''; $error = ''; $success = false;
 
+// ── Token d'invitation depuis abonné ────────────────────────────────────
+$invite_token    = preg_replace('/[^a-f0-9]/', '', $_GET['invite'] ?? '');
+$invite_data     = null;
+$invite_email    = '';
+$invite_prenom   = '';
+$invite_nom      = '';
+$invite_msg      = '';
+if ($invite_token) {
+    try {
+        $stmt = $db->prepare("SELECT id,email,prenom,nom,invite_membre_sent_at FROM subscribers WHERE invite_membre_token=? AND invite_membre_accepted=0 AND invite_membre_sent_at > DATE_SUB(NOW(), INTERVAL 30 DAY) LIMIT 1");
+        $stmt->execute([$invite_token]);
+        $invite_data = $stmt->fetch();
+        if ($invite_data) {
+            $invite_email  = $invite_data['email'];
+            $invite_prenom = $invite_data['prenom'] ?? '';
+            $invite_nom    = $invite_data['nom'] ?? '';
+            $invite_msg    = tm('invite_bienvenue', $invite_prenom ?: tm('invite_abonn'));
+        } else {
+            $error = tm('invite_invalid');
+        }
+    } catch (Exception $e) {}
+}
+
 // ── Générer token CSRF ────────────────────────────────────────────────────
 if (empty($_SESSION['csrf_inscription'])) {
     $_SESSION['csrf_inscription'] = bin2hex(random_bytes(32));
@@ -129,6 +152,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $nouveau_membre = $db->query("SELECT * FROM members WHERE id = $member_id")->fetch();
                 envoyerLienMagique($db, $nouveau_membre);
 
+                // Si inscription via invitation abonné → marquer comme accepté
+                $inv_tok = preg_replace('/[^a-f0-9]/', '', $_POST['invite_token'] ?? '');
+                if ($inv_tok) {
+                    $db->prepare("UPDATE subscribers SET invite_membre_accepted=1, invite_membre_token=NULL WHERE invite_membre_token=?")
+                       ->execute([$inv_tok]);
+                }
+
                 $success = true;
                 $msg = tm('msg_bienvenue', $code_membre, $email);
 
@@ -194,6 +224,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <?php if ($error): ?><div class="msg-err"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
+  <?php if ($invite_data && $invite_msg): ?>
+  <div style="background:#f5f3ff;border-left:3px solid #8b5cf6;padding:12px 14px;border-radius:6px;margin-bottom:14px;font-size:.85rem;color:#5b21b6">
+    👋 <?= htmlspecialchars($invite_msg) ?><br>
+    <span style="font-size:.78rem;color:#7c3aed;margin-top:3px;display:block">Votre email est pré-rempli — vérifiez vos informations et complétez votre profil.</span>
+  </div>
+  <?php endif; ?>
+  <!-- Token d'invitation (transmis lors du POST) -->
+  <?php if ($invite_token): ?><input type="hidden" name="invite_token" value="<?= htmlspecialchars($invite_token) ?>"><?php endif; ?>
+
   <div class="avantages">
     <p>
       <?= tm('avantages_intro') ?><br>
@@ -215,15 +254,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="form-row">
       <div>
         <label><?= tm('prenom') ?></label>
-        <input type="text" name="prenom" value="<?= htmlspecialchars(isset($_POST['prenom']) ? $_POST['prenom'] : '') ?>" required>
+        <input type="text" name="prenom" value="<?= htmlspecialchars($invite_prenom ?: (isset($_POST['prenom']) ? $_POST['prenom'] : '')) ?>" required>
       </div>
       <div>
         <label><?= tm('nom') ?></label>
-        <input type="text" name="nom" value="<?= htmlspecialchars(isset($_POST['nom']) ? $_POST['nom'] : '') ?>" required>
+        <input type="text" name="nom" value="<?= htmlspecialchars($invite_nom ?: (isset($_POST['nom']) ? $_POST['nom'] : '')) ?>" required>
       </div>
     </div>
     <label><?= tm('email') ?></label>
-    <input type="email" name="email" value="<?= htmlspecialchars(isset($_POST['email']) ? $_POST['email'] : '') ?>" required>
+    <input type="email" name="email" value="<?= htmlspecialchars($invite_email ?: (isset($_POST['email']) ? $_POST['email'] : '')) ?>" required <?= $invite_email ? 'readonly style="background:#f5f7fa;color:#888"' : '' ?>>
     <label><?= tm('adresse') ?></label>
     <input type="text" name="adresse" value="<?= htmlspecialchars(isset($_POST['adresse']) ? $_POST['adresse'] : '') ?>" placeholder="<?= tm('adresse_ph') ?>">
     <div class="form-row">

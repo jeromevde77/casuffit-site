@@ -130,7 +130,12 @@ $T = $LANG === 'nl' ? [
   'non_abonne'          => 'Niet ingeschreven',
   'se_desabonner'       => 'Uitschrijven',
   'se_reabonner'        => 'Opnieuw inschrijven',
-  'confirm_desabo'      => 'Uitschrijven?',
+      // ── Invitation depuis abonné ─────────────────────────────────────────────
+    'invite_bienvenue'  => 'Bonjour %s, vous êtes déjà abonné(e) à notre newsletter.',
+    'invite_abonn'      => 'cher(e) abonné(e)',
+    'invite_invalid'    => "Ce lien d\'invitation est invalide ou expiré (valable 30 jours).",
+
+    'confirm_desabo'      => 'Uitschrijven?',
   'mes_donnees'         => '👤 Mijn persoonlijke gegevens',
   'section_identite'    => 'Identiteit',
   'label_prenom'        => 'Voornaam *',

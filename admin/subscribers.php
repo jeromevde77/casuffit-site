@@ -228,6 +228,10 @@ $msg = $_GET['msg'] ?? '';
         Supprimer
       </button>
       <div class="bulk-sep"></div>
+      <button type="button" class="btn btn-m" onclick="inviterSelection()" style="background:#8b5cf6;color:#fff">
+        ✉ Inviter → Membre
+      </button>
+      <div class="bulk-sep"></div>
       <button type="button" class="btn btn-g" onclick="clearSel()">Désélectionner</button>
     </div>
 
@@ -270,6 +274,16 @@ $msg = $_GET['msg'] ?? '';
               <button type="button" class="act-btn view" title="Activer" onclick="quickAct(<?=$s['id']?>,'activer')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
+              <?php endif;?>
+              <?php if(empty($s['invite_membre_accepted']) && empty($s['invite_membre_sent_at'])):?>
+              <button type="button" class="act-btn" title="Inviter à devenir membre"
+                      onclick="inviterMembre(<?=$s['id']?>)"
+                      style="color:#8b5cf6;border-color:#e9d5ff;background:#faf5ff;font-size:13px">✉</button>
+              <?php elseif(!empty($s['invite_membre_sent_at']) && empty($s['invite_membre_accepted'])):?>
+              <span title="Invitation envoyée le <?=date('d/m/Y',strtotime($s['invite_membre_sent_at']))?>"
+                    style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:#faf5ff;border:1.5px solid #c4b5fd;color:#8b5cf6;font-size:11px">⏳</span>
+              <?php elseif(!empty($s['invite_membre_accepted'])):?>
+              <span title="Membre ✓" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;font-size:13px">✓</span>
               <?php endif;?>
               <button type="button" class="act-btn del" title="Supprimer (RGPD)" onclick="quickAct(<?=$s['id']?>,'supprimer')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
@@ -484,6 +498,37 @@ function copyEmails() {
       if (navigator.clipboard) navigator.clipboard.writeText(txt);
       alert(n + ' email(s) copié(s) dans le presse-papier !');
     });
+}
+
+function inviterMembre(id) {
+  if (!confirm('Envoyer une invitation "Créer un espace membre" à cet abonné ?')) return;
+  _envoyerInvitations([id]);
+}
+
+function inviterSelection() {
+  var ids = Array.from(document.querySelectorAll('.row-cb:checked')).map(cb => cb.value);
+  if (!ids.length) return;
+  if (!confirm('Envoyer une invitation "Créer un espace membre" à ' + ids.length + ' abonné(s) sélectionné(s) ?')) return;
+  _envoyerInvitations(ids);
+}
+
+function _envoyerInvitations(ids) {
+  var btn = event?.currentTarget;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Envoi…'; }
+
+  var fd = new FormData();
+  fd.append('_csrf', '<?= htmlspecialchars(csrf_token()) ?>');
+  fd.append('mode', 'selected');
+  ids.forEach(id => fd.append('ids[]', id));
+
+  fetch('invite_membre.php', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(d => {
+      alert(d.msg || (d.ok ? 'Invitations envoyées !' : 'Erreur : ' + d.error));
+      if (d.ok) location.reload();
+    })
+    .catch(e => alert('Erreur réseau : ' + e.message))
+    .finally(() => { if (btn) { btn.disabled = false; btn.textContent = '✉ Inviter → Membre'; } });
 }
 </script>
 </body>
