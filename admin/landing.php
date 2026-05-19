@@ -82,9 +82,34 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 /* ── Éditeur texte ── */
 .editor-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .editor-label{font-size:.7rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;background:#f5f7fa;border-bottom:1px solid #e8eef3;flex-shrink:0}
-.wysiwyg-toolbar{display:flex;gap:3px;flex-wrap:wrap;padding:6px 10px;background:#fff;border-bottom:1px solid #e0e8f0;flex-shrink:0}
+.wysiwyg-toolbar{display:flex;gap:3px;flex-wrap:wrap;padding:6px 10px;background:#fff;border-bottom:1px solid #e0e8f0;flex-shrink:0;align-items:center}
 .wt-btn{padding:4px 9px;border:1px solid #d0d8e0;border-radius:4px;background:#fafbfc;font-size:.78rem;cursor:pointer;font-family:inherit}
 .wt-btn:hover{background:#1673B2;color:#fff;border-color:#1673B2}
+.wt-sep{width:1px;height:20px;background:#e0e8f0;margin:0 3px}
+
+/* ── Palette de blocs ── */
+.bloc-palette-btn{padding:5px 10px;border:1.5px solid #FF9900;border-radius:5px;background:#fff8ee;color:#c47700;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;margin-left:6px}
+.bloc-palette-btn:hover{background:#FF9900;color:#fff}
+.bloc-palette{display:none;position:fixed;z-index:9999;background:#fff;border:1.5px solid #e0e8f0;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.15);padding:12px;width:560px;max-height:80vh;overflow-y:auto}
+.bloc-palette.open{display:block}
+.bp-title{font-size:.7rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;padding:0 4px 8px;border-bottom:1px solid #f0f3f7;margin-bottom:10px}
+.bp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bp-item{border:1.5px solid #e0e8f0;border-radius:8px;padding:10px;cursor:pointer;transition:border-color .15s,background .15s;background:#fafbfc}
+.bp-item:hover{border-color:#1673B2;background:#f0f7fc}
+.bp-item .bp-label{font-size:.7rem;font-weight:700;color:#1673B2;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.bp-item .bp-preview{font-size:.68rem;line-height:1.4;pointer-events:none}
+/* Mini-previews dans la palette */
+.bp-preview .prev-titre{font-weight:700;color:#1673B2;font-size:.8rem}
+.bp-preview .prev-btn-o{background:#FF9900;color:#fff;padding:2px 8px;border-radius:4px;display:inline-block;font-size:.68rem;font-weight:700}
+.bp-preview .prev-btn-b{background:#1673B2;color:#fff;padding:2px 8px;border-radius:4px;display:inline-block;font-size:.68rem;font-weight:700}
+.bp-preview .prev-btn-w{background:#fff;color:#1673B2;border:1.5px solid #1673B2;padding:2px 8px;border-radius:4px;display:inline-block;font-size:.68rem;font-weight:700}
+.bp-preview .prev-card{background:#fff;border-radius:6px;padding:6px 8px;box-shadow:0 2px 6px rgba(0,0,0,.08);font-size:.68rem}
+.bp-preview .prev-card h4{color:#1673B2;font-size:.72rem;margin-bottom:3px}
+.bp-preview .prev-bleu{background:#e8f3fb;border-left:3px solid #1673B2;padding:4px 8px;font-size:.68rem;color:#0e3d6b}
+.bp-preview .prev-vert{background:#e8f5e9;border-left:3px solid #2e7d32;padding:4px 8px;font-size:.68rem;color:#1b5e20}
+.bp-preview .prev-orange{background:#fff8ee;border:1.5px solid #FF9900;padding:5px 8px;border-radius:5px;font-size:.68rem;color:#c47700}
+.bp-preview .prev-li{padding-left:14px;font-size:.68rem;color:#555}
+.bp-preview .prev-li::before{content:'✓ ';color:#FF9900;font-weight:700}
 .wysiwyg-editor{flex:1;overflow-y:auto;padding:14px;outline:none;font-size:.88rem;line-height:1.7;cursor:text}
 .wysiwyg-editor:focus{background:#fffef0}
 textarea.code-editor{flex:1;padding:12px;font-family:'SF Mono',Monaco,Consolas,'Courier New',monospace;font-size:.8rem;line-height:1.6;border:none;outline:none;resize:none;background:#1e1e2e;color:#cdd6f4;tab-size:2}
@@ -180,16 +205,98 @@ iframe#preview.desktop{width:100%;height:100%}
           <div class="wysiwyg-toolbar">
             <button class="wt-btn" onclick="fmt('bold')"><b>G</b></button>
             <button class="wt-btn" onclick="fmt('italic')"><i>I</i></button>
+            <div class="wt-sep"></div>
             <button class="wt-btn" onclick="fmtBlock('h2')">H2</button>
             <button class="wt-btn" onclick="fmtBlock('h3')">H3</button>
+            <div class="wt-sep"></div>
             <button class="wt-btn" onclick="fmt('insertUnorderedList')">• —</button>
             <button class="wt-btn" onclick="fmt('insertOrderedList')">1.</button>
+            <div class="wt-sep"></div>
             <button class="wt-btn" onclick="insertLink()">🔗</button>
             <button class="wt-btn" onclick="fmt('removeFormat')">Tx</button>
-            <div style="margin-left:auto;display:flex;gap:4px">
-              <button class="wt-btn" onclick="insertBloc('cadre-bleu')" style="background:#e8f3fb;border-color:#1673B2;color:#1673B2">+ Cadre bleu</button>
-              <button class="wt-btn" onclick="insertBloc('cadre-vert')" style="background:#e8f5e9;border-color:#2e7d32;color:#2e7d32">+ Cadre vert</button>
-              <button class="wt-btn" onclick="insertBloc('action-card')" style="background:#fff8ee;border-color:#FF9900;color:#c47700">+ Carte</button>
+            <button class="bloc-palette-btn" onclick="togglePalette(this)">＋ Insérer un bloc ▾</button>
+          </div>
+
+          <!-- Palette de blocs -->
+          <div class="bloc-palette" id="bloc-palette">
+            <div class="bp-title">Choisissez un bloc à insérer</div>
+            <div class="bp-grid">
+
+              <div class="bp-item" onclick="insertBloc('titre-h2')">
+                <div class="bp-label">📝 Titre H2</div>
+                <div class="bp-preview"><div class="prev-titre">Mon titre de section</div></div>
+              </div>
+
+              <div class="bp-item" onclick="insertBloc('btn-orange')">
+                <div class="bp-label">🟠 Bouton orange</div>
+                <div class="bp-preview"><span class="prev-btn-o">Devenir membre</span></div>
+              </div>
+
+              <div class="bp-item" onclick="insertBloc('btn-bleu')">
+                <div class="bp-label">🔵 Bouton bleu</div>
+                <div class="bp-preview"><span class="prev-btn-b">Faire un don</span></div>
+              </div>
+
+              <div class="bp-item" onclick="insertBloc('btn-contour')">
+                <div class="bp-label">⬜ Bouton contour</div>
+                <div class="bp-preview"><span class="prev-btn-w">En savoir plus</span></div>
+              </div>
+
+              <div class="bp-item" onclick="insertBloc('carte-blanche')">
+                <div class="bp-label">🃏 Carte blanche</div>
+                <div class="bp-preview">
+                  <div class="prev-card">
+                    <h4>Titre de la carte</h4>
+                    <div>Description courte ici</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bp-item" onclick="insertBloc('carte-complete')">
+                <div class="bp-label">📦 Carte avec bouton</div>
+                <div class="bp-preview">
+                  <div class="prev-card">
+                    <h4>Titre</h4>
+                    <div style="margin-bottom:4px">Description</div>
+                    <span class="prev-btn-o">Bouton</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bp-item" onclick="insertBloc('cadre-bleu')">
+                <div class="bp-label">🔷 Cadre bleu</div>
+                <div class="bp-preview"><div class="prev-bleu">Message important en bleu</div></div>
+              </div>
+
+              <div class="bp-item" onclick="insertBloc('cadre-vert')">
+                <div class="bp-label">🟢 Cadre vert</div>
+                <div class="bp-preview"><div class="prev-vert">Étapes ou instructions</div></div>
+              </div>
+
+              <div class="bp-item" onclick="insertBloc('cadre-orange')">
+                <div class="bp-label">🟡 Encadré alerte</div>
+                <div class="bp-preview"><div class="prev-orange">⚠ Point important</div></div>
+              </div>
+
+              <div class="bp-item" onclick="insertBloc('liste-coches')">
+                <div class="bp-label">✅ Liste à coches</div>
+                <div class="bp-preview">
+                  <div class="prev-li">Point 1</div>
+                  <div class="prev-li">Point 2</div>
+                  <div class="prev-li">Point 3</div>
+                </div>
+              </div>
+
+              <div class="bp-item" onclick="insertBloc('separateur')">
+                <div class="bp-label">➖ Séparateur</div>
+                <div class="bp-preview"><hr style="border:none;border-top:1px solid #e0e8f0;margin:4px 0"></div>
+              </div>
+
+              <div class="bp-item" onclick="insertBloc('texte-centre')">
+                <div class="bp-label">⬛ Texte centré</div>
+                <div class="bp-preview" style="text-align:center;color:#555;font-size:.68rem">Texte centré</div>
+              </div>
+
             </div>
           </div>
           <div id="wysiwyg-fr" class="wysiwyg-editor" contenteditable="true" oninput="syncFR(); updatePreview()"></div>
@@ -325,15 +432,38 @@ function insertLink() {
   const url = prompt('URL du lien :');
   if (url) { document.getElementById('wysiwyg-fr').focus(); document.execCommand('createLink', false, url); syncFR(); updatePreview(); }
 }
-function insertBloc(cls) {
+function togglePalette(btn) {
+  const p = document.getElementById('bloc-palette');
+  if (p.classList.contains('open')) { p.classList.remove('open'); return; }
+  const rect = btn.getBoundingClientRect();
+  p.style.top  = (rect.bottom + 6) + 'px';
+  p.style.left = Math.min(rect.left, window.innerWidth - 580) + 'px';
+  p.classList.add('open');
+}
+document.addEventListener('click', e => {
+  const p = document.getElementById('bloc-palette');
+  if (p && !p.contains(e.target) && !e.target.closest('.bloc-palette-btn')) p.classList.remove('open');
+});
+
+function insertBloc(type) {
+  document.getElementById('bloc-palette').classList.remove('open');
   const ed = document.getElementById('wysiwyg-fr');
   ed.focus();
-  const templates = {
-    'cadre-bleu':  '<div class="cadre-bleu" style="background:#e8f3fb;border-left:4px solid #1673B2;padding:10px 14px;margin:8px 0;border-radius:4px;color:#0e3d6b">Texte du cadre bleu…</div>',
-    'cadre-vert':  '<div class="cadre-vert" style="background:#e8f5e9;border-left:4px solid #2e7d32;padding:10px 14px;margin:8px 0;border-radius:4px"><strong>Titre</strong><br>Texte du cadre vert…</div>',
-    'action-card': '<div class="cta-block"><h3>Titre du bloc</h3><p>Description courte et percutante.</p><a href="#" class="btn btn-orange">Bouton orange</a></div>',
+  const T = {
+    'titre-h2':     '<h2>Titre de section</h2>',
+    'btn-orange':   '<p><a href="#" class="btn btn-orange" style="display:inline-block;width:auto;padding:12px 24px;border-radius:10px;background:#FF9900;color:#fff;text-decoration:none;font-weight:700">Texte du bouton</a></p>',
+    'btn-bleu':     '<p><a href="#" class="btn btn-blue" style="display:inline-block;width:auto;padding:12px 24px;border-radius:10px;background:#1673B2;color:#fff;text-decoration:none;font-weight:700">Texte du bouton</a></p>',
+    'btn-contour':  '<p><a href="#" class="btn btn-outline" style="display:inline-block;width:auto;padding:12px 24px;border-radius:10px;background:#fff;color:#1673B2;border:2px solid #1673B2;text-decoration:none;font-weight:700">Texte du bouton</a></p>',
+    'carte-blanche':'<div class="cta-block" style="background:#fff;border-radius:12px;padding:20px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.06)"><h3 style="color:#1673B2;font-size:1rem;font-weight:700;margin-bottom:6px">Titre de la carte</h3><p style="font-size:.88rem;color:#555">Description de la carte.</p></div>',
+    'carte-complete':'<div class="cta-block" style="background:#fff;border-radius:12px;padding:20px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.06)"><h3 style="color:#1673B2;font-size:1rem;font-weight:700;margin-bottom:6px">Titre de la carte</h3><p style="font-size:.88rem;color:#555;margin-bottom:14px">Description courte et percutante.</p><a href="#" style="display:block;padding:12px;border-radius:10px;background:#FF9900;color:#fff;text-decoration:none;font-weight:700;text-align:center">Bouton d\'action</a></div>',
+    'cadre-bleu':   '<div style="background:#e8f3fb;border-left:4px solid #1673B2;padding:12px 16px;margin:10px 0;border-radius:4px;color:#0e3d6b">Message ou information importante</div>',
+    'cadre-vert':   '<div style="background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 16px;margin:10px 0;border-radius:4px"><strong style="color:#1b5e20;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px">Titre</strong>Texte du cadre vert</div>',
+    'cadre-orange': '<div style="background:#fff8ee;border:2px solid #FF9900;padding:12px 16px;margin:10px 0;border-radius:6px"><strong style="color:#FF9900">⚠ Point important</strong><br>Texte de l\'alerte ici</div>',
+    'liste-coches': '<ul style="list-style:none;padding:0;margin:10px 0"><li style="padding:6px 0 6px 24px;position:relative">✓ &nbsp;Premier point</li><li style="padding:6px 0 6px 24px;position:relative">✓ &nbsp;Deuxième point</li><li style="padding:6px 0 6px 24px;position:relative">✓ &nbsp;Troisième point</li></ul>',
+    'separateur':   '<hr style="border:none;border-top:1px solid #e0e8f0;margin:16px 0">',
+    'texte-centre': '<p style="text-align:center;color:#888;font-size:.85rem">Texte centré</p>',
   };
-  document.execCommand('insertHTML', false, templates[cls] || '');
+  document.execCommand('insertHTML', false, T[type] || '');
   syncFR(); updatePreview();
 }
 
