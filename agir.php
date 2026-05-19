@@ -136,7 +136,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
 
   <div class="content">
 
-    <!-- Progression -->
+    <!-- Progression (toujours affichée) -->
     <div class="progress-card">
       <div class="progress-title">
         <?= $is_nl ? '🎯 Doelstelling — Juridische strijd' : '🎯 Objectif — Combat juridique' ?>
@@ -148,79 +148,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
       <div class="progress-bar"><div class="progress-fill" style="width:<?= $pct ?>%"></div></div>
     </div>
 
-    <!-- Contenu éditable depuis admin/pages.php (slug=agir) -->
-    <?php if (!empty($agir_contenu)): ?>
-    <div class="why content-text">
+    <!-- Contenu 100% éditable depuis Admin → Outils → Landing /agir -->
+    <div class="content-editable-zone">
       <?= $agir_contenu ?>
-    </div>
-    <?php else: ?>
-    <!-- Contenu par défaut si la page BDD est vide -->
-    <div class="why">
-      <h2><?= $is_nl ? 'Waarom doen we het?' : 'Pourquoi nous agissons' ?></h2>
-      <ul>
-        <?php if ($is_nl): ?>
-          <li>Tienduizenden omwonenden overvlogen, vaak buiten de norm</li>
-          <li>Niet-naleving van de PRS-windvoorschriften</li>
-          <li>Sluipende verslechtering van uw levenskwaliteit</li>
-          <li>Référé déposé tegen de Belgische Staat — juridische strijd loopt</li>
-        <?php else: ?>
-          <li>Des dizaines de milliers de riverains survolés, souvent hors normes</li>
-          <li>Non-respect des seuils de vent du PRS</li>
-          <li>Une dégradation insidieuse de votre qualité de vie</li>
-          <li>Référé déposé contre l'État belge — combat juridique en cours</li>
-        <?php endif; ?>
-      </ul>
-    </div>
-    <?php endif; ?>
-
-    <!-- CTA 1 : devenir membre -->
-    <div class="cta-block">
-      <h3>👤 <?= $is_nl ? 'Word lid (gratis)' : 'Devenez membre (gratuit)' ?></h3>
-      <p><?= $is_nl 
-        ? 'Persoonlijke QR-code, donatiegeschiedenis, nieuwsbrief en toegang tot uw ledenruimte.'
-        : 'QR code personnel, historique de vos dons, newsletter et accès à votre espace membre.' ?></p>
-      <a href="/membre/inscription.php?utm_source=<?= urlencode($source) ?>&utm_campaign=<?= urlencode($campaign) ?>" class="btn btn-orange">
-        ✨ <?= $is_nl ? 'Mijn ruimte aanmaken' : 'Créer mon espace' ?>
-      </a>
-    </div>
-
-    <!-- CTA 2 : faire un don -->
-    <div class="cta-block">
-      <h3>💶 <?= $is_nl ? 'Steun de juridische strijd' : 'Soutenir le combat juridique' ?></h3>
-      <p><?= $is_nl 
-        ? 'Helpt u ons het vervolg van onze juridische strijd tegen de Belgische Staat te financieren.'
-        : 'Aidez-nous à financer la suite de notre combat juridique contre l\'État belge.' ?></p>
-      <a href="/?utm_source=<?= urlencode($source) ?>&utm_campaign=<?= urlencode($campaign) ?>#don" class="btn btn-blue">
-        💶 <?= $is_nl ? 'Een gift doen' : 'Faire un don' ?>
-      </a>
-    </div>
-
-    <!-- CTA 3 : outils météo -->
-    <div class="cta-block">
-      <h3>📱 <?= $is_nl ? 'Onze surveillance-tools' : 'Nos outils de surveillance' ?></h3>
-      <p><?= $is_nl 
-        ? 'Real-time wind, METAR-historiek, windroos en vluchtradar — installeerbaar als app.'
-        : 'Vent en direct, historique METAR, rose des vents et radar de vols — installable comme une app.' ?></p>
-      <a href="/wind.php?utm_source=<?= urlencode($source) ?>&utm_campaign=<?= urlencode($campaign) ?>" class="btn btn-outline">
-        🌬 <?= $is_nl ? 'Open de tools' : 'Ouvrir les outils' ?>
-      </a>
-    </div>
-
-    <!-- Partage -->
-    <div class="share">
-      <h3>📢 <?= $is_nl ? 'Verspreid de boodschap' : 'Faites passer le mot' ?></h3>
-      <div class="share-btns">
-        <?php
-          $shareText = $is_nl 
-            ? 'Sluit je aan bij ça suffit ! Stop de hinder van baan 01 — '
-            : 'Rejoignez ça suffit ! Stop aux nuisances de la piste 01 — ';
-          $shareUrl = 'https://www.casuffit.be/agir';
-        ?>
-        <a class="share-btn share-wa" href="https://wa.me/?text=<?= rawurlencode($shareText . $shareUrl) ?>" target="_blank">WhatsApp</a>
-        <a class="share-btn share-fb" href="https://www.facebook.com/sharer/sharer.php?u=<?= rawurlencode($shareUrl) ?>" target="_blank">Facebook</a>
-        <a class="share-btn share-mail" href="mailto:?subject=<?= rawurlencode($shareText) ?>&body=<?= rawurlencode($shareText . $shareUrl) ?>">Email</a>
-        <button class="share-btn share-copy" onclick="navigator.clipboard.writeText('<?= $shareUrl ?>').then(()=>this.textContent='✓ Copié')"><?= $is_nl ? 'Kopiëren' : 'Copier' ?></button>
-      </div>
     </div>
 
   </div>
