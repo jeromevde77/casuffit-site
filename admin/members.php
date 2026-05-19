@@ -3,7 +3,10 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../membre/functions.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmer_don'])) {
     $db->prepare("UPDATE member_dons SET statut='confirme' WHERE id=?")->execute(array(intval($_POST['don_id'])));
@@ -136,7 +139,7 @@ $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
   <!-- Ajouter un don manuellement -->
   <div class="card">
     <h3>Enregistrer un don (virement reçu)</h3>
-    <form method="POST" class="form-inline">
+    <form method="POST" class="form-inline"><?= csrf_field() ?>
       <div>
         <label>Membre</label>
         <select name="member_id" required style="min-width:200px">
@@ -189,7 +192,7 @@ $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
         <td style="font-size:.72rem;color:#aaa"><?= date('d/m/Y', strtotime($d['date_don'])) ?></td>
         <td>
           <?php if ($d['statut'] !== 'confirme'): ?>
-          <form method="POST" style="display:inline">
+          <form method="POST" style="display:inline"><?= csrf_field() ?>
             <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
             <button type="submit" name="confirmer_don" class="btn btn-green" style="padding:4px 8px;font-size:.7rem">Confirmer</button>
           </form>

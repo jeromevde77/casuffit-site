@@ -2,9 +2,12 @@
 // admin/dons.php
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 // Mise à jour statut
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['don_id'], $_POST['statut'])) {
     $allowed = ['en_attente','recu','annule'];
     if (in_array($_POST['statut'], $allowed) && is_numeric($_POST['don_id'])) {
@@ -102,7 +105,7 @@ $dons = $db->query("SELECT * FROM dons ORDER BY date_don DESC")->fetchAll();
         </td>
         <td><?= date('d/m/Y', strtotime($d['date_don'])) ?></td>
         <td>
-          <form method="POST" style="display:flex;gap:6px;align-items:center;">
+          <form method="POST" style="display:flex;gap:6px;align-items:center;"><?= csrf_field() ?>
             <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
             <select name="statut">
               <option value="en_attente" <?= $d['statut']==='en_attente'?'selected':'' ?>>En attente</option>

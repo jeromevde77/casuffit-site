@@ -2,9 +2,12 @@
 // admin/subscribers.php
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 // ── Actions groupées ─────────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ids']) && isset($_POST['bulk_action'])) {
     $ids = array_filter(array_map('intval', (array)$_POST['ids']));
     if (!empty($ids)) {
@@ -204,7 +207,7 @@ $msg = $_GET['msg'] ?? '';
   </form>
 
   <!-- Form bulk + table -->
-  <form method="POST" id="bulk-form">
+  <form method="POST" id="bulk-form"><?= csrf_field() ?>
     <?php foreach ($_GET as $k=>$v): ?><input type="hidden" name="<?=htmlspecialchars($k)?>" value="<?=htmlspecialchars($v)?>"><?php endforeach; ?>
     <input type="hidden" name="bulk_action" id="bulk-action-input" value="">
 
@@ -285,7 +288,7 @@ $msg = $_GET['msg'] ?? '';
 <div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)closeEdit()">
   <div class="modal">
     <h3>Modifier l'abonné</h3>
-    <form method="POST" id="edit-form">
+    <form method="POST" id="edit-form"><?= csrf_field() ?>
       <input type="hidden" name="edit_id" id="edit-id">
       <?php foreach($_GET as $k=>$v):?><input type="hidden" name="<?=htmlspecialchars($k)?>" value="<?=htmlspecialchars($v)?>"><?php endforeach;?>
       <div class="row2">
@@ -330,7 +333,7 @@ $msg = $_GET['msg'] ?? '';
     <?php if (!empty($add_error)): ?>
       <div style="background:#fde8e8;color:#c53030;padding:8px 12px;border-radius:6px;margin-bottom:14px;font-size:.82rem;border-left:3px solid #fc8181"><?= htmlspecialchars($add_error) ?></div>
     <?php endif; ?>
-    <form method="POST">
+    <form method="POST"><?= csrf_field() ?>
       <input type="hidden" name="add_subscriber" value="1">
       <div class="frow"><label>Email *</label><input type="email" name="email" required autofocus placeholder="prenom.nom@exemple.be"></div>
       <div class="row2">

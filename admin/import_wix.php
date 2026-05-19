@@ -6,6 +6,7 @@ ini_set('display_errors', 0);
 @ini_set('memory_limit', '256M');
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 $msg = ''; $error = ''; $import_result = null;
@@ -80,6 +81,8 @@ function parseAdresse($raw) {
 }
 
 // ── ÉTAPE 1 : Prévisualiser et nettoyer ───────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'preview') {
     if (empty($_FILES['csv']['tmp_name'])) { $error = 'Aucun fichier.'; }
     else {
@@ -453,7 +456,7 @@ function envoyerEmailBienvenue($contact) {
 
     <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
       <?php if ($nb_valid > 0): ?>
-      <form method="POST">
+      <form method="POST"><?= csrf_field() ?>
         <input type="hidden" name="action" value="import">
         <button type="submit" class="btn btn-green"
                 onclick="return confirm('Importer <?= $nb_valid ?> contacts ?')">
@@ -473,7 +476,7 @@ function envoyerEmailBienvenue($contact) {
       Le fichier sera <strong>analysé et nettoyé</strong> avant import : suppression des retours à la ligne, 
       correction des téléphones, extraction des adresses. Un aperçu vous permettra de vérifier avant de confirmer.
     </p>
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data"><?= csrf_field() ?>
       <input type="hidden" name="action" value="preview">
       <div class="upload-zone" onclick="document.getElementById('csv-file').click()">
         <input type="file" id="csv-file" name="csv" accept=".csv" onchange="updateZone(this)" style="display:none">
@@ -493,7 +496,7 @@ function envoyerEmailBienvenue($contact) {
   <?php if ($nb_wix_rest > 0 && !$preview_data): ?>
   <div class="card">
     <h3>✉ Envoyer les emails de bienvenue (<?= $nb_wix_rest ?> en attente)</h3>
-    <form method="POST" onsubmit="return confirm('Envoyer <?= $nb_wix_rest ?> email(s) ?')">
+    <form method="POST" onsubmit="return confirm('Envoyer <?= $nb_wix_rest ?><?= csrf_field() ?> email(s) ?')">
       <input type="hidden" name="action" value="envoyer_bienvenue">
       <input type="hidden" name="ids" value="">
       <button type="submit" class="btn btn-orange">✉ Envoyer les <?= $nb_wix_rest ?> email(s)</button>
@@ -537,7 +540,7 @@ function envoyerEmailBienvenue($contact) {
         <td style="text-align:center"><?= ($c['soutien_action']??0)?'<span class="badge b-ok">✓</span>':'—' ?></td>
         <td><?= $c['email_bienvenue_envoye']?'<span class="badge b-ok">✓</span>':'<span class="badge b-wait">⏳</span>' ?></td>
         <td>
-          <form method="POST" style="display:inline">
+          <form method="POST" style="display:inline"><?= csrf_field() ?>
             <input type="hidden" name="action" value="envoyer_bienvenue">
             <input type="hidden" name="ids" value="<?= $c['id'] ?>">
             <button type="submit" class="btn btn-sm <?= $c['email_bienvenue_envoye']?'':'btn-green' ?>"
@@ -553,7 +556,7 @@ function envoyerEmailBienvenue($contact) {
     </div>
     <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
       <span id="nb-selec" style="font-size:.75rem;color:#888">0 sélectionné(s)</span>
-      <form method="POST" id="form-groupe">
+      <form method="POST" id="form-groupe"><?= csrf_field() ?>
         <input type="hidden" name="action" value="envoyer_bienvenue">
         <input type="hidden" name="ids" id="ids-groupe" value="">
         <button type="submit" class="btn btn-orange btn-sm" id="btn-groupe" disabled onclick="return prepareGroupe()">✉ Envoyer aux sélectionnés</button>

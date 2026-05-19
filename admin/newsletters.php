@@ -2,11 +2,14 @@
 // admin/newsletters.php — Liste et envoi des newsletters
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 $msg = ''; $error = '';
 
 // ── Envoyer une newsletter ────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_nl'])) {
     $id = intval($_POST['nl_id'] ?? 0);
     if ($id > 0) {
@@ -134,7 +137,7 @@ $brouillons   = array_filter($newsletters, function($n){ return $n['statut'] ===
     <?php if (empty($brouillons)): ?>
       <p class="no-brouillon">Aucun brouillon disponible. <a href="compose.php" style="color:#FF9900">Rédigez-en un →</a></p>
     <?php else: ?>
-    <form method="POST" class="send-form" onsubmit="return confirm('Envoyer cette newsletter à <?= $nb_abonnes ?> abonnés ?')">
+    <form method="POST" class="send-form" onsubmit="return confirm('Envoyer cette newsletter à <?= $nb_abonnes ?><?= csrf_field() ?> abonnés ?')">
       <select name="nl_id" required>
         <option value="">— Choisir un brouillon —</option>
         <?php foreach ($brouillons as $b): ?>

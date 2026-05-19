@@ -2,6 +2,7 @@
 // admin/dons_all.php — Vue consolidée de tous les dons
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 // Filtres
@@ -10,6 +11,8 @@ $filtre_membre  = isset($_GET['membre'])  ? $_GET['membre']  : '';
 $filtre_periode = isset($_GET['periode']) ? $_GET['periode'] : '';
 
 // Confirmer un don
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmer'])) {
     $id = intval($_POST['don_id']);
     $db->prepare("UPDATE member_dons SET statut='confirme' WHERE id=?")->execute(array($id));
@@ -241,12 +244,12 @@ $top_donateurs = $db->query("
           </td>
           <td>
             <?php if ($d['statut']==='en_attente'): ?>
-            <form method="POST" style="display:inline">
+            <form method="POST" style="display:inline"><?= csrf_field() ?>
               <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
               <button name="confirmer" class="btn btn-green" style="padding:4px 8px;font-size:.7rem">Confirmer</button>
             </form>
             <?php elseif ($d['statut']==='confirme'): ?>
-            <form method="POST" style="display:inline" onsubmit="return confirm('Annuler ce don ?')">
+            <form method="POST" style="display:inline" onsubmit="return confirm('Annuler ce don ?')"><?= csrf_field() ?>
               <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
               <button name="annuler" class="btn btn-red" style="padding:4px 8px;font-size:.7rem">Annuler</button>
             </form>

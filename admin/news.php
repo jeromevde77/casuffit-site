@@ -1,12 +1,15 @@
 <?php
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 $msg = ''; $error = '';
 $edit = null;
 
 // Sauvegarder
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_news'])) {
     $id       = intval(isset($_POST['news_id']) ? $_POST['news_id'] : 0);
     $titre    = trim(isset($_POST['titre'])    ? $_POST['titre']    : '');
@@ -56,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_news'])) {
 }
 
 // Supprimer
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+if (isset($_GET['delete']) && is_numeric($_GET['delete']) && hash_equals(csrf_token(), $_GET['_csrf'] ?? '')) {
     $db->prepare("DELETE FROM news WHERE id=?")->execute(array(intval($_GET['delete'])));
     header('Location: news.php?msg='.urlencode('Actualité supprimée.')); exit;
 }
@@ -381,7 +384,7 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
 
 <?php if ($edit || isset($_GET['new'])): ?>
 <!-- ═══ ÉDITEUR ═══ -->
-<form method="POST" id="news-form">
+<form method="POST" id="news-form"><?= csrf_field() ?>
 <input type="hidden" name="news_id" value="<?= $edit ? intval($edit['id']) : 0 ?>">
 <input type="hidden" name="save_news" value="1">
 <input type="hidden" name="statut" id="f-statut" value="<?= $edit ? htmlspecialchars($edit['statut']) : 'brouillon' ?>">
@@ -644,7 +647,7 @@ function autoTranslateNews(newsId) {
         <?php else: ?>
           <a href="news.php?unpublish=<?= $n['id'] ?>" class="act-btn" title="Dépublier" style="color:#999;border-color:#e2e8f0;background:#f7f8fa"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></a>
         <?php endif; ?>
-        <a href="news.php?delete=<?= $n['id'] ?>" class="act-btn del" title="Supprimer" onclick="return confirm('Supprimer cette actualité ?')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></a>
+        <a href="news.php?delete=<?= $n['id'] ?>&_csrf=<?= htmlspecialchars(csrf_token()) ?>" class="act-btn del" title="Supprimer" onclick="return confirm('Supprimer cette actualité ?')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></a>
       </div>
     </div>
     <?php endforeach; ?>

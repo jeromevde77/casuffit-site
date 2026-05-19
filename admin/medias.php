@@ -3,6 +3,7 @@
 if (!defined('MEDIAS_DIR')) define('MEDIAS_DIR', __DIR__ . '/../medias/');
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 // Créer le dossier médias si nécessaire
@@ -11,6 +12,8 @@ if (!is_dir(MEDIAS_DIR)) { mkdir(MEDIAS_DIR, 0755, true); }
 $msg = ''; $error = '';
 
 // Upload
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_FILES['media']['tmp_name'])) {
     $file    = $_FILES['media'];
     $alt     = htmlspecialchars(trim(isset($_POST['alt_text']) ? $_POST['alt_text'] : ''), ENT_QUOTES, 'UTF-8');
@@ -124,7 +127,7 @@ $medias = $db->query("SELECT * FROM medias ORDER BY uploaded_at DESC")->fetchAll
   <!-- Upload -->
   <div class="card">
     <h3>⬆ Uploader une image</h3>
-    <form method="POST" enctype="multipart/form-data" id="upload-form">
+    <form method="POST" enctype="multipart/form-data" id="upload-form"><?= csrf_field() ?>
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('media-file').click()">
         <input type="file" id="media-file" name="media" accept="image/*" onchange="updateZone(this)">
         <div class="icon" id="upload-icon">🖼</div>

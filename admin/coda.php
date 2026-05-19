@@ -4,6 +4,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../lib/coda_parser.php';
 session_start(); requireAdmin();
 
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 // Créer la table coda_imports si elle n'existe pas
@@ -24,6 +25,8 @@ $error   = '';
 $success = '';
 
 // ── Traitement de l'upload ───────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['coda_file'])) {
     $file = $_FILES['coda_file'];
 
@@ -268,7 +271,7 @@ $historique = $db->query("SELECT * FROM coda_imports ORDER BY date_import DESC L
   <!-- Zone upload -->
   <div class="card">
     <h3>📁 Charger un fichier CODA</h3>
-    <form method="POST" enctype="multipart/form-data" id="coda-form">
+    <form method="POST" enctype="multipart/form-data" id="coda-form"><?= csrf_field() ?>
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('coda-file').click()">
         <input type="file" id="coda-file" name="coda_file" accept=".cod,.coda,.txt,.dat" onchange="updateZone(this)">
         <div class="icon" id="upload-icon">🏦</div>

@@ -2,11 +2,14 @@
 // admin/compose.php — Compositeur de newsletter avec aperçu HTML
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 $msg = ''; $error = '';
 
 // ── Sauvegarder le brouillon ──────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_draft'])) {
     $sujet   = htmlspecialchars(trim($_POST['sujet'] ?? ''), ENT_QUOTES, 'UTF-8');
     $contenu = $_POST['contenu_html'] ?? '';
@@ -240,7 +243,7 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
       <?php if ($msg): ?><div class="flash-ok"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
       <?php if ($error): ?><div class="flash-err"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
-      <form method="POST" id="nlf">
+      <form method="POST" id="nlf"><?= csrf_field() ?>
         <input type="hidden" name="nl_id" value="<?= $nl ? $nl['id'] : 0 ?>">
 
         <label>Sujet de l'email *</label>

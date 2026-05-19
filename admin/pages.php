@@ -2,12 +2,15 @@
 // admin/pages.php — Éditeur de pages + gestion des widgets
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 $msg = ''; $error = '';
 $edit_page = null;
 
 // ── Sauvegarder une page ─────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_page'])) {
     $id             = intval(isset($_POST['page_id']) ? $_POST['page_id'] : 0);
     $slug           = preg_replace('/[^a-z0-9_-]/', '', strtolower(trim(isset($_POST['slug']) ? $_POST['slug'] : '')));
@@ -93,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_page'])) {
 }
 
 // ── Supprimer une page ────────────────────────────────────────────────────
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+if (isset($_GET['delete']) && is_numeric($_GET['delete']) && hash_equals(csrf_token(), $_GET['_csrf'] ?? '')) {
     $row = $db->query("SELECT slug FROM pages WHERE id=".intval($_GET['delete']))->fetch();
     if ($row) {
         $db->prepare("DELETE FROM pages WHERE id=?")->execute(array(intval($_GET['delete'])));
@@ -546,7 +549,7 @@ if ($edit_page) {
         </div>
         <div class="pitem-acts" onclick="event.stopPropagation()">
           <a href="pages.php?edit=<?= $p['id'] ?>" class="act-btn edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></a>
-          <a href="pages.php?delete=<?= $p['id'] ?>" class="act-btn del" title="Supprimer"
+          <a href="pages.php?delete=<?= $p['id'] ?>&_csrf=<?= htmlspecialchars(csrf_token()) ?>" class="act-btn del" title="Supprimer"
              onclick="return confirm('Supprimer &quot;<?= htmlspecialchars($p['titre']) ?>&quot; ?')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></a>
         </div>
       </div>
@@ -578,7 +581,7 @@ if ($edit_page) {
       <?php if ($msg): ?><div class="flash-ok"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
       <?php if ($error): ?><div class="flash-err"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
-      <form method="POST" id="pf">
+      <form method="POST" id="pf"><?= csrf_field() ?>
         <input type="hidden" name="page_id" value="<?= $edit_page ? $edit_page['id'] : 0 ?>">
 
         <label>Titre *</label>
@@ -2271,6 +2274,7 @@ function mediaUpload(file) {
   status.textContent = '⏳ Upload en cours...';
   var fd = new FormData();
   fd.append('file', file);
+  fd.append('_csrf', '<?= htmlspecialchars(csrf_token()) ?>');
   fetch('medias_api.php?action=upload', {method:'POST', body:fd})
     .then(function(r){ return r.json(); })
     .then(function(d){

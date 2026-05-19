@@ -6,6 +6,7 @@ require_once __DIR__ . '/../config.php';
 if (!defined('MEDIAS_DIR')) define('MEDIAS_DIR', __DIR__ . '/../medias/');
 // session_start() déjà géré par config.php via requireAdmin/requireMembre
 if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/../includes/csrf.php';
 header('Content-Type: application/json; charset=utf-8');
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
     echo json_encode(['ok' => false, 'error' => "PHP $errno: $errstr line $errline"]);
@@ -36,6 +37,7 @@ if ($action === 'list') {
 
 // ── Uploader un média ─────────────────────────────────────────────────────
 if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify();
     $file = $_FILES['file'] ?? null;
 
     if (!$file || $file['error'] !== UPLOAD_ERR_OK) {

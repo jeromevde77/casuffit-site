@@ -2,6 +2,7 @@
 // admin/widgets.php — Gestion des widgets
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 $msg = ''; $error = '';
@@ -9,6 +10,8 @@ $edit_widget = null;
 $widgets_dir = __DIR__ . '/../includes/widgets/';
 
 // ── Sauvegarder un widget ─────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_widget'])) {
     $id          = intval(isset($_POST['widget_id']) ? $_POST['widget_id'] : 0);
     $slug        = preg_replace('/[^a-z0-9_-]/', '', strtolower(trim($_POST['slug'] ?? '')));
@@ -55,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_widget'])) {
 }
 
 // ── Supprimer un widget ───────────────────────────────────────────────────
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+if (isset($_GET['delete']) && is_numeric($_GET['delete']) && hash_equals(csrf_token(), $_GET['_csrf'] ?? '')) {
     $row = $db->query("SELECT slug FROM widgets WHERE id=".intval($_GET['delete']))->fetch();
     if ($row) {
         // Vérifier qu'aucune page n'utilise ce widget
@@ -326,7 +329,7 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
         </div>
         <div class="witem-acts" onclick="event.stopPropagation()">
           <a href="widgets.php?edit=<?= $w['id'] ?>" class="act-btn edit"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></a>
-          <a href="widgets.php?delete=<?= $w['id'] ?>" class="act-btn del"
+          <a href="widgets.php?delete=<?= $w['id'] ?>&_csrf=<?= htmlspecialchars(csrf_token()) ?>" class="act-btn del"
              onclick="return confirm('Supprimer ce widget ?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></a>
         </div>
       </div>
@@ -385,7 +388,7 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
         <strong>cfg('cle', 'defaut')</strong> — lire une config
       </div>
 
-      <form id="wf" method="POST">
+      <form id="wf" method="POST"><?= csrf_field() ?>
         <input type="hidden" name="widget_id" value="<?= $edit_widget ? intval($edit_widget['id']) : 0 ?>">
         <input type="hidden" name="save_widget" value="1">
         <?php if ($viewing_nl): ?>
@@ -458,7 +461,7 @@ textarea.code{width:100%;min-height:280px;background:#1e1e2e;color:#cdd6f4;font-
               style="background:<?= $has_nl_file ? '#d97706' : '#1673B2' ?>;color:#fff;border:none;padding:7px 14px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px">
         <?= $has_nl_file ? '🔄 Re-traduire en NL' : '🇳🇱 Créer version NL' ?>
       </button>
-      <a href="widgets.php?delete=<?= $edit_widget['id'] ?>" class="btn btn-r"
+      <a href="widgets.php?delete=<?= $edit_widget['id'] ?>&_csrf=<?= htmlspecialchars(csrf_token()) ?>" class="btn btn-r"
          onclick="return confirm('Supprimer ce widget ?')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Supprimer</a>
       <?php endif; ?>
       <button type="button" class="btn btn-g btn-apercu-mobile" onclick="openApercu()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Aperçu</button>

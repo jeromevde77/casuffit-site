@@ -2,6 +2,7 @@
 // admin/site_config.php — Paramètres généraux du site
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
@@ -14,6 +15,8 @@ try {
     $rows_h = $db->query("SELECT widget_slug, ordre FROM page_widgets WHERE page_slug='__header__' ORDER BY ordre")->fetchAll();
     foreach ($rows_h as $r) $header_widgets_sc[$r['widget_slug']] = $r['ordre'];
 } catch (Exception $e) {}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_header_widgets'])) {
     // Sauvegarder les widgets de la zone header
@@ -139,7 +142,7 @@ foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; }
   <div class="page-title">⚙ Paramètres du site</div>
   <?php if ($msg): ?><div class="flash-ok"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
 
-  <form method="POST" enctype="multipart/form-data">
+  <form method="POST" enctype="multipart/form-data"><?= csrf_field() ?>
 
     <!-- Général -->
     <div class="card">
@@ -262,7 +265,7 @@ foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; }
     <p style="font-size:.78rem;color:#666;margin-bottom:14px">
       Ces widgets s'affichent sur <strong>toutes les pages</strong>, juste sous le header, avant les tabs.
     </p>
-    <form method="POST">
+    <form method="POST"><?= csrf_field() ?>
       <?php foreach ($all_widgets_sc as $w): ?>
       <label style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1.5px solid <?= isset($header_widgets_sc[$w['slug']]) ? '#1673B2' : '#e0e8f0' ?>;border-radius:7px;margin-bottom:6px;cursor:pointer;background:<?= isset($header_widgets_sc[$w['slug']]) ? '#e6f1fb' : '#fff' ?>">
         <input type="checkbox"
