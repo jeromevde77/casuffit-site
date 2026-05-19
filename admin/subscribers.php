@@ -383,7 +383,7 @@ document.addEventListener('keydown', e => { if (e.key==='Escape') { closeEdit();
 // Rouvrir la modale si erreur de validation
 window.addEventListener('DOMContentLoaded', () => openAdd());
 <?php endif; ?>
-</script>
+
 document.getElementById('check-all').addEventListener('change', function() {
   document.querySelectorAll('.row-cb').forEach(cb => {
     cb.checked = this.checked;
