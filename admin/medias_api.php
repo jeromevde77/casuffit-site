@@ -1,6 +1,6 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+ini_set('display_errors', 0);
+error_reporting(0);
 // admin/medias_api.php — API JSON pour la modale médias de l'éditeur de pages
 require_once __DIR__ . '/../config.php';
 if (!defined('MEDIAS_DIR')) define('MEDIAS_DIR', __DIR__ . '/../medias/');
@@ -43,13 +43,13 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!in_array($file['type'], $allowed)) {
         echo json_encode(['ok' => false, 'error' => 'Type non autorisé']);
         exit;
     }
 
-    $ext_map  = ['image/jpeg'=>'jpg','image/png'=>'png','image/gif'=>'gif','image/webp'=>'webp','image/svg+xml'=>'svg'];
+    $ext_map  = ['image/jpeg'=>'jpg','image/png'=>'png','image/gif'=>'gif','image/webp'=>'webp'];
     $ext      = $ext_map[$file['type']];
     $filename = date('Ymd_His') . '_' . preg_replace('/[^a-z0-9]/', '', strtolower(pathinfo($file['name'], PATHINFO_FILENAME))) . '.' . $ext;
     $dest     = MEDIAS_DIR . $filename;

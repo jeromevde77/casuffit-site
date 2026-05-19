@@ -14,12 +14,12 @@ $msg = ''; $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_FILES['media']['tmp_name'])) {
     $file    = $_FILES['media'];
     $alt     = htmlspecialchars(trim(isset($_POST['alt_text']) ? $_POST['alt_text'] : ''), ENT_QUOTES, 'UTF-8');
-    $allowed = array('image/jpeg','image/png','image/gif','image/webp','image/svg+xml');
-    $ext_map = array('image/jpeg'=>'jpg','image/png'=>'png','image/gif'=>'gif','image/webp'=>'webp','image/svg+xml'=>'svg');
+    $allowed = array('image/jpeg','image/png','image/gif','image/webp');
+    $ext_map = array('image/jpeg'=>'jpg','image/png'=>'png','image/gif'=>'gif','image/webp'=>'webp');
 
     if ($file['error'] !== UPLOAD_ERR_OK) { $error = 'Erreur upload.'; }
     elseif ($file['size'] > 5*1024*1024) { $error = 'Fichier trop lourd (max 5 MB).'; }
-    elseif (!in_array($file['type'], $allowed)) { $error = 'Format non autorisé (JPG, PNG, GIF, WebP, SVG).'; }
+    elseif (!in_array($file['type'], $allowed)) { $error = 'Format non autorisé (JPG, PNG, GIF, WebP).'; }
     else {
         $ext      = $ext_map[$file['type']];
         $filename = date('Ymd_His') . '_' . preg_replace('/[^a-z0-9]/', '', strtolower(pathinfo($file['name'], PATHINFO_FILENAME))) . '.' . $ext;

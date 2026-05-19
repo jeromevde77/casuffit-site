@@ -9,7 +9,17 @@ Options -Indexes
 AddDefaultCharset UTF-8
 
 # ── Fichiers sensibles — accès web interdit ───────────────────────────
-<FilesMatch "^(config\.php|install\.sql|README\.md|\.env)$">
+<FilesMatch "^(config\.php|README\.md|INSTALL\.md|LIRE_MOI_UPLOAD\.txt|\.env|.*\.bak)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+# Tous les fichiers .sql sont bloqués
+<FilesMatch "\.sql$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+# Bloquer les fichiers de migration / injection PHP
+<FilesMatch "^(migrate_.*|inject_.*|update_.*|fix_.*|debug.*|test_.*)\.php$">
     Order allow,deny
     Deny from all
 </FilesMatch>
@@ -59,6 +69,9 @@ AddDefaultCharset UTF-8
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "same-origin"
+    Header always set Permissions-Policy "geolocation=(self), microphone=(), camera=()"
+    # Strict-Transport-Security : forcer HTTPS pendant 1 an
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 </IfModule>
 
 # ── Cache ressources statiques ────────────────────────────────────────
