@@ -1675,6 +1675,16 @@ foreach ($header_widgets as $w_slug) {
         }
     }
 
+    // Ajouter les pages hors-menu demandées via ?page= (ex: agir, pages de landing)
+    if (!empty($first_tab_slug) && isset($tabs_content[$first_tab_slug])) {
+        $already = array_filter($all_dynamic_pages, function($p) use ($first_tab_slug) {
+            return $p['slug'] === $first_tab_slug;
+        });
+        if (empty($already)) {
+            $all_dynamic_pages[] = $tabs_content[$first_tab_slug];
+        }
+    }
+
     foreach ($all_dynamic_pages as $p):
         if (empty($p['slug'])) continue;
         if (!empty($p['lien_url'])) continue;
