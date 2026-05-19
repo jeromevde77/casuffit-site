@@ -652,8 +652,9 @@ function previewQR() {
   _qr = new QRious({
     element: canvas,
     value: url,
-    size: Math.min(size, 180), // aperçu toujours 180 max
-    background: '#ffffff',
+    size: Math.min(size, 180),
+    background: 'transparent',
+    backgroundAlpha: 0,
     foreground: '#1673B2',
     level: 'Q',
     padding: 6,
@@ -672,7 +673,8 @@ function doInsertQR() {
     element: tmpCanvas,
     value: url,
     size: size,
-    background: '#ffffff',
+    background: 'transparent',
+    backgroundAlpha: 0,
     foreground: '#1673B2',
     level: 'Q',
     padding: Math.round(size * 0.04),
@@ -680,12 +682,11 @@ function doInsertQR() {
   const dataUrl = tmpCanvas.toDataURL('image/png');
 
   // Construire le HTML
-  const margin = align === 'center' ? 'margin:10px auto' :
-                 align === 'right'  ? 'margin:10px 0 10px auto' :
-                                      'margin:10px 0';
-  let html = `<div style="text-align:${align};${margin==='margin:10px auto'?'':''}">`;
-  html += `<img src="${dataUrl}" width="${size}" height="${size}" alt="QR code ${url}"
-                style="display:block;${margin};border:8px solid #fff;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.1)">`;
+  const alignStyle = align === 'center' ? 'display:block;margin:10px auto' :
+                     align === 'right'  ? 'display:block;margin:10px 0 10px auto' :
+                                          'display:block;margin:10px 0';
+  let html = `<div style="text-align:${align}">`;
+  html += `<img src="${dataUrl}" width="${size}" height="${size}" alt="QR code ${url}" style="${alignStyle}">`;
   if (caption) {
     html += `<p style="font-size:.75rem;color:#888;text-align:center;margin:4px 0 10px">${caption}</p>`;
   }
