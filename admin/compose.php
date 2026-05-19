@@ -136,7 +136,9 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
     .email-frame{background:#fff;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.08);max-width:580px;margin:0 auto;overflow:hidden}
   
   @media (max-width: 768px) {
-    .wrap { margin-left: 0 !important; padding-top: 52px !important; }
+    .wrap { margin-left: 0 !important; padding-top: 52px !important; grid-template-columns: 1fr !important; height: auto !important; overflow: auto !important; }
+    .editor { border-right: none !important; }
+    .preview { display: none !important; }
     .grid2, .cards-grid { grid-template-columns: 1fr !important; }
     table { font-size: .75rem; }
     table th, table td { padding: 6px 8px !important; }
