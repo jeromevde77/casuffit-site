@@ -275,15 +275,16 @@ $msg = $_GET['msg'] ?? '';
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
               <?php endif;?>
-              <?php if(empty($s['invite_membre_accepted']) && empty($s['invite_membre_sent_at'])):?>
+              <?php if(empty($s['invite_membre_accepted'] ?? null) && empty($s['invite_membre_sent_at'] ?? null)):?>
               <button type="button" class="act-btn" title="Inviter à devenir membre"
                       onclick="inviterMembre(<?=$s['id']?>)"
                       style="color:#8b5cf6;border-color:#e9d5ff;background:#faf5ff;font-size:13px">✉</button>
-              <?php elseif(!empty($s['invite_membre_sent_at']) && empty($s['invite_membre_accepted'])):?>
+              <?php elseif(!empty($s['invite_membre_sent_at'] ?? null) && empty($s['invite_membre_accepted'] ?? null)):?>
               <span title="Invitation envoyée le <?=date('d/m/Y',strtotime($s['invite_membre_sent_at']))?>"
                     style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:#faf5ff;border:1.5px solid #c4b5fd;color:#8b5cf6;font-size:11px">⏳</span>
-              <?php elseif(!empty($s['invite_membre_accepted'])):?>
-              <span title="Membre ✓" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;font-size:13px">✓</span>
+              <?php elseif(!empty($s['invite_membre_accepted'] ?? null)):?>
+              <span title="Est devenu membre ✓"
+                    style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;font-size:13px">✓</span>
               <?php endif;?>
               <button type="button" class="act-btn del" title="Supprimer (RGPD)" onclick="quickAct(<?=$s['id']?>,'supprimer')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
@@ -431,6 +432,7 @@ function quickAct(id, action) {
   if (!confirm(labels[action])) return;
   var f = document.createElement('form'); f.method='POST'; f.action='';
   var add = (n,v) => { var i=document.createElement('input');i.type='hidden';i.name=n;i.value=v;f.appendChild(i); };
+  add('_csrf', '<?= htmlspecialchars(csrf_token()) ?>');
   add('bulk_action', action); add('ids[]', id);
   <?php foreach($_GET as $k=>$v): ?>add(<?=json_encode($k)?>,<?=json_encode($v)?>);<?php endforeach;?>
   document.body.appendChild(f); f.submit();
