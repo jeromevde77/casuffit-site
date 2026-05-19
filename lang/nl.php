@@ -57,4 +57,11 @@ return [
     'wind.tab.rose'        => 'Windroos',
     'wind.tab.flights'     => 'Vluchten',
     'wind.refresh'         => 'Vernieuwen',
+
+    // ── Header / Aankondigingsbanner ────────────────────────────────────
+    'header.badge'         => 'Baan 01 · UBCNA · Burgerunie',
+    'header.brand_suffix'  => 'VZW',
+    'annonce.date'         => 'Aankondiging — Mei 2026',
+    'annonce.close'        => 'Sluiten',
+    'annonce.equals'       => 'ça suffit ! VZW',
 ];

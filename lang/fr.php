@@ -57,4 +57,11 @@ return [
     'wind.tab.rose'        => 'Rose des vents',
     'wind.tab.flights'     => 'Vols',
     'wind.refresh'         => 'Actualiser',
+
+    // ── Header / Bandeau d'annonce ───────────────────────────────────────
+    'header.badge'         => 'Piste 01 · UBCNA · Union citoyenne',
+    'header.brand_suffix'  => 'ASBL',
+    'annonce.date'         => 'Annonce — Mai 2026',
+    'annonce.close'        => 'Fermer',
+    'annonce.equals'       => 'ça suffit ! ASBL',
 ];

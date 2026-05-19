@@ -135,11 +135,11 @@ if (!empty($_GET['page'])) {
 
 // Annonce
 $annonce_active = cfg('annonce_active', '1') === '1';
-$annonce_titre  = cfg('annonce_titre', 'Piste 01 & UBCNA s unissent !');
-$annonce_texte  = cfg('annonce_texte', '');
+$annonce_titre  = cfgLang('annonce_titre', 'Piste 01 & UBCNA s unissent !');
+$annonce_texte  = cfgLang('annonce_texte', '');
 
 // Urgence texte
-$urgence_texte = cfg('urgence_texte', 'Piste 01 & UBCNA unis — Ensemble pour faire cesser les nuisances !');
+$urgence_texte = cfgLang('urgence_texte', 'Piste 01 & UBCNA unis — Ensemble pour faire cesser les nuisances !');
 
 // Config don
 $iban        = cfg('iban', 'BE41 0689 0149 6910');
@@ -1385,14 +1385,14 @@ blockquote {
 
 <?php if ($annonce_active): ?>
 <div class="annonce-union" id="annonce-union">
-  <button class="annonce-close" onclick="document.getElementById('annonce-union').style.display='none'" title="Fermer">✕</button>
-  <div class="annonce-date">Annonce — Mai 2026</div>
+  <button class="annonce-close" onclick="document.getElementById('annonce-union').style.display='none'" title="<?= t('annonce.close') ?>">✕</button>
+  <div class="annonce-date"><?= t('annonce.date') ?></div>
   <h2>🤝 <?= htmlspecialchars($annonce_titre) ?></h2>
   <p><?= htmlspecialchars($annonce_texte) ?></p>
   <div class="annonce-logos">
     <span>Piste 01 ça suffit !</span><span class="plus">+</span>
     <span>UBCNA</span><span class="plus">=</span>
-    <span style="background:#FF9900;border-color:#FF9900;">ça suffit ! ASBL</span>
+    <span style="background:#FF9900;border-color:#FF9900;"><?= t('annonce.equals') ?></span>
   </div>
 </div>
 <?php endif; ?>
@@ -1423,8 +1423,8 @@ function navBtnClass($p) {
       <img src="medias/logo.png" alt="ça suffit ! ASBL" onerror="this.style.display='none'">
     </div>
     <div class="header-brand">
-      <h1><span class="accent">ça suffit !</span> ASBL</h1>
-      <span class="header-badge">Piste 01 · UBCNA · Union citoyenne</span>
+      <h1><span class="accent">ça suffit !</span> <?= t('header.brand_suffix') ?></h1>
+      <span class="header-badge"><?= t('header.badge') ?></span>
     </div>
     <nav class="header-nav">
       <?php
