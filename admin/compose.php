@@ -228,8 +228,9 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
 
 <div class="wrap">
 
-  <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor(); majApercu()"><?= $nl ? $nl['contenu_html'] : '' ?></div>
+  <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor(); majApercu()"></div>
         <textarea name="contenu_html" id="f-contenu" style="display:none"><?= htmlspecialchars($nl ? $nl['contenu_html'] : '') ?></textarea>
+        <script>(function(){var t=document.getElementById('f-contenu');var e=document.getElementById('wysiwyg-editor');if(t&&e)e.innerHTML=t.value;})();</script>
       </form>
     </div>
     <div class="editor-foot">
