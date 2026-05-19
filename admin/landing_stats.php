@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 require_once __DIR__ . '/../includes/csrf.php';
-require_once __DIR__ . '/../includes/admin_sidebar_css.php';
 
 $db = getDB();
 
@@ -53,6 +52,7 @@ if ($hasTable) {
 <title>Stats flyers — Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
+<?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; margin:0; background:#f5f7fa; color:#222; }
 .main { margin-left: 240px; padding: 24px 28px; }
 @media (max-width: 768px) { .main { margin-left: 0; padding-top: 60px; } }

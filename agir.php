@@ -187,6 +187,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
       </a>
     </div>
 
+    <!-- QR Code -->
+    <div class="cta-block" style="text-align:center">
+      <h3>📲 <?= $is_nl ? 'Scan & deel' : 'Scanner & partager' ?></h3>
+      <p><?= $is_nl ? 'Scan voor directe toegang · Deel met uw buren' : 'Scannez pour accès direct · Partagez avec vos voisins' ?></p>
+      <div id="qr-agir" style="display:inline-block;background:#fff;padding:12px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.1)"></div>
+      <p style="margin-top:8px;font-size:.75rem;color:#888">casuffit.be/agir</p>
+    </div>
+
     <!-- Partage -->
     <div class="share">
       <h3>📢 <?= $is_nl ? 'Verspreid de boodschap' : 'Faites passer le mot' ?></h3>
@@ -212,5 +220,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
 
 </div>
 
+<!-- QR Code generator -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var canvas = document.createElement('canvas');
+  new QRious({
+    element: canvas,
+    value: 'https://www.casuffit.be/agir',
+    size: 180,
+    background: '#ffffff',
+    foreground: '#1673B2',
+    level: 'Q',
+    padding: 8,
+  });
+  document.getElementById('qr-agir').appendChild(canvas);
+});
+</script>
 </body>
 </html>
