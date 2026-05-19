@@ -1,5 +1,5 @@
 // admin/sw.js — Service Worker ça suffit ! Admin PWA
-const CACHE = 'csa-admin-v1';
+const CACHE = 'csa-admin-v2';
 
 // Ressources à mettre en cache au premier chargement
 const PRECACHE = [
