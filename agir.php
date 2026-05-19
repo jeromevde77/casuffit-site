@@ -17,29 +17,19 @@ try {
        ->execute([$source, $campaign, LANG, hash('sha256', $_SERVER['REMOTE_ADDR'] ?? '')]);
 } catch (Exception $e) { /* table inexistante → silencieux */ }
 
-// Charger le CSS custom depuis la BDD
-$agir_css = '';
+// Charger depuis landing_pages (table dédiée, indépendante de pages et site_config)
+$agir_css = ''; $agir_contenu = '';
 try {
-    $stmt = $db->prepare("SELECT valeur FROM site_config WHERE cle='agir_css' LIMIT 1");
+    $stmt = $db->prepare("SELECT contenu, contenu_nl, css FROM landing_pages WHERE slug='agir' LIMIT 1");
     $stmt->execute();
-    $row = $stmt->fetch();
-    $agir_css = $row ? ($row['valeur'] ?? '') : '';
-} catch (Exception $e) {}
-$obj_total  = (float)cfg('objectif_total', 20000);
-$pct = $obj_total > 0 ? round($obj_actuel / $obj_total * 100) : 0;
-
-// Charger le contenu éditable depuis la BDD (page slug=agir)
-$agir_contenu = '';
-try {
-    $row = $db->prepare("SELECT contenu, contenu_nl FROM pages WHERE slug='agir' LIMIT 1");
-    $row->execute();
-    $agir_page = $row->fetch();
-    if ($agir_page) {
-        $agir_contenu = ($is_nl && !empty($agir_page['contenu_nl']))
-            ? $agir_page['contenu_nl']
-            : ($agir_page['contenu'] ?? '');
+    $lp = $stmt->fetch();
+    if ($lp) {
+        $agir_css     = $lp['css'] ?? '';
+        $agir_contenu = ($is_nl && !empty($lp['contenu_nl'])) ? $lp['contenu_nl'] : ($lp['contenu'] ?? '');
     }
 } catch (Exception $e) {}
+$obj_total = (float)cfg('objectif_total', 20000);
+$pct = $obj_total > 0 ? round($obj_actuel / $obj_total * 100) : 0;
 ?>
 <!DOCTYPE html>
 <html lang="<?= LANG ?>">

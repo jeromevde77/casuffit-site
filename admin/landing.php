@@ -7,48 +7,38 @@ $db = getDB();
 
 $msg = ''; $error = '';
 
-// ── Charger la page agir ────────────────────────────────────────────────
-$page = $db->prepare("SELECT * FROM pages WHERE slug = 'agir' LIMIT 1");
-$page->execute();
-$page = $page->fetch();
-if (!$page) {
-    // Créer la page si elle n'existe pas
-    $db->prepare("INSERT INTO pages (titre, slug, visible, dans_menu, menu_position, ordre, contenu) VALUES ('Agir avec nous','agir',1,0,'none',99,'')")->execute();
-    $page = $db->prepare("SELECT * FROM pages WHERE slug='agir' LIMIT 1")->execute()->fetch();
+// ── Charger depuis la table landing_pages (indépendante de pages et site_config) ──
+function lpGet($db) {
+    $stmt = $db->prepare("SELECT * FROM landing_pages WHERE slug='agir' LIMIT 1");
+    $stmt->execute();
+    $r = $stmt->fetch();
+    if (!$r) {
+        $db->prepare("INSERT INTO landing_pages (slug, titre, contenu, contenu_nl, css) VALUES ('agir','Page Agir avec nous','','',' ')")->execute();
+        $r = ['contenu'=>'','contenu_nl'=>'','css'=>''];
+    }
+    return $r;
 }
-
-// CSS stocké dans site_config
-$agir_css     = cfg('agir_css', '');
-$agir_css_nl  = cfg('agir_css_nl', '');
+$lp = lpGet($db);
 
 // ── Sauvegarder ──────────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
-
     $action = $_POST['action'] ?? 'save_all';
 
-    if ($action === 'save_content' || $action === 'save_all') {
-        $contenu    = $_POST['contenu'] ?? '';
-        $contenu_nl = $_POST['contenu_nl'] ?? '';
-        $db->prepare("UPDATE pages SET contenu=?, contenu_nl=? WHERE slug='agir'")
-           ->execute([$contenu, $contenu_nl]);
-    }
+    $contenu    = ($action === 'save_content' || $action === 'save_all') ? ($_POST['contenu'] ?? '')    : $lp['contenu'];
+    $contenu_nl = ($action === 'save_content' || $action === 'save_all') ? ($_POST['contenu_nl'] ?? '') : $lp['contenu_nl'];
+    $css        = ($action === 'save_css'     || $action === 'save_all') ? ($_POST['agir_css'] ?? '')   : $lp['css'];
 
-    if ($action === 'save_css' || $action === 'save_all') {
-        $css = $_POST['agir_css'] ?? '';
-        $db->prepare("INSERT INTO site_config (cle, valeur, label, groupe) VALUES ('agir_css', ?, 'CSS landing /agir', 'landing') ON DUPLICATE KEY UPDATE valeur=?")->execute([$css, $css]);
-    }
+    $db->prepare("UPDATE landing_pages SET contenu=?, contenu_nl=?, css=? WHERE slug='agir'")
+       ->execute([$contenu, $contenu_nl, $css]);
 
     $msg = '✅ Sauvegardé.';
-    // Recharger
-    $stmt = $db->prepare("SELECT * FROM pages WHERE slug='agir' LIMIT 1");
-    $stmt->execute();
-    $page = $stmt->fetch();
-    $agir_css = cfg('agir_css', '');
+    $lp = lpGet($db);
 }
 
-$contenu    = $page['contenu']    ?? '';
-$contenu_nl = $page['contenu_nl'] ?? '';
+$contenu    = $lp['contenu']    ?? '';
+$contenu_nl = $lp['contenu_nl'] ?? '';
+$agir_css   = $lp['css']        ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
