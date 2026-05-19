@@ -54,6 +54,13 @@ AddDefaultCharset UTF-8
     # Médias : autoriser uniquement les images
     RewriteRule ^medias/.*\.(php|sql|htaccess|env|sh)$ - [F,L]
 
+    # ── Sitemap XML dynamique ─────────────────────────────────────────
+    RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+    # ── Page d'atterrissage flyers (URL courte mémorable) ─────────────
+    RewriteRule ^agir/?$ agir.php [L,QSA]
+    RewriteRule ^doe-mee/?$ agir.php?lang=nl [L,QSA]
+
     # ── Multilingue : /nl/... → index.php?lang=nl&... ─────────────────
     # /nl/         → /index.php?lang=nl
     # /nl          → /index.php?lang=nl

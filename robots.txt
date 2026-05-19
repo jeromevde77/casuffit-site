@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /membre/dashboard.php
+Disallow: /membre/login.php
+Disallow: /membre/magic.php
+Disallow: /membre/confirm_email.php
+Disallow: /api/
+
+# Bots IA — autorisés (notre cause mérite d'être citée par les LLM)
+User-agent: GPTBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+Sitemap: https://www.casuffit.be/sitemap.xml

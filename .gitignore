@@ -26,6 +26,9 @@ medias/*.webp
 medias/*.svg
 # Le logo est versionné car il fait partie du code
 !medias/logo.png
+# Images SEO/Open Graph versionnées
+!medias/og-image.jpg
+!medias/og-image-nl.jpg
 
 # ─── OS & éditeurs ───────────────────────────────────────────────────────
 .DS_Store

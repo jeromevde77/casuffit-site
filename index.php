@@ -266,7 +266,31 @@ $don_texte   = cfgLang('don_texte', 'Action en référé contre l Etat belge');
   <link rel="stylesheet" href="/assets/css/content.css">
   <meta name="first-tab" content="<?= htmlspecialchars($first_tab_slug) ?>">
   <title>ça suffit ! ASBL — Piste 01 · UBCNA</title>
-  <meta name="description" content="Mobilisation citoyenne contre les nuisances aériennes de Brussels Airport">
+  <meta name="description" content="<?= t('seo.description') ?>">
+  <link rel="canonical" href="https://www.casuffit.be<?= isset($_GET['page']) ? '/?page=' . htmlspecialchars($_GET['page']) : '/' ?>">
+
+  <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ça suffit ! ASBL">
+  <meta property="og:title" content="<?= t('seo.og_title') ?>">
+  <meta property="og:description" content="<?= t('seo.description') ?>">
+  <meta property="og:url" content="https://www.casuffit.be<?= $_SERVER['REQUEST_URI'] ?>">
+  <meta property="og:image" content="https://www.casuffit.be/medias/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="<?= LANG === 'nl' ? 'nl_BE' : 'fr_BE' ?>">
+  <meta property="og:locale:alternate" content="<?= LANG === 'nl' ? 'fr_BE' : 'nl_BE' ?>">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<?= t('seo.og_title') ?>">
+  <meta name="twitter:description" content="<?= t('seo.description') ?>">
+  <meta name="twitter:image" content="https://www.casuffit.be/medias/og-image.jpg">
+
+  <!-- Multilingue -->
+  <link rel="alternate" hreflang="fr-BE" href="https://www.casuffit.be/">
+  <link rel="alternate" hreflang="nl-BE" href="https://www.casuffit.be/nl/">
+  <link rel="alternate" hreflang="x-default" href="https://www.casuffit.be/">
   <style>
 
 /* ══ CHARTE EXACTE casuffit.be ══════════════════════════════════════ */
