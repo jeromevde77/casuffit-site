@@ -13,13 +13,13 @@ $LANG = $_SESSION['membre_lang'] ?? $_SESSION['app_lang'] ?? 'fr';
 $T = $LANG === 'nl' ? [
 
   // Titres & nav
-  'site_title'          => 'ça suffit ! VZW',
+  'site_title'          => 'Ça suffit ! VZW',
   'retour_site'         => '← Terug naar de site',
   'retour_espace'       => '← Terug naar mijn ruimte',
 
   // Inscription
   'inscription_titre'   => 'Uw ledenruimte aanmaken',
-  'inscription_page'    => 'Lid worden — ça suffit ! VZW',
+  'inscription_page'    => 'Lid worden — Ça suffit ! VZW',
   'avantages_intro'     => 'Door lid te worden krijgt u:',
   'avantage_qr'         => 'Een persoonlijke QR-code met gestructureerde mededeling (+++)',
   'avantage_dons'       => 'Het overzicht van uw giften in uw privéruimte',
@@ -34,7 +34,7 @@ $T = $LANG === 'nl' ? [
   'commune_ph'          => 'Waterloo',
   'telephone'           => 'Telefoon',
   'telephone_ph'        => '+32 470 00 00 00',
-  'rgpd_label'          => 'Ik ga akkoord dat mijn gegevens worden gebruikt door de VZW <strong>ça suffit !</strong> (Baan 01 · UBCNA) overeenkomstig de AVG. Ik kan me op elk moment uitschrijven vanuit mijn ledenruimte.',
+  'rgpd_label'          => 'Ik ga akkoord dat mijn gegevens worden gebruikt door de VZW <strong>Ça suffit !</strong> (Baan 01 · UBCNA) overeenkomstig de AVG. Ik kan me op elk moment uitschrijven vanuit mijn ledenruimte.',
   'captcha_label'       => '🤖 Anti-robotverificatie *',
   'btn_creer'           => 'Mijn ledenruimte aanmaken →',
   'deja_membre'         => 'Al lid?',
@@ -51,7 +51,7 @@ $T = $LANG === 'nl' ? [
 
   // Login
   'login_titre'         => 'Toegang ledenruimte',
-  'login_page'          => 'Aanmelding lid — ça suffit ! VZW',
+  'login_page'          => 'Aanmelding lid — Ça suffit ! VZW',
   'login_explain'       => 'Voer uw e-mail in en wij sturen u een <strong>beveiligde aanmeldingslink</strong> geldig 24u. Geen wachtwoord te onthouden!',
   'votre_email'         => 'Uw e-mailadres',
   'btn_recevoir_lien'   => '✉ Mijn aanmeldingslink ontvangen',
@@ -62,7 +62,7 @@ $T = $LANG === 'nl' ? [
   'err_email_invalide'  => 'Ongeldig e-mailadres.',
 
   // Magic link
-  'magic_page'          => 'Aanmelding — ça suffit ! VZW',
+  'magic_page'          => 'Aanmelding — Ça suffit ! VZW',
   'lien_invalide_titre' => 'Ongeldige of verlopen link',
   'lien_invalide_msg'   => 'Deze link is ongeldig of verlopen. <a href="login.php">Vraag een nieuwe link aan</a>.',
   'btn_new_lien'        => 'Een nieuwe link aanvragen',
@@ -75,7 +75,7 @@ $T = $LANG === 'nl' ? [
   'retour_espace_btn'   => '← Mijn ledenruimte',
 
   // Profil
-  'profil_page'         => 'Mijn profiel — ça suffit ! VZW',
+  'profil_page'         => 'Mijn profiel — Ça suffit ! VZW',
   'profil_titre'        => 'Mijn profiel',
   'identite'            => 'Identiteit',
   'contact'             => 'Contact',
@@ -92,7 +92,7 @@ $T = $LANG === 'nl' ? [
   'cree_le'             => 'Aangemaakt op %s',
 
   // Dashboard (utilisé dans dashboard.php)
-  'dashboard_page'      => 'Mijn ruimte — ça suffit ! VZW',
+  'dashboard_page'      => 'Mijn ruimte — Ça suffit ! VZW',
   'back_site'           => '← Hoofdsite',
   'bonjour'             => 'Hallo',
   'membre_depuis'       => 'Lid',
@@ -145,7 +145,7 @@ $T = $LANG === 'nl' ? [
   'label_iban'          => 'IBAN',
   'iban_titre'          => '🏦 Rekeningnummer (optioneel — vrijwillig)',
   'iban_txt'            => 'Als u eerder giften heeft gedaan via een eenvoudige overschrijving, kunt u hier uw IBAN opgeven. Dit stelt ons in staat deze betalingen te koppelen aan uw ledenaccount. Deze informatie is strikt vertrouwelijk en wordt nooit aan derden doorgegeven.',
-  'rgpd_dash_label'     => 'Ik machtig <strong>ça suffit ! VZW</strong> om mijn persoonlijke gegevens (naam, adres, e-mail, telefoon, IBAN indien opgegeven) te registreren en verwerken in het kader van ledenbeheer en nieuwsbrief. Deze gegevens worden niet aan derden doorgegeven. Ik kan te allen tijde verwijdering aanvragen.',
+  'rgpd_dash_label'     => 'Ik machtig <strong>Ça suffit ! VZW</strong> om mijn persoonlijke gegevens (naam, adres, e-mail, telefoon, IBAN indien opgegeven) te registreren en verwerken in het kader van ledenbeheer en nieuwsbrief. Deze gegevens worden niet aan derden doorgegeven. Ik kan te allen tijde verwijdering aanvragen.',
   'rgpd_accepte_le'     => '✓ Aanvaard op %s',
   'derniere_verif'      => 'Laatste controle: %s',
   'btn_enregistrer_donnees' => '💾 Mijn gegevens opslaan',
@@ -171,13 +171,13 @@ $T = $LANG === 'nl' ? [
 ] : [
 
   // Titres & nav
-  'site_title'          => 'ça suffit ! ASBL',
+  'site_title'          => 'Ça suffit ! ASBL',
   'retour_site'         => '← Retour au site',
   'retour_espace'       => '← Retour à mon espace',
 
   // Inscription
   'inscription_titre'   => 'Créer votre espace membre',
-  'inscription_page'    => 'Devenir membre — ça suffit ! ASBL',
+  'inscription_page'    => 'Devenir membre — Ça suffit ! ASBL',
   'avantages_intro'     => 'En devenant membre vous obtenez :',
   'avantage_qr'         => 'Un QR code personnel avec communication structurée (+++)',
   'avantage_dons'       => 'L\'historique de vos dons dans votre espace privé',
@@ -192,7 +192,7 @@ $T = $LANG === 'nl' ? [
   'commune_ph'          => 'Waterloo',
   'telephone'           => 'Téléphone',
   'telephone_ph'        => '+32 470 00 00 00',
-  'rgpd_label'          => 'J\'accepte que mes données soient utilisées par l\'ASBL <strong>ça suffit !</strong> (Piste 01 · UBCNA) conformément au RGPD. Je peux me désabonner à tout moment depuis mon espace membre.',
+  'rgpd_label'          => 'J\'accepte que mes données soient utilisées par l\'ASBL <strong>Ça suffit !</strong> (Piste 01 · UBCNA) conformément au RGPD. Je peux me désabonner à tout moment depuis mon espace membre.',
   'captcha_label'       => '🤖 Vérification anti-robot *',
   'btn_creer'           => 'Créer mon espace membre →',
   'deja_membre'         => 'Déjà membre ?',
@@ -209,7 +209,7 @@ $T = $LANG === 'nl' ? [
 
   // Login
   'login_titre'         => 'Accès espace membre',
-  'login_page'          => 'Connexion membre — ça suffit ! ASBL',
+  'login_page'          => 'Connexion membre — Ça suffit ! ASBL',
   'login_explain'       => 'Entrez votre email et nous vous enverrons un <strong>lien de connexion sécurisé</strong> valable 24h. Pas de mot de passe à retenir !',
   'votre_email'         => 'Votre adresse email',
   'btn_recevoir_lien'   => '✉ Recevoir mon lien de connexion',
@@ -220,7 +220,7 @@ $T = $LANG === 'nl' ? [
   'err_email_invalide'  => 'Adresse email invalide.',
 
   // Magic link
-  'magic_page'          => 'Connexion — ça suffit ! ASBL',
+  'magic_page'          => 'Connexion — Ça suffit ! ASBL',
   'lien_invalide_titre' => 'Lien invalide ou expiré',
   'lien_invalide_msg'   => 'Ce lien est invalide ou a expiré. <a href="login.php">Demandez un nouveau lien</a>.',
   'btn_new_lien'        => 'Demander un nouveau lien',
@@ -233,7 +233,7 @@ $T = $LANG === 'nl' ? [
   'retour_espace_btn'   => '← Mon espace membre',
 
   // Profil
-  'profil_page'         => 'Mon profil — ça suffit ! ASBL',
+  'profil_page'         => 'Mon profil — Ça suffit ! ASBL',
   'profil_titre'        => 'Mon profil',
   'identite'            => 'Identité',
   'contact'             => 'Contact',
@@ -250,7 +250,7 @@ $T = $LANG === 'nl' ? [
   'cree_le'             => 'Créé le %s',
 
   // Dashboard
-  'dashboard_page'      => 'Mon espace — ça suffit ! ASBL',
+  'dashboard_page'      => 'Mon espace — Ça suffit ! ASBL',
   'back_site'           => '← Site principal',
   'bonjour'             => 'Bonjour',
   'membre_depuis'       => 'Membre',
@@ -303,7 +303,7 @@ $T = $LANG === 'nl' ? [
   'label_iban'          => 'IBAN',
   'iban_titre'          => '🏦 Numéro de compte (optionnel — sur base volontaire)',
   'iban_txt'            => 'Si vous avez effectué des dons antérieurs par virement simple, vous pouvez indiquer votre IBAN ici. Cela nous permet de relier ces versements à votre compte membre. Cette information est strictement confidentielle et ne sera jamais transmise à des tiers.',
-  'rgpd_dash_label'     => 'J\'autorise <strong>ça suffit ! ASBL</strong> à enregistrer et traiter mes données personnelles (nom, adresse, email, téléphone, IBAN si fourni) dans le cadre de la gestion des membres et de la newsletter. Ces données ne sont pas transmises à des tiers. Je peux en demander la suppression à tout moment.',
+  'rgpd_dash_label'     => 'J\'autorise <strong>Ça suffit ! ASBL</strong> à enregistrer et traiter mes données personnelles (nom, adresse, email, téléphone, IBAN si fourni) dans le cadre de la gestion des membres et de la newsletter. Ces données ne sont pas transmises à des tiers. Je peux en demander la suppression à tout moment.',
   'rgpd_accepte_le'     => '✓ Accepté le %s',
   'derniere_verif'      => 'Dernière vérification : %s',
   'btn_enregistrer_donnees' => '💾 Enregistrer mes données',

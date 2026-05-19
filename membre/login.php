@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="card">
   <div class="brand">
-    <h1>ça suffit ! <span>ASBL</span></h1>
+    <h1>Ça suffit ! <span>ASBL</span></h1>
     <p><?= tm('login_titre') ?></p>
   </div>
 

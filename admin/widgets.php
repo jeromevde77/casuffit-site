@@ -112,7 +112,7 @@ if ($edit_widget) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <?php include __DIR__ . '/../includes/admin_pwa_head.php'; ?>
-<title>Widgets — Admin ça suffit !</title>
+<title>Widgets — Admin Ça suffit !</title>
 <style>
 <?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -645,7 +645,7 @@ var WBLOCS = {
   lettre:    '<div class="lettre-intro"><p>Chers membres, ...</p></div>\n',
   citation:  '<div class="citation-box"><p>« Votre citation »</p></div>\n',
   bq:        '<blockquote>Citation mise en valeur.</blockquote>\n',
-  signature: '<div class="signature">Cordialement,<strong>L\'équipe ça suffit !</strong></div>\n',
+  signature: '<div class="signature">Cordialement,<strong>L\'équipe Ça suffit !</strong></div>\n',
   grid:      '<div class="actions-grid"><div class="action-card"><div class="ac-num">01</div><div class="ac-titre">Titre</div><div class="ac-text">Description.</div></div></div>\n',
   liste:     '<ul><li>Élément 1</li><li>Élément 2</li></ul>\n',
   chiffre:   '<div style="display:inline-block;text-align:center;margin:8px 16px 8px 0"><span class="chiffre-val">320</span><span class="chiffre-label">avions/jour</span></div>\n',
@@ -733,7 +733,7 @@ document.addEventListener('click', function(e) {
 
     <div class="sp-item" onclick="wInsBloc('signature'); closeWPalette()">
       <div class="sp-item-label">Signature</div>
-      <div class="sp-prev-sign">L'équipe ça suffit !<br><small>Contact : ...</small></div>
+      <div class="sp-prev-sign">L'équipe Ça suffit !<br><small>Contact : ...</small></div>
     </div>
 
     <div class="sp-item" style="grid-column:1/-1" onclick="wInsBloc('grid'); closeWPalette()">

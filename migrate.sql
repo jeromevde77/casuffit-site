@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════════════
---  migrate.sql — ça suffit ! ASBL
+--  migrate.sql — Ça suffit ! ASBL
 --  À exécuter sur une BDD EXISTANTE pour la mettre à jour
 --  Compatible OVH MySQL (pas de IF NOT EXISTS sur ALTER TABLE)
 --  Chaque ALTER est séparé — ignorer les erreurs "Duplicate column"

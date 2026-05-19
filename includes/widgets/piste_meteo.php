@@ -1230,7 +1230,7 @@ window.pmwOpenPlainte = function() {
     'Une capture d\'écran du tableau de bord est jointe à ce message.\n\n' +
     'Dans l\'attente de votre réponse,\n' +
     'Veuillez agréer mes salutations distinguées.\n\n' +
-    '— Via ça suffit ! ASBL — casuffit.be';
+    '— Via Ça suffit ! ASBL — casuffit.be';
 
   document.getElementById('pmw-plainte-mail').textContent = pmwMailBody;
 
@@ -1368,7 +1368,7 @@ window.pmwOpenMailto = function() {
     + '</ul>'
     + captureHtml
     + '<p style="margin-top:8px;font-size:.85em;color:#666">Selon l\'instruction ministérielle du 17/07/2013 (IM 2013) — seule base légale valide.</p>'
-    + '<p style="color:#aaa;font-size:.8em;margin-top:16px">— Via <strong>ça suffit ! ASBL</strong> — casuffit.be</p>'
+    + '<p style="color:#aaa;font-size:.8em;margin-top:16px">— Via <strong>Ça suffit ! ASBL</strong> — casuffit.be</p>'
     + '</div></body></html>';
 
   // ── Générer le fichier .eml ───────────────────────────────────────────

@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════
---  INJECTION CONTENU + LOGO — ça suffit ! ASBL
+--  INJECTION CONTENU + LOGO — Ça suffit ! ASBL
 --  À exécuter dans phpMyAdmin après install.sql
 -- ═══════════════════════════════════════════════════════════
 
@@ -255,7 +255,7 @@ ON DUPLICATE KEY UPDATE contenu=VALUES(contenu), titre=VALUES(titre), icone=VALU
 INSERT INTO pages (slug, titre, icone, ordre, visible, dans_menu, contenu) VALUES
 ('allies', 'Nos alliés', '🤝', 5, 1, 1, '<div class="cadre-bleu" style="margin-bottom:24px">
         <strong>Un combat commun, des associations complémentaires.</strong><br>
-        Piste 01 ça suffit !, Wake Up Kraainem et l\'UBCNA-BUTV partagent le même objectif fondamental : mettre fin aux nuisances aériennes abusives autour de Brussels Airport. Ensemble, nous couvrons toutes les zones survolées — du Brabant wallon à l\'est de Bruxelles et la périphérie flamande.
+        Piste 01 Ça suffit !, Wake Up Kraainem et l\'UBCNA-BUTV partagent le même objectif fondamental : mettre fin aux nuisances aériennes abusives autour de Brussels Airport. Ensemble, nous couvrons toutes les zones survolées — du Brabant wallon à l\'est de Bruxelles et la périphérie flamande.
       </div>
 
       <!-- PISTE 01 ÇA SUFFIT -->
@@ -263,7 +263,7 @@ INSERT INTO pages (slug, titre, icone, ordre, visible, dans_menu, contenu) VALUE
         <div style="display:flex; align-items:center; gap:16px; margin-bottom:14px;">
           <div style="width:52px; height:52px; background:var(--bleu-hex); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:900; color:white; font-size:85%; text-align:center; line-height:1.2;">01<br>✈</div>
           <div>
-            <div style="font-size:1.05rem; font-weight:700; color:var(--bleu-hex);">Piste 01, ça suffit ! ASBL</div>
+            <div style="font-size:1.05rem; font-weight:700; color:var(--bleu-hex);">Piste 01, Ça suffit ! ASBL</div>
             <div style="font-size:78%; color:var(--gris-texte);">Brabant wallon — Waterloo, Braine-l\'Alleud, Lasne, La Hulpe…</div>
           </div>
         </div>
@@ -326,7 +326,7 @@ INSERT INTO pages (slug, titre, icone, ordre, visible, dans_menu, contenu) VALUE
       <!-- FORCE DU NOMBRE -->
       <div class="cadre-orange" style="margin-top:8px;">
         <strong>💪 Ensemble, nous sommes plus forts.</strong><br>
-        Ces trois associations couvrent l\'ensemble des zones survolées autour de Brussels Airport. En rejoignant et en soutenant financièrement Piste 01 ça suffit !, vous renforcez l\'ensemble de ce réseau de défense citoyenne.
+        Ces trois associations couvrent l\'ensemble des zones survolées autour de Brussels Airport. En rejoignant et en soutenant financièrement Piste 01 Ça suffit !, vous renforcez l\'ensemble de ce réseau de défense citoyenne.
       </div>
 
 
@@ -346,14 +346,14 @@ INSERT INTO site_config (cle, valeur, label, groupe) VALUES
 ('urgence_texte', 'Piste 01 & UBCNA unis — Ensemble pour faire cesser les nuisances !', 'Bandeau urgence', 'general'),
 ('annonce_active', '1', 'Annonce active', 'annonce'),
 ('annonce_titre', 'Piste 01 & UBCNA s unissent !', 'Titre annonce', 'annonce'),
-('annonce_texte', 'Suite à notre réunion du 5 mai 2026, les associations Piste 01 ça suffit ! et l UBCNA ont décidé de s unir sous une bannière commune pour renforcer notre action citoyenne et judiciaire.', 'Texte annonce', 'annonce'),
+('annonce_texte', 'Suite à notre réunion du 5 mai 2026, les associations Piste 01 Ça suffit ! et l UBCNA ont décidé de s unir sous une bannière commune pour renforcer notre action citoyenne et judiciaire.', 'Texte annonce', 'annonce'),
 ('montant_recolte', '0', 'Montant récolté', 'dons'),
 ('montant_objectif', '15000', 'Objectif', 'dons'),
 ('don_texte', 'Action en référé contre l Etat belge', 'Texte barre dons', 'dons'),
 ('iban', 'BE41 0689 0149 6910', 'IBAN', 'dons'),
 ('bic', 'GKCCBEBB', 'BIC', 'dons'),
-('beneficiaire', 'ça suffit ! ASBL', 'Bénéficiaire', 'dons'),
-('site_nom', 'ça suffit ! ASBL', 'Nom du site', 'general'),
+('beneficiaire', 'Ça suffit ! ASBL', 'Bénéficiaire', 'dons'),
+('site_nom', 'Ça suffit ! ASBL', 'Nom du site', 'general'),
 ('site_slogan', 'Piste 01 · UBCNA — Stop aux nuisances !', 'Slogan', 'general'),
 ('site_email', 'info@casuffit.be', 'Email', 'general'),
 ('site_facebook', 'https://www.facebook.com/casuffit', 'Facebook', 'general')

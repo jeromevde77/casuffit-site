@@ -65,7 +65,7 @@ if (!$token || !$email) {
 <html lang="fr">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Bienvenue — ça suffit ! ASBL</title>
+  <title>Bienvenue — Ça suffit ! ASBL</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Helvetica Neue",Arial,sans-serif;background:linear-gradient(135deg,#0e3d6b,#1673B2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -89,7 +89,7 @@ if (!$token || !$email) {
 <body>
 <div class="card">
   <img src="medias/logo.png" class="logo" alt="logo" onerror="this.style.display='none'">
-  <div class="brand">ça suffit ! <span>ASBL</span></div>
+  <div class="brand">Ça suffit ! <span>ASBL</span></div>
 
   <?php if ($error): ?>
     <div style="margin-top:20px" class="error-box"><?= $error ?></div>

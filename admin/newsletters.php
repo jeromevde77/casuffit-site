@@ -47,7 +47,7 @@ $brouillons   = array_filter($newsletters, function($n){ return $n['statut'] ===
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <?php include __DIR__ . '/../includes/admin_pwa_head.php'; ?>
-  <title>Newsletters — Admin ça suffit !</title>
+  <title>Newsletters — Admin Ça suffit !</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333}

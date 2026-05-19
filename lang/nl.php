@@ -17,7 +17,7 @@ return [
     'footer.about'         => 'Over ons',
     'footer.privacy'       => 'Privacybeleid',
     'footer.contact'       => 'Contact',
-    'footer.copyright'     => '© {year} ça suffit ! VZW — Alle rechten voorbehouden',
+    'footer.copyright'     => '© {year} Ça suffit ! VZW — Alle rechten voorbehouden',
 
     // ── Don ──────────────────────────────────────────────────────────────
     'don.title'            => 'Steun de actie',
@@ -63,9 +63,9 @@ return [
     'header.brand_suffix'  => 'VZW',
     'annonce.date'         => 'Aankondiging — Mei 2026',
     'annonce.close'        => 'Sluiten',
-    'annonce.equals'       => 'ça suffit ! VZW',
+    'annonce.equals'       => 'Ça suffit ! VZW',
 
     // ── SEO / Open Graph ─────────────────────────────────────────────────
     'seo.description'      => 'Burgermobilisatie tegen de geluidshinder van Brussels Airport — Juridische actie, real-time weermonitoring, gemeenschap van omwonenden uit Vlaams- en Waals-Brabant en het Brussels Gewest.',
-    'seo.og_title'         => 'ça suffit ! VZW — Stop de geluidshinder van Brussels Airport',
+    'seo.og_title'         => 'Ça suffit ! VZW — Stop de geluidshinder van Brussels Airport',
 ];

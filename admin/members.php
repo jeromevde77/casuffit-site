@@ -49,7 +49,7 @@ $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <?php include __DIR__ . '/../includes/admin_pwa_head.php'; ?>
-  <title>Membres — Admin ça suffit !</title>
+  <title>Membres — Admin Ça suffit !</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333}

@@ -138,7 +138,7 @@ if ($edit_page) {
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <?php include __DIR__ . '/../includes/admin_pwa_head.php'; ?>
-  <title>Pages — Admin ça suffit !</title>
+  <title>Pages — Admin Ça suffit !</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333}
@@ -2327,7 +2327,7 @@ var BLOCS = {
   lettre:    '<div class="lettre-intro"><p>Chers membres,<br>votre message ici.</p></div>',
   citation:  '<div class="citation-box"><p>« Votre citation »</p><a href="#">— Source</a></div>',
   bq:        '<blockquote>Citation mise en valeur.</blockquote>',
-  signature: '<div class="signature">Cordialement,<strong>L\'équipe ça suffit ! ASBL</strong></div>',
+  signature: '<div class="signature">Cordialement,<strong>L\'équipe Ça suffit ! ASBL</strong></div>',
   grid:      '<div class="actions-grid"><div class="action-card"><div class="ac-num">01</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div><div class="action-card"><div class="ac-num">02</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div><div class="action-card"><div class="ac-num">03</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div></div>',
   liste:     '<ul><li>Élément 1</li><li>Élément 2</li><li>Élément 3</li></ul>',
   chiffre:   '<div style="display:inline-block;text-align:center;margin:8px 16px 8px 0"><span class="chiffre-val">320</span><span class="chiffre-label">avions/jour</span></div>',
@@ -2509,7 +2509,7 @@ function removeBloc() {
 
     <div class="sp-item" onclick="insBloc('signature'); closePalette()">
       <div class="sp-item-label">Signature</div>
-      <div class="sp-prev-sign">L&apos;équipe ça suffit !<br><small>Contact : ...</small></div>
+      <div class="sp-prev-sign">L&apos;équipe Ça suffit !<br><small>Contact : ...</small></div>
     </div>
 
     <div class="sp-item" style="grid-column:1/-1" onclick="insBloc('grid'); closePalette()">

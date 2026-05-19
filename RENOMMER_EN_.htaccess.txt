@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════════════
-#  .htaccess — ça suffit ! ASBL  (UN SEUL fichier à la racine)
+#  .htaccess — Ça suffit ! ASBL  (UN SEUL fichier à la racine)
 # ═══════════════════════════════════════════════════════════════════════
 
 # ── Interdire le listing de TOUS les dossiers ─────────────────────────

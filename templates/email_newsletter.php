@@ -11,7 +11,7 @@
       <tr>
         <td style="background:linear-gradient(135deg,#0e3d6b 0%,#1673B2 100%);padding:28px 40px;text-align:center;">
           <h1 style="color:#ffffff;font-size:22px;font-weight:800;margin:0;letter-spacing:-0.02em;">
-            Piste 01 <span style="color:#FF9900;font-style:italic;">ça suffit !</span>
+            Piste 01 <span style="color:#FF9900;font-style:italic;">Ça suffit !</span>
           </h1>
           <p style="color:rgba(255,255,255,0.7);font-size:11px;margin:5px 0 0;letter-spacing:0.08em;text-transform:uppercase;">ASBL · Brabant wallon</p>
         </td>
@@ -49,7 +49,7 @@
       <tr>
         <td style="background:#f8f9fa;padding:20px 40px;border-top:1px solid #eee;text-align:center;">
           <p style="color:#aaa;font-size:11px;margin:0 0 8px;line-height:1.8;">
-            <strong style="color:#1673B2;">Piste 01 ça suffit ! ASBL</strong><br>
+            <strong style="color:#1673B2;">Piste 01 Ça suffit ! ASBL</strong><br>
             <a href="mailto:<?= ADMIN_EMAIL ?>" style="color:#1673B2;text-decoration:none;"><?= ADMIN_EMAIL ?></a>
             · <a href="<?= SITE_URL ?>" style="color:#1673B2;text-decoration:none;"><?= SITE_URL ?></a>
           </p>

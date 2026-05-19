@@ -60,8 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changer_email'])) {
        ->execute([$email_nouveau, $token, $membre['id']]);
     // Envoyer email de confirmation
     $lien = SITE_URL . '/membre/confirm_email.php?token=' . $token;
-    $sujet = 'Confirmation changement d\'email — ça suffit ! ASBL';
-    $corps = "Bonjour {$membre['prenom']},\n\nVous avez demandé à changer votre email vers : $email_nouveau\n\nCliquez sur ce lien pour confirmer :\n$lien\n\nCe lien expire dans 24h. Si vous n'avez pas fait cette demande, ignorez ce message.\n\nL'équipe ça suffit ! ASBL";
+    $sujet = 'Confirmation changement d\'email — Ça suffit ! ASBL';
+    $corps = "Bonjour {$membre['prenom']},\n\nVous avez demandé à changer votre email vers : $email_nouveau\n\nCliquez sur ce lien pour confirmer :\n$lien\n\nCe lien expire dans 24h. Si vous n'avez pas fait cette demande, ignorez ce message.\n\nL'équipe Ça suffit ! ASBL";
     @mail($email_nouveau, $sujet, $corps, "From: " . cfg('site_email', 'info@casuffit.be') . "\r\nContent-Type: text/plain; charset=UTF-8");
     header('Location: dashboard.php?tab=profil&msg=email_confirm_envoye'); exit;
 }
@@ -246,7 +246,7 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
 <body>
 <header class="site-header">
   <img src="<?= SITE_URL ?>/medias/logo.png" style="width:36px;height:36px;object-fit:contain" alt="" onerror="this.style.display='none'">
-  <h1>ça suffit ! <span>ASBL</span></h1>
+  <h1>Ça suffit ! <span>ASBL</span></h1>
   <a href="<?= SITE_URL ?>" class="back"><?= tm('back_site') ?></a>
     <div style="font-size:.72rem;margin-left:auto">
       <a href="?lang=fr" style="<?= $LANG==='fr'?'font-weight:700;color:#fff':'color:rgba(255,255,255,.5)' ?>">FR</a> |
@@ -319,7 +319,7 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
           <div class="montant-display"><?= number_format($don_actif['montant'],2,',',' ') ?> €</div>
           <img id="qrcode-img" src="" width="160" height="160" alt="QR">
           <div class="ogm-display"><?= htmlspecialchars($don_actif['ogm_don']?:$membre['ogm']) ?></div>
-          <div class="iban-mini"><strong><?= htmlspecialchars($iban) ?></strong><br>BIC : <?= htmlspecialchars($bic) ?><br><?= htmlspecialchars(cfg('beneficiaire','ça suffit ! ASBL')) ?></div>
+          <div class="iban-mini"><strong><?= htmlspecialchars($iban) ?></strong><br>BIC : <?= htmlspecialchars($bic) ?><br><?= htmlspecialchars(cfg('beneficiaire','Ça suffit ! ASBL')) ?></div>
           <div style="font-size:.7rem;color:#aaa;margin-top:4px">Réf. don #<?= $don_actif['id'] ?></div>
           <button class="btn-green" onclick="genererQR(ogm_actif,montant_actif)"><?= tm('actualiser_qr') ?></button>
           <button class="btn-gray" onclick="telechargerQR()"><?= tm('telecharger_qr') ?></button>

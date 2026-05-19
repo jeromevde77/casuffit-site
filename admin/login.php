@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
 <?php include __DIR__ . '/../includes/admin_pwa_head.php'; ?>
-  <title>Admin — Piste 01 ça suffit !</title>
+  <title>Admin — Piste 01 Ça suffit !</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: "Helvetica Neue", Arial, sans-serif; background: linear-gradient(135deg, #0e3d6b, #1673B2); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="card">
   <div class="brand">
-    <h1>ça suffit ! <span>ASBL</span></h1>
+    <h1>Ça suffit ! <span>ASBL</span></h1>
     <p>Piste 01 · UBCNA — Administration</p>
   </div>
   <?php if ($error): ?>

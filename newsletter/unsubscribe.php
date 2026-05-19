@@ -25,7 +25,7 @@ if (strlen($token) !== 64) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Désabonnement — Piste 01 ça suffit !</title>
+  <title>Désabonnement — Piste 01 Ça suffit !</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: "Helvetica Neue", Arial, sans-serif; background: #f5f8fc; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
@@ -42,7 +42,7 @@ if (strlen($token) !== 64) {
   <?php if ($done): ?>
     <div class="icon">👋</div>
     <h1>Vous êtes désabonné(e)</h1>
-    <p>Vous ne recevrez plus de newsletters de <strong>Piste 01 ça suffit !</strong><br>Vos données personnelles restent dans notre base conformément au RGPD mais ne seront plus utilisées pour des envois.</p>
+    <p>Vous ne recevrez plus de newsletters de <strong>Piste 01 Ça suffit !</strong><br>Vos données personnelles restent dans notre base conformément au RGPD mais ne seront plus utilisées pour des envois.</p>
     <a href="<?= SITE_URL ?>" class="btn">Retour au site</a>
     <small>Pour faire supprimer définitivement vos données, contactez-nous : <?= ADMIN_EMAIL ?></small>
   <?php else: ?>

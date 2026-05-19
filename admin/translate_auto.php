@@ -105,7 +105,7 @@ Glossaire FR → NL (vocabulaire à utiliser systématiquement) :
 TXT;
 
 $prompt = <<<TXT
-Tu traduis le contenu d'une association militante belge (ça suffit ! ASBL) du français vers le néerlandais belge.
+Tu traduis le contenu d'une association militante belge (Ça suffit ! ASBL) du français vers le néerlandais belge.
 
 CONTEXTE : Association citoyenne qui s'oppose à l'usage abusif de la piste 01 à l'aéroport de Bruxelles. Public visé : habitants flamands et bruxellois.
 
@@ -117,7 +117,7 @@ CONSIGNES STRICTES :
 1. Conserve **exactement** la structure HTML (balises, attributs, classes). Ne traduis QUE le texte entre les balises.
 2. Ne traduis PAS : noms propres, noms de pistes, sigles techniques (AIP, METAR, skeyes, BATC, UBCNA, IRM, NIMBY...), URLs, codes ICAO.
 3. Conserve les emoji.
-4. Si tu rencontres "ça suffit !" → garde-le tel quel (c'est le nom de l'asbl).
+4. Si tu rencontres "Ça suffit !" → garde-le tel quel (c'est le nom de l'asbl).
 
 À TRADUIRE :
 

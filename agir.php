@@ -36,7 +36,7 @@ $pct = $obj_total > 0 ? round($obj_actuel / $obj_total * 100) : 0;
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
-<title><?= $is_nl ? 'Doe mee' : 'Agir' ?> — ça suffit ! <?= $is_nl ? 'VZW' : 'ASBL' ?></title>
+<title><?= $is_nl ? 'Doe mee' : 'Agir' ?> — Ça suffit ! <?= $is_nl ? 'VZW' : 'ASBL' ?></title>
 <meta name="description" content="<?= htmlspecialchars(t('seo.description')) ?>">
 <link rel="icon" type="image/png" href="/favicon-32.png">
 
@@ -118,12 +118,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
 <div class="container">
 
   <div class="hero">
-    <div class="logo"><img src="/medias/logo.png" alt="ça suffit !"></div>
+    <div class="logo"><img src="/medias/logo.png" alt="Ça suffit !"></div>
     <h1>
       <?php if ($is_nl): ?>
-        <span class="accent">ça suffit !</span><br>Sluit u aan
+        <span class="accent">Ça suffit !</span><br>Sluit u aan
       <?php else: ?>
-        <span class="accent">ça suffit !</span><br>Rejoignez-nous
+        <span class="accent">Ça suffit !</span><br>Rejoignez-nous
       <?php endif; ?>
     </h1>
     <p class="tagline">

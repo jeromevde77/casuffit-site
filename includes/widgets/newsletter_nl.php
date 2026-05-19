@@ -49,7 +49,7 @@
 
       <label style="display:flex;align-items:flex-start;gap:10px;font-size:.82rem;color:#555;cursor:pointer;margin-bottom:16px">
         <input type="checkbox" id="nl-rgpd-w" required style="margin-top:3px;flex-shrink:0">
-        Ik ga akkoord dat mijn gegevens worden gebruikt om de nieuwsbrief van ça suffit ! VZW te ontvangen
+        Ik ga akkoord dat mijn gegevens worden gebruikt om de nieuwsbrief van Ça suffit ! VZW te ontvangen
       </label>
 
       <div id="form-msg-w" class="form-msg"></div>

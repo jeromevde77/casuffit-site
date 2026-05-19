@@ -182,7 +182,7 @@ $historique = $db->query("SELECT * FROM coda_imports ORDER BY date_import DESC L
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <?php include __DIR__ . '/../includes/admin_pwa_head.php'; ?>
-  <title>Import CODA — Admin ça suffit !</title>
+  <title>Import CODA — Admin Ça suffit !</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
         <?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>

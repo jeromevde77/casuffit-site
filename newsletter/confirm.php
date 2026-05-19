@@ -36,7 +36,7 @@ $prenom_display = (isset($sub['prenom']) ? $sub['prenom'] : '');
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Confirmation — Piste 01 ça suffit !</title>
+  <title>Confirmation — Piste 01 Ça suffit !</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: "Helvetica Neue", Arial, sans-serif; background: #f5f8fc; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
@@ -54,7 +54,7 @@ $prenom_display = (isset($sub['prenom']) ? $sub['prenom'] : '');
   <?php if ($success): ?>
     <div class="icon">✅</div>
     <h1>Inscription confirmée !</h1>
-    <p>Merci <?= htmlspecialchars($prenom_display) ?>, vous êtes maintenant inscrit(e) à la newsletter de <strong>Piste 01 ça suffit !</strong><br>Vous serez informé(e) de toutes nos actions et de l'avancement de nos démarches.</p>
+    <p>Merci <?= htmlspecialchars($prenom_display) ?>, vous êtes maintenant inscrit(e) à la newsletter de <strong>Piste 01 Ça suffit !</strong><br>Vous serez informé(e) de toutes nos actions et de l'avancement de nos démarches.</p>
     <a href="<?= SITE_URL ?>" class="btn">Retour au site</a>
   <?php else: ?>
     <div class="icon">❌</div>

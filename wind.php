@@ -17,7 +17,7 @@ $api_token = $_SESSION['api_token'];
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>EBBR Wind — ça suffit !</title>
+  <title>EBBR Wind — Ça suffit !</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="EBBR Wind">
@@ -369,7 +369,7 @@ $api_token = $_SESSION['api_token'];
 <header class="app-header">
   <div class="app-title">
     <img src="/assets/img/wind-icon-180.png" alt="">
-    <span>ça suffit !</span>&nbsp;Wind
+    <span>Ça suffit !</span>&nbsp;Wind
   </div>
   <div style="display:flex;gap:6px;align-items:center">
     <a href="?setlang=<?= LANG === 'fr' ? 'nl' : 'fr' ?>"
@@ -421,7 +421,7 @@ $api_token = $_SESSION['api_token'];
         <div class="install-step-num">5</div>
         <div class="install-step-txt">
           <strong>C'est installé !</strong>
-          L'icône <b>ça suffit ! Wind</b> apparaît sur votre écran d'accueil. Elle s'ouvre en plein écran comme une vraie app.
+          L'icône <b>Ça suffit ! Wind</b> apparaît sur votre écran d'accueil. Elle s'ouvre en plein écran comme une vraie app.
         </div>
       </li>
     </ul>
@@ -437,7 +437,7 @@ $api_token = $_SESSION['api_token'];
   <div class="app-view active" id="view-meteo">
     <?php include __DIR__ . '/includes/widgets/piste_meteo.php'; ?>
     <div class="app-footer-links">
-      <a href="/">← ça suffit ! ASBL</a> &nbsp;·&nbsp; METAR + IRM station 6451
+      <a href="/">← Ça suffit ! ASBL</a> &nbsp;·&nbsp; METAR + IRM station 6451
     </div>
   </div>
 

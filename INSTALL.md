@@ -1,4 +1,4 @@
-# Installation — ça suffit ! ASBL
+# Installation — Ça suffit ! ASBL
 
 ## Prérequis
 - PHP 8.0+

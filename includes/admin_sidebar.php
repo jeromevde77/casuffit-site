@@ -3,7 +3,7 @@
   <div class="sidebar-brand">
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div>
-        <h2>ça suffit ! <span>ASBL</span></h2>
+        <h2>Ça suffit ! <span>ASBL</span></h2>
         <p>Administration</p>
       </div>
       <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Fermer">✕</button>
@@ -45,7 +45,7 @@
 
 <div class="mobile-topbar" id="mobile-topbar">
   <button class="burger-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
-  <span class="mobile-title" id="mobile-page-title">ça suffit ! <strong>Admin</strong></span>
+  <span class="mobile-title" id="mobile-page-title">Ça suffit ! <strong>Admin</strong></span>
   <a href="<?= SITE_URL ?>" target="_blank" style="font-size:.75rem;color:#fff;text-decoration:none;opacity:.7">Site</a>
 </div>
 

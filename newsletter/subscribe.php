@@ -90,11 +90,11 @@ function sendConfirmEmail(string $to, string $to_name, string $prenom_display, s
     // Essayer Brevo API en priorité
     if (!empty(BREVO_API_KEY)) {
         return sendViaBrevo($to, $to_name, getConfirmHtml($prenom_display, $confirm_url),
-            "Confirmez votre inscription — Piste 01 ça suffit !",
+            "Confirmez votre inscription — Piste 01 Ça suffit !",
             "Bonjour $prenom_display,\n\nConfirmez votre inscription : $confirm_url\n\nLien valable 48h.");
     }
     // Sinon PHPMailer SMTP
-    return sendViaSMTP($to, $to_name, "Confirmez votre inscription — Piste 01 ça suffit !",
+    return sendViaSMTP($to, $to_name, "Confirmez votre inscription — Piste 01 Ça suffit !",
         getConfirmHtml($prenom_display, $confirm_url),
         "Bonjour $prenom_display,\n\nConfirmez : $confirm_url");
 }

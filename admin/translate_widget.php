@@ -30,7 +30,7 @@ if (!$contenu) {
 
 // ── Prompt ────────────────────────────────────────────────────────────────
 $prompt = <<<TXT
-Tu traduis un widget PHP/HTML d'une association militante belge (ça suffit ! ASBL) du français vers le néerlandais belge.
+Tu traduis un widget PHP/HTML d'une association militante belge (Ça suffit ! ASBL) du français vers le néerlandais belge.
 
 CONTEXTE : Widget affiché sur le site casuffit.be. Public visé : habitants flamands et bruxellois.
 
@@ -38,7 +38,7 @@ CONSIGNES STRICTES :
 1. Conserve EXACTEMENT tout le code PHP, HTML, CSS inline, JavaScript, les attributs, les classes CSS.
 2. Ne traduis QUE les textes visibles par l'utilisateur (contenu des balises, placeholder, title, aria-label, textContent JS).
 3. Ne traduis PAS : noms de variables PHP, fonctions, slugs, URLs, classes CSS, IDs, valeurs techniques.
-4. Ne traduis PAS : "ça suffit !", ASBL/VZW (garde les deux), IBAN, BIC, montants €, codes.
+4. Ne traduis PAS : "Ça suffit !", ASBL/VZW (garde les deux), IBAN, BIC, montants €, codes.
 5. Garde les emoji tels quels.
 6. Le fichier doit commencer par "<?php // Widget : " suivi du titre traduit + " — Version NL ?>"
 7. Remplace "ASBL" par "VZW" dans les textes visibles uniquement.

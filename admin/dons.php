@@ -70,7 +70,7 @@ $dons = $db->query("SELECT * FROM dons ORDER BY date_don DESC")->fetchAll();
 </head>
 <body>
 <div class="sidebar">
-  <div class="sidebar-brand"><h2>Piste 01 <span>ça suffit !</span></h2><p>Administration</p></div>
+  <div class="sidebar-brand"><h2>Piste 01 <span>Ça suffit !</span></h2><p>Administration</p></div>
   <nav>
     <a href="dashboard.php">📊 Dashboard</a>
     <a href="subscribers.php">📋 Abonnés</a>

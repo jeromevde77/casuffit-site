@@ -50,7 +50,7 @@ $nb_sub_new  = $db->query("SELECT COUNT(*) FROM subscribers WHERE date_inscripti
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <?php include __DIR__ . '/../includes/admin_pwa_head.php'; ?>
-<title>Dashboard — Admin ça suffit !</title>
+<title>Dashboard — Admin Ça suffit !</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333}

@@ -1,7 +1,7 @@
-# ça suffit ! ASBL — Site web officiel
+# Ça suffit ! ASBL — Site web officiel
 
 Site de mobilisation citoyenne contre les nuisances aériennes de Brussels Airport.  
-**Piste 01 ça suffit ! · UBCNA · Union citoyenne**
+**Piste 01 Ça suffit ! · UBCNA · Union citoyenne**
 
 ---
 

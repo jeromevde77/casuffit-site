@@ -82,7 +82,7 @@ foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; }
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <?php include __DIR__ . '/../includes/admin_pwa_head.php'; ?>
-  <title>Paramètres — Admin ça suffit !</title>
+  <title>Paramètres — Admin Ça suffit !</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333}
@@ -148,7 +148,7 @@ foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; }
     <div class="card">
       <h3>🌐 Paramètres généraux</h3>
       <label>Nom du site</label>
-      <input type="text" name="site_nom" value="<?= htmlspecialchars($c['site_nom'] ?? 'ça suffit ! ASBL') ?>">
+      <input type="text" name="site_nom" value="<?= htmlspecialchars($c['site_nom'] ?? 'Ça suffit ! ASBL') ?>">
       <label>Slogan</label>
       <input type="text" name="site_slogan" value="<?= htmlspecialchars($c['site_slogan'] ?? '') ?>">
       <div class="form-row">
@@ -225,7 +225,7 @@ foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; }
         </div>
       </div>
       <label>Bénéficiaire</label>
-      <input type="text" name="beneficiaire" value="<?= htmlspecialchars($c['beneficiaire'] ?? 'ça suffit ! ASBL') ?>">
+      <input type="text" name="beneficiaire" value="<?= htmlspecialchars($c['beneficiaire'] ?? 'Ça suffit ! ASBL') ?>">
 
       <label>Texte sous la barre de progression</label>
       <input type="text" name="don_texte" value="<?= htmlspecialchars($c['don_texte'] ?? '') ?>" placeholder="Combat juridique — Suite de nos actions">

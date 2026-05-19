@@ -24,7 +24,7 @@ $looker_url = cfg('looker_url', '');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Statistiques — Admin ça suffit !</title>
+<title>Statistiques — Admin Ça suffit !</title>
 <style>
 <?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>
 *{box-sizing:border-box;margin:0;padding:0}

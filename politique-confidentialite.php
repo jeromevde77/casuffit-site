@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Politique de confidentialité — ça suffit ! ASBL</title>
+  <title>Politique de confidentialité — Ça suffit ! ASBL</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,7 +36,7 @@
 
   <div class="card">
     <h2>1. Responsable du traitement</h2>
-    <p><strong>ça suffit ! ASBL</strong><br>
+    <p><strong>Ça suffit ! ASBL</strong><br>
     Association sans but lucratif de droit belge<br>
     Contact : <a href="mailto:<?= htmlspecialchars(cfg('site_email','info@casuffit.be')) ?>"><?= htmlspecialchars(cfg('site_email','info@casuffit.be')) ?></a></p>
   </div>

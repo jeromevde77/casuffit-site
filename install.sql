@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════════════
---  install.sql — ça suffit ! ASBL — Installation complète from scratch
+--  install.sql — Ça suffit ! ASBL — Installation complète from scratch
 --  1. Créer une base de données vide dans phpMyAdmin
 --  2. Exécuter ce fichier
 --  3. Exécuter inject_content.sql

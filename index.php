@@ -2,7 +2,7 @@
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
-// index.php — Site ça suffit ! ASBL (v2 - look ancien site)
+// index.php — Site Ça suffit ! ASBL (v2 - look ancien site)
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/lang.php';
 
@@ -144,7 +144,7 @@ $urgence_texte = cfgLang('urgence_texte', 'Piste 01 & UBCNA unis — Ensemble po
 // Config don
 $iban        = cfg('iban', 'BE41 0689 0149 6910');
 $bic         = cfg('bic', 'GKCCBEBB');
-$beneficiaire = cfg('beneficiaire', 'ça suffit ! ASBL');
+$beneficiaire = cfg('beneficiaire', 'Ça suffit ! ASBL');
 $don_texte   = cfgLang('don_texte', 'Combat juridique — Suite de nos actions');
 
 // Logo chargé depuis medias/logo.png
@@ -265,13 +265,13 @@ $don_texte   = cfgLang('don_texte', 'Combat juridique — Suite de nos actions')
   <meta name="app-version" content="2.2.0">
   <link rel="stylesheet" href="/assets/css/content.css">
   <meta name="first-tab" content="<?= htmlspecialchars($first_tab_slug) ?>">
-  <title>ça suffit ! ASBL — Piste 01 · UBCNA</title>
+  <title>Ça suffit ! ASBL — Piste 01 · UBCNA</title>
   <meta name="description" content="<?= t('seo.description') ?>">
   <link rel="canonical" href="https://www.casuffit.be<?= isset($_GET['page']) ? '/?page=' . htmlspecialchars($_GET['page']) : '/' ?>">
 
   <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="ça suffit ! ASBL">
+  <meta property="og:site_name" content="Ça suffit ! ASBL">
   <meta property="og:title" content="<?= t('seo.og_title') ?>">
   <meta property="og:description" content="<?= t('seo.description') ?>">
   <meta property="og:url" content="https://www.casuffit.be<?= $_SERVER['REQUEST_URI'] ?>">
@@ -1414,7 +1414,7 @@ blockquote {
   <h2>🤝 <?= htmlspecialchars($annonce_titre) ?></h2>
   <p><?= htmlspecialchars($annonce_texte) ?></p>
   <div class="annonce-logos">
-    <span>Piste 01 ça suffit !</span><span class="plus">+</span>
+    <span>Piste 01 Ça suffit !</span><span class="plus">+</span>
     <span>UBCNA</span><span class="plus">=</span>
     <span style="background:#FF9900;border-color:#FF9900;"><?= t('annonce.equals') ?></span>
   </div>
@@ -1444,10 +1444,10 @@ function navBtnClass($p) {
 <header class="site-header">
   <div class="header-inner">
     <div class="logo-wrap">
-      <img src="medias/logo.png" alt="ça suffit ! ASBL" onerror="this.style.display='none'">
+      <img src="medias/logo.png" alt="Ça suffit ! ASBL" onerror="this.style.display='none'">
     </div>
     <div class="header-brand">
-      <h1><span class="accent">ça suffit !</span> <?= t('header.brand_suffix') ?></h1>
+      <h1><span class="accent">Ça suffit !</span> <?= t('header.brand_suffix') ?></h1>
       <span class="header-badge"><?= t('header.badge') ?></span>
     </div>
     <nav class="header-nav">
@@ -1742,9 +1742,9 @@ $site_email = cfg('site_email', 'info@casuffit.be');
 
     <!-- Colonne 1 : Logo + mission -->
     <div class="pied-col pied-col-mission">
-      <img src="medias/logo.png" alt="Piste 01, ça suffit !" class="pied-logo">
+      <img src="medias/logo.png" alt="Piste 01, Ça suffit !" class="pied-logo">
       <p class="pied-mission">
-        <strong>ça suffit ! ASBL</strong><br>
+        <strong>Ça suffit ! ASBL</strong><br>
         Mobilisation citoyenne contre les nuisances de la piste 01 de Bruxelles-National.
       </p>
     </div>
@@ -1792,7 +1792,7 @@ $site_email = cfg('site_email', 'info@casuffit.be');
   </div><!-- /pied-grid -->
 
   <div class="pied-bottom">
-    <span id="copyright-trigger" onclick="handleAdminClick()" style="cursor:default;user-select:none">© <?= date('Y') ?> Piste 01, ça suffit ! ASBL &nbsp;·&nbsp; Tous droits réservés</span>
+    <span id="copyright-trigger" onclick="handleAdminClick()" style="cursor:default;user-select:none">© <?= date('Y') ?> Piste 01, Ça suffit ! ASBL &nbsp;·&nbsp; Tous droits réservés</span>
     <span style="margin-left:16px">
       <a href="/politique-confidentialite" style="color:#aaa;font-size:.75rem;text-decoration:none">Politique de confidentialité</a>
       &nbsp;·&nbsp;

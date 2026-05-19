@@ -17,7 +17,7 @@ return [
     'footer.about'         => 'À propos',
     'footer.privacy'       => 'Politique de confidentialité',
     'footer.contact'       => 'Contact',
-    'footer.copyright'     => '© {year} ça suffit ! ASBL — Tous droits réservés',
+    'footer.copyright'     => '© {year} Ça suffit ! ASBL — Tous droits réservés',
 
     // ── Don ──────────────────────────────────────────────────────────────
     'don.title'            => 'Soutenez l\'action',
@@ -63,9 +63,9 @@ return [
     'header.brand_suffix'  => 'ASBL',
     'annonce.date'         => 'Annonce — Mai 2026',
     'annonce.close'        => 'Fermer',
-    'annonce.equals'       => 'ça suffit ! ASBL',
+    'annonce.equals'       => 'Ça suffit ! ASBL',
 
     // ── SEO / Open Graph ─────────────────────────────────────────────────
     'seo.description'      => 'Mobilisation citoyenne contre les nuisances aériennes de Brussels Airport — Action en justice, surveillance météo en temps réel, communauté de riverains du Brabant wallon et de la région bruxelloise.',
-    'seo.og_title'         => 'ça suffit ! ASBL — Stop aux nuisances aériennes de Brussels Airport',
+    'seo.og_title'         => 'Ça suffit ! ASBL — Stop aux nuisances aériennes de Brussels Airport',
 ];

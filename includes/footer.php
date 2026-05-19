@@ -2,9 +2,9 @@
 <footer style="background:#0e3d6b;color:#fff;padding:32px 20px;margin-top:40px">
   <div style="max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;flex-wrap:wrap">
     <div>
-      <div style="font-size:1rem;font-weight:800;margin-bottom:8px">ça suffit ! <span style="color:#FF9900;font-style:italic">ASBL</span></div>
+      <div style="font-size:1rem;font-weight:800;margin-bottom:8px">Ça suffit ! <span style="color:#FF9900;font-style:italic">ASBL</span></div>
       <div style="font-size:0.75rem;color:rgba(255,255,255,0.6);line-height:1.8">
-        Piste 01 ça suffit ! · UBCNA<br>
+        Piste 01 Ça suffit ! · UBCNA<br>
         <a href="mailto:<?= htmlspecialchars(cfg('site_email')) ?>" style="color:rgba(255,255,255,0.7)"><?= htmlspecialchars(cfg('site_email')) ?></a>
       </div>
     </div>
@@ -13,7 +13,7 @@
       <div style="font-size:0.78rem;color:rgba(255,255,255,0.75);line-height:1.8;font-family:monospace">
         <?= htmlspecialchars(cfg('iban', 'BE41 0689 0149 6910')) ?><br>
         BIC : <?= htmlspecialchars(cfg('bic', 'GKCCBEBB')) ?><br>
-        <?= htmlspecialchars(cfg('beneficiaire', 'ça suffit ! ASBL')) ?>
+        <?= htmlspecialchars(cfg('beneficiaire', 'Ça suffit ! ASBL')) ?>
       </div>
     </div>
     <div>
@@ -28,7 +28,7 @@
     </div>
   </div>
   <div style="max-width:1000px;margin:20px auto 0;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);font-size:0.7rem;color:rgba(255,255,255,0.3);text-align:center">
-    © <?= date('Y') ?> <?= htmlspecialchars(cfg('site_nom', 'ça suffit ! ASBL')) ?> · Tous droits réservés
+    © <?= date('Y') ?> <?= htmlspecialchars(cfg('site_nom', 'Ça suffit ! ASBL')) ?> · Tous droits réservés
   </div>
 </footer>
 <script>

@@ -10,7 +10,7 @@
       <tr>
         <td style="background:linear-gradient(135deg,#0e3d6b 0%,#1673B2 100%);padding:28px 40px;text-align:center;">
           <h1 style="color:#fff;font-size:20px;font-weight:800;margin:0;">
-            ça suffit ! <span style="color:#FF9900;font-style:italic;">ASBL</span>
+            Ça suffit ! <span style="color:#FF9900;font-style:italic;">ASBL</span>
           </h1>
           <p style="color:rgba(255,255,255,0.7);font-size:11px;margin:5px 0 0;letter-spacing:0.08em;text-transform:uppercase;">Piste 01 · UBCNA · Espace membre</p>
         </td>
@@ -53,7 +53,7 @@
       <tr>
         <td style="background:#f8f9fa;padding:18px 40px;border-top:1px solid #eee;text-align:center;">
           <p style="color:#aaa;font-size:11px;margin:0;line-height:1.8;">
-            <strong style="color:#1673B2;">ça suffit ! ASBL</strong> · Piste 01 · UBCNA<br>
+            <strong style="color:#1673B2;">Ça suffit ! ASBL</strong> · Piste 01 · UBCNA<br>
             <?= ADMIN_EMAIL ?> · <?= SITE_URL ?>
           </p>
         </td>
