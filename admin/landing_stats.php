@@ -53,6 +53,9 @@ if ($hasTable) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 <?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333;font-size:14px}
+
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; margin:0; background:#f5f7fa; color:#222; }
 .main { margin-left: 240px; padding: 24px 28px; }
 @media (max-width: 768px) { .main { margin-left: 0; padding-top: 60px; } }

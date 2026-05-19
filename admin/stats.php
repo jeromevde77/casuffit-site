@@ -27,6 +27,9 @@ $looker_url = cfg('looker_url', '');
 <title>Statistiques — Admin ça suffit !</title>
 <style>
 <?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333;font-size:14px}
+
 .stats-wrap { padding: 24px; max-width: 1400px; }
 .stats-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
 .stats-header h1 { font-size:1.3rem; font-weight:700; color:#0e3d6b; margin:0; }

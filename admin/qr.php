@@ -48,6 +48,9 @@ $presets = [
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 <?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333;font-size:14px}
+
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; margin:0; background:#f5f7fa; color:#222; }
 .main { margin-left: 240px; padding: 24px 28px; }
 @media (max-width: 768px) { .main { margin-left: 0; padding-top: 60px; } }
@@ -306,7 +309,8 @@ function downloadSVG() {
   const px = Math.max(1, Math.floor(w / 33)); // détection approximative du module
 
   // Build SVG en exportant le canvas comme image embarquée (simple et fonctionnel)
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+  const xmlDecl = '<' + '?xml version="1.0" encoding="UTF-8"?' + '>';
+  const svg = xmlDecl + `
 <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
   <rect width="100%" height="100%" fill="${light}"/>
   <image href="${canvas.toDataURL('image/png')}" width="${size}" height="${size}"/>
