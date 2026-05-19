@@ -93,7 +93,7 @@ if (isset($_GET['emails_only'])) {
 }
 
 // ── Liste ─────────────────────────────────────────────────────────────────
-$stmt = $db->prepare("SELECT * FROM subscribers WHERE $where_sql ORDER BY date_inscription DESC");
+$stmt = $db->prepare("SELECT s.*, (SELECT COUNT(*) FROM members m WHERE m.email=s.email LIMIT 1) AS is_membre FROM subscribers s WHERE $where_sql ORDER BY s.date_inscription DESC");
 $stmt->execute($params);
 $subscribers  = $stmt->fetchAll();
 $total_actifs = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'")->fetchColumn();
@@ -275,7 +275,9 @@ $msg = $_GET['msg'] ?? '';
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
               <?php endif;?>
-              <?php if(empty($s['invite_membre_accepted'] ?? null) && empty($s['invite_membre_sent_at'] ?? null)):?>
+              <?php if(!empty($s['is_membre'])):?>
+              <span title="Déjà membre" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;font-size:13px">👤</span>
+              <?php elseif(empty($s['invite_membre_accepted'] ?? null) && empty($s['invite_membre_sent_at'] ?? null)):?>
               <button type="button" class="act-btn" title="Inviter à devenir membre"
                       onclick="inviterMembre(<?=$s['id']?>)"
                       style="color:#8b5cf6;border-color:#e9d5ff;background:#faf5ff;font-size:13px">✉</button>

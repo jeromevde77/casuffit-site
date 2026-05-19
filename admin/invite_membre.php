@@ -32,10 +32,18 @@ $ids  = array_filter(array_map('intval', (array)($_POST['ids'] ?? [])));
 if (empty($ids)) { echo json_encode(['ok'=>false,'error'=>'Aucun abonné sélectionné']); exit; }
 
 $in      = implode(',', $ids);
-$abonnes = $db->query("SELECT id,email,prenom,nom FROM subscribers WHERE id IN ($in) AND statut='actif'")->fetchAll();
+$abonnes = $db->query("SELECT s.id, s.email, s.prenom, s.nom,
+    (SELECT COUNT(*) FROM members m WHERE m.email=s.email LIMIT 1) AS is_membre
+    FROM subscribers s WHERE s.id IN ($in) AND s.statut='actif'")->fetchAll();
 
 if (empty($abonnes)) {
     echo json_encode(['ok'=>false,'error'=>'Aucun abonné actif trouvé dans la sélection']); exit;
+}
+
+// Exclure ceux qui sont déjà membres
+$abonnes = array_filter($abonnes, fn($a) => empty($a['is_membre']));
+if (empty($abonnes)) {
+    echo json_encode(['ok'=>false,'error'=>'Ces abonnés sont déjà membres — rien à envoyer.']); exit;
 }
 
 $site_url = defined('SITE_URL') ? SITE_URL : 'https://www.casuffit.be';
