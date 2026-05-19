@@ -17,8 +17,14 @@ try {
        ->execute([$source, $campaign, LANG, hash('sha256', $_SERVER['REMOTE_ADDR'] ?? '')]);
 } catch (Exception $e) { /* table inexistante → silencieux */ }
 
-$urgence = cfgLang('urgence_texte', $is_nl ? 'Baan 01 & UBCNA — Samen tegen de hinder!' : 'Piste 01 & UBCNA — Ensemble contre les nuisances !');
-$obj_actuel = (float)cfg('objectif_actuel', 2000);
+// Charger le CSS custom depuis la BDD
+$agir_css = '';
+try {
+    $stmt = $db->prepare("SELECT valeur FROM site_config WHERE cle='agir_css' LIMIT 1");
+    $stmt->execute();
+    $row = $stmt->fetch();
+    $agir_css = $row ? ($row['valeur'] ?? '') : '';
+} catch (Exception $e) {}
 $obj_total  = (float)cfg('objectif_total', 20000);
 $pct = $obj_total > 0 ? round($obj_actuel / $obj_total * 100) : 0;
 
@@ -108,6 +114,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
   .container { max-width: 540px; margin: 0 auto; }
 }
 </style>
+<?php if (!empty($agir_css)): ?>
+<style id="agir-custom-css"><?= $agir_css ?></style>
+<?php endif; ?>
 </head>
 <body>
 
