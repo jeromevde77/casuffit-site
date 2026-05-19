@@ -102,15 +102,44 @@ iframe#preview{border:none;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.1
 iframe#preview.mobile{width:390px;max-height:844px}
 iframe#preview.desktop{width:100%;height:100%}
 
-/* ── CSS reset dans le WYSIWYG ── */
-.wysiwyg-editor h2{color:#FF9900;font-size:1rem;margin:10px 0 6px;border-bottom:1px solid #e0e8f0;padding-bottom:3px}
-.wysiwyg-editor h3{color:#1673B2;font-size:.92rem;margin:8px 0 4px}
-.wysiwyg-editor ul{padding-left:18px;margin:6px 0}
-.wysiwyg-editor li{margin-bottom:4px}
-.wysiwyg-editor a{color:#1673B2}
-.wysiwyg-editor .cadre-bleu{background:#e8f3fb;border-left:4px solid #1673B2;padding:10px 14px;margin:8px 0;border-radius:4px;color:#0e3d6b;font-size:.88rem}
-.wysiwyg-editor .cadre-vert{background:#e8f5e9;border-left:4px solid #2e7d32;padding:10px 14px;margin:8px 0;border-radius:4px}
-.wysiwyg-editor .action-card{background:#e8f3fb;border-top:3px solid #1673B2;padding:12px;border-radius:4px;margin:6px 0}
+/* ── CSS de la landing page agir — scopé au WYSIWYG ── */
+/* Styles de base */
+#wysiwyg-fr, #wysiwyg-nl { background: #f5f7fa; }
+#wysiwyg-fr h2, #wysiwyg-nl h2 { color: #1673B2; font-size: 1.2rem; margin: 10px 0 8px; font-weight: 700; }
+#wysiwyg-fr h3, #wysiwyg-nl h3 { color: #1673B2; font-size: 1rem; margin: 8px 0 6px; font-weight: 700; }
+#wysiwyg-fr p, #wysiwyg-nl p { font-size: .9rem; color: #333; margin-bottom: 8px; }
+#wysiwyg-fr a, #wysiwyg-nl a { color: #1673B2; }
+/* Classes de la landing page */
+#wysiwyg-fr .urgence-banner, #wysiwyg-nl .urgence-banner{ display: inline-block; background: #FF9900; color: #fff; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: .85rem; }
+#wysiwyg-fr .content, #wysiwyg-nl .content{ background: #f5f7fa; padding: 28px 20px; border-radius: 16px 16px 0 0; margin-top: 12px; }
+#wysiwyg-fr .progress-card, #wysiwyg-nl .progress-card{ background: #fff; border: 2px solid #FF9900; border-radius: 12px; padding: 16px 18px; margin-bottom: 22px; }
+#wysiwyg-fr .progress-title, #wysiwyg-nl .progress-title{ font-size: .75rem; font-weight: 700; color: #FF9900; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+#wysiwyg-fr .progress-amounts, #wysiwyg-nl .progress-amounts{ display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; color: #1673B2; margin-bottom: 8px; }
+#wysiwyg-fr .progress-amounts .obj, #wysiwyg-nl .progress-amounts .obj{ color: #555; font-weight: 600; font-size: .85rem; }
+#wysiwyg-fr .progress-bar, #wysiwyg-nl .progress-bar{ height: 10px; background: #e8eef3; border-radius: 5px; overflow: hidden; }
+#wysiwyg-fr .progress-fill, #wysiwyg-nl .progress-fill{ height: 100%; background: linear-gradient(90deg, #FF9900, #FFB84D); border-radius: 5px; transition: width .8s; }
+#wysiwyg-fr .why, #wysiwyg-nl .why{ margin-bottom: 24px; }
+#wysiwyg-fr .why h2, #wysiwyg-nl .why h2{ color: #1673B2; font-size: 1.2rem; margin-bottom: 12px; font-weight: 700; }
+#wysiwyg-fr .why ul, #wysiwyg-nl .why ul{ list-style: none; }
+#wysiwyg-fr .why li, #wysiwyg-nl .why li{ padding: 8px 0; padding-left: 26px; position: relative; font-size: .95rem; }
+#wysiwyg-fr .why li::before, #wysiwyg-nl .why li::before{ content: '✓'; position: absolute; left: 0; top: 8px; color: #FF9900; font-weight: 700; font-size: 1.1rem; }
+#wysiwyg-fr .cta-block, #wysiwyg-nl .cta-block{ background: #fff; border-radius: 12px; padding: 22px 20px; margin-bottom: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+#wysiwyg-fr .cta-block h3, #wysiwyg-nl .cta-block h3{ color: #1673B2; font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
+#wysiwyg-fr .cta-block p, #wysiwyg-nl .cta-block p{ font-size: .88rem; color: #555; margin-bottom: 14px; }
+#wysiwyg-fr .btn, #wysiwyg-nl .btn{ display: block; width: 100%; padding: 14px; border-radius: 10px; text-decoration: none; text-align: center; font-weight: 700; font-size: 1rem; transition: transform .15s, box-shadow .15s; }
+#wysiwyg-fr .btn:active, #wysiwyg-nl .btn:active{ transform: scale(.98); }
+#wysiwyg-fr .btn-orange, #wysiwyg-nl .btn-orange{ background: #FF9900; color: #fff; box-shadow: 0 4px 14px rgba(255,153,0,.35); }
+#wysiwyg-fr .btn-blue, #wysiwyg-nl .btn-blue{ background: #1673B2; color: #fff; box-shadow: 0 4px 14px rgba(22,115,178,.35); }
+#wysiwyg-fr .btn-outline, #wysiwyg-nl .btn-outline{ background: #fff; color: #1673B2; border: 2px solid #1673B2; }
+#wysiwyg-fr .divider, #wysiwyg-nl .divider{ text-align: center; color: #aaa; font-size: .8rem; margin: 16px 0; }
+#wysiwyg-fr .share, #wysiwyg-nl .share{ margin-top: 24px; text-align: center; }
+#wysiwyg-fr .share h3, #wysiwyg-nl .share h3{ color: #1673B2; font-size: 1rem; margin-bottom: 12px; }
+#wysiwyg-fr .share-btns, #wysiwyg-nl .share-btns{ display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+#wysiwyg-fr .share-btn, #wysiwyg-nl .share-btn{ padding: 10px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: .85rem; color: #fff; border: none; cursor: pointer; }
+#wysiwyg-fr .share-wa, #wysiwyg-nl .share-wa{ background: #25D366; }
+#wysiwyg-fr .share-fb, #wysiwyg-nl .share-fb{ background: #1877F2; }
+#wysiwyg-fr .share-mail, #wysiwyg-nl .share-mail{ background: #555; }
+#wysiwyg-fr .share-copy, #wysiwyg-nl .share-copy{ background: #FF9900; }
 </style>
 </head>
 <body>
@@ -300,9 +329,9 @@ function insertBloc(cls) {
   const ed = document.getElementById('wysiwyg-fr');
   ed.focus();
   const templates = {
-    'cadre-bleu': '<div class="cadre-bleu">Texte du cadre bleu…</div>',
-    'cadre-vert': '<div class="cadre-vert"><div class="cv-titre">Titre</div>Texte…</div>',
-    'action-card': '<div class="cta-block"><h3>Titre</h3><p>Description</p><a href="#" class="btn btn-orange">Bouton</a></div>',
+    'cadre-bleu':  '<div class="cadre-bleu" style="background:#e8f3fb;border-left:4px solid #1673B2;padding:10px 14px;margin:8px 0;border-radius:4px;color:#0e3d6b">Texte du cadre bleu…</div>',
+    'cadre-vert':  '<div class="cadre-vert" style="background:#e8f5e9;border-left:4px solid #2e7d32;padding:10px 14px;margin:8px 0;border-radius:4px"><strong>Titre</strong><br>Texte du cadre vert…</div>',
+    'action-card': '<div class="cta-block"><h3>Titre du bloc</h3><p>Description courte et percutante.</p><a href="#" class="btn btn-orange">Bouton orange</a></div>',
   };
   document.execCommand('insertHTML', false, templates[cls] || '');
   syncFR(); updatePreview();
