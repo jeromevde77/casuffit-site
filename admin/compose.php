@@ -247,7 +247,7 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
         <input type="hidden" name="nl_id" value="<?= $nl ? $nl['id'] : 0 ?>">
 
         <label>Sujet de l'email *</label>
-        <input type="text" name="sujet" id="f-sujet" placeholder="Ex: Mise à jour — Action en référé"
+        <input type="text" name="sujet" id="f-sujet" placeholder="Ex: Mise à jour — Combat juridique"
                value="<?= htmlspecialchars($nl ? $nl['sujet'] : '') ?>" oninput="majApercu()">
 
         <label>Contenu HTML</label>

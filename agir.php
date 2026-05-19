@@ -149,7 +149,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
           <li>Des dizaines de milliers de riverains survolés, souvent hors normes</li>
           <li>Non-respect des seuils de vent du PRS</li>
           <li>Une dégradation insidieuse de votre qualité de vie</li>
-          <li>Action en référé en préparation contre l'État belge</li>
+          <li>Référé déposé contre l'État belge — combat juridique en cours</li>
         <?php endif; ?>
       </ul>
     </div>
@@ -167,9 +167,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
 
     <!-- CTA 2 : faire un don -->
     <div class="cta-block">
-      <h3>💶 <?= $is_nl ? 'Steun de juridische actie' : 'Soutenir l\'action en justice' ?></h3>
+      <h3>💶 <?= $is_nl ? 'Steun de juridische strijd' : 'Soutenir le combat juridique' ?></h3>
       <p><?= $is_nl 
-        ? 'Helpt u ons de gerechtskosten te dragen voor onze actie tegen de Belgische Staat.'
+        ? 'Helpt u ons de het vervolg van onze juridische strijd tegen de Belgische Staat te financieren.'
         : 'Aidez-nous à financer les frais de justice de notre action en référé contre l\'État belge.' ?></p>
       <a href="/?utm_source=<?= urlencode($source) ?>&utm_campaign=<?= urlencode($campaign) ?>#don" class="btn btn-blue">
         💶 <?= $is_nl ? 'Een gift doen' : 'Faire un don' ?>

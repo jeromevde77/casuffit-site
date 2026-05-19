@@ -82,7 +82,7 @@ $recolte = $montant_initial + $dons_confirmes;
 // (optionnel - on peut aussi juste le calculer à la volée)
 $objectif  = floatval(cfg('montant_objectif', 15000));
 $pct       = $objectif > 0 ? min(100, round($recolte / $objectif * 100)) : 0;
-$don_texte = cfgLang('don_texte', 'Frais judiciaires — Action en référé');
+$don_texte = cfgLang('don_texte', 'Combat juridique — Frais et procédures');
 $iban      = cfg('iban', 'BE41 0689 0149 6910');
 $bic       = cfg('bic', 'GKCCBEBB');
 $beneficiaire = cfg('beneficiaire', 'ca suffit ! ASBL');
@@ -145,7 +145,7 @@ $urgence_texte = cfgLang('urgence_texte', 'Piste 01 & UBCNA unis — Ensemble po
 $iban        = cfg('iban', 'BE41 0689 0149 6910');
 $bic         = cfg('bic', 'GKCCBEBB');
 $beneficiaire = cfg('beneficiaire', 'ça suffit ! ASBL');
-$don_texte   = cfgLang('don_texte', 'Action en référé contre l Etat belge');
+$don_texte   = cfgLang('don_texte', 'Combat juridique — Suite de nos actions');
 
 // Logo chargé depuis medias/logo.png
 ?>

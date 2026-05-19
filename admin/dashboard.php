@@ -203,7 +203,7 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 
   <!-- Collecte hero -->
   <div class="collecte-hero">
-    <div class="ch-title">🎯 Objectif — Action en référé contre l'État belge</div>
+    <div class="ch-title">🎯 Objectif — Combat juridique — Suite de nos actions</div>
     <div class="ch-montants">
       <span class="ch-recolte"><?= number_format($recolte, 0, ',', ' ') ?> €</span>
       <span class="ch-sep">/</span>

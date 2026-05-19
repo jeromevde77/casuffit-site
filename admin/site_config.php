@@ -228,7 +228,7 @@ foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; }
       <input type="text" name="beneficiaire" value="<?= htmlspecialchars($c['beneficiaire'] ?? 'ça suffit ! ASBL') ?>">
 
       <label>Texte sous la barre de progression</label>
-      <input type="text" name="don_texte" value="<?= htmlspecialchars($c['don_texte'] ?? '') ?>" placeholder="Action en référé contre l'État belge">
+      <input type="text" name="don_texte" value="<?= htmlspecialchars($c['don_texte'] ?? '') ?>" placeholder="Combat juridique — Suite de nos actions">
 
       <div class="form-row">
         <div>

@@ -35,7 +35,7 @@
           <table width="100%" cellpadding="0" cellspacing="0" style="margin:32px 0;background:#f0f6fb;border-radius:10px;padding:24px;">
             <tr>
               <td style="text-align:center;">
-                <p style="color:#1673B2;font-size:14px;font-weight:600;margin:0 0 12px;">Soutenez notre action en justice</p>
+                <p style="color:#1673B2;font-size:14px;font-weight:600;margin:0 0 12px;">Soutenez la suite de notre combat juridique</p>
                 <a href="<?= SITE_URL ?>#don" style="background:#FF9900;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700;display:inline-block;">
                   ✈ Faire un don
                 </a>

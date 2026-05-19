@@ -34,7 +34,7 @@
           </p>
           <p style="color:#555;font-size:14px;line-height:1.7;margin:24px 0 0;border-top:1px solid #eee;padding-top:20px;">
             En vous inscrivant, vous serez informé(e) de :<br>
-            ✈ L'avancement de notre action en référé contre l'État belge<br>
+            ✈ L'avancement de notre combat juridique contre l'État belge<br>
             ✈ Les actualités sur les nuisances de la piste 01<br>
             ✈ Les actions citoyennes et manifestations<br>
             ✈ Les victoires de notre mobilisation

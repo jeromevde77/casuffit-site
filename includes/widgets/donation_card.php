@@ -2,7 +2,7 @@
 <!-- CARTE DON -->
   <div class="donation-card">
     <div class="don-titre">💶 Soutenez notre action</div>
-    <div class="don-sub"><?= htmlspecialchars(cfg('don_texte','Frais judiciaires — Action en référé')) ?></div>
+    <div class="don-sub"><?= htmlspecialchars(cfg('don_texte','Combat juridique — Frais et procédures')) ?></div>
 
     <!-- Deux options -->
     <div class="don-options">
