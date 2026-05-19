@@ -297,6 +297,72 @@ iframe#preview.desktop{width:100%;height:100%}
                 <div class="bp-preview" style="text-align:center;color:#555;font-size:.68rem">Texte centré</div>
               </div>
 
+              <div class="bp-item" onclick="openQRModal()">
+                <div class="bp-label">📲 QR Code</div>
+                <div class="bp-preview" style="text-align:center">
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <rect x="2" y="2" width="16" height="16" rx="2" fill="#1673B2" opacity=".15"/>
+                    <rect x="5" y="5" width="10" height="10" rx="1" fill="#1673B2" opacity=".4"/>
+                    <rect x="22" y="2" width="16" height="16" rx="2" fill="#1673B2" opacity=".15"/>
+                    <rect x="25" y="5" width="10" height="10" rx="1" fill="#1673B2" opacity=".4"/>
+                    <rect x="2" y="22" width="16" height="16" rx="2" fill="#1673B2" opacity=".15"/>
+                    <rect x="5" y="25" width="10" height="10" rx="1" fill="#1673B2" opacity=".4"/>
+                    <rect x="22" y="22" width="5" height="5" rx="1" fill="#1673B2" opacity=".4"/>
+                    <rect x="30" y="22" width="8" height="5" rx="1" fill="#1673B2" opacity=".4"/>
+                    <rect x="22" y="30" width="8" height="5" rx="1" fill="#1673B2" opacity=".4"/>
+                    <rect x="33" y="30" width="5" height="8" rx="1" fill="#1673B2" opacity=".4"/>
+                  </svg>
+                  <div style="font-size:.65rem;color:#1673B2;margin-top:2px">Générer & insérer</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ── Modale QR Code ── -->
+          <div id="qr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:10000;align-items:center;justify-content:center">
+            <div style="background:#fff;border-radius:12px;padding:24px;width:360px;box-shadow:0 12px 40px rgba(0,0,0,.2)">
+              <h3 style="color:#1673B2;font-size:1rem;margin-bottom:16px;font-weight:700">📲 Insérer un QR Code</h3>
+
+              <label style="display:block;font-size:.75rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">URL</label>
+              <input id="qr-url" type="text" value="https://www.casuffit.be/agir"
+                     style="width:100%;padding:8px 10px;border:1.5px solid #d0d8e0;border-radius:6px;font-size:.88rem;margin-bottom:12px"
+                     oninput="previewQR()">
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+                <div>
+                  <label style="display:block;font-size:.75rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Taille</label>
+                  <select id="qr-size" onchange="previewQR()"
+                          style="width:100%;padding:7px;border:1.5px solid #d0d8e0;border-radius:6px;font-size:.85rem">
+                    <option value="120">Petit (120px)</option>
+                    <option value="180" selected>Moyen (180px)</option>
+                    <option value="240">Grand (240px)</option>
+                    <option value="320">Très grand (320px)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display:block;font-size:.75rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Alignement</label>
+                  <select id="qr-align"
+                          style="width:100%;padding:7px;border:1.5px solid #d0d8e0;border-radius:6px;font-size:.85rem">
+                    <option value="left">Gauche</option>
+                    <option value="center" selected>Centré</option>
+                    <option value="right">Droite</option>
+                  </select>
+                </div>
+              </div>
+
+              <label style="display:block;font-size:.75rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Légende (optionnel)</label>
+              <input id="qr-caption" type="text" placeholder="Ex: casuffit.be/agir"
+                     style="width:100%;padding:8px 10px;border:1.5px solid #d0d8e0;border-radius:6px;font-size:.88rem;margin-bottom:14px">
+
+              <div style="text-align:center;margin-bottom:14px;background:#f5f7fa;border-radius:8px;padding:10px">
+                <canvas id="qr-preview-canvas"></canvas>
+              </div>
+
+              <div style="display:flex;gap:8px">
+                <button onclick="closeQRModal()" style="flex:1;padding:9px;border:1.5px solid #d0d8e0;border-radius:6px;background:#fff;cursor:pointer;font-family:inherit;font-size:.85rem">Annuler</button>
+                <button onclick="doInsertQR()" style="flex:2;padding:9px;border:none;border-radius:6px;background:#1673B2;color:#fff;cursor:pointer;font-family:inherit;font-size:.85rem;font-weight:700">✅ Insérer le QR code</button>
+              </div>
             </div>
           </div>
           <div id="wysiwyg-fr" class="wysiwyg-editor" contenteditable="true" oninput="syncFR(); updatePreview()"></div>
@@ -562,6 +628,81 @@ async function autoTranslate() {
   btn.textContent = '🤖 Traduire auto';
   btn.disabled = false;
 }
+</script>
+<!-- QRious — génération QR code côté client -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script>
+let _qr = null;
+
+function openQRModal() {
+  document.getElementById('bloc-palette').classList.remove('open');
+  const modal = document.getElementById('qr-modal');
+  modal.style.display = 'flex';
+  previewQR();
+}
+
+function closeQRModal() {
+  document.getElementById('qr-modal').style.display = 'none';
+}
+
+function previewQR() {
+  const url  = document.getElementById('qr-url').value || 'https://www.casuffit.be/agir';
+  const size = parseInt(document.getElementById('qr-size').value) || 180;
+  const canvas = document.getElementById('qr-preview-canvas');
+  _qr = new QRious({
+    element: canvas,
+    value: url,
+    size: Math.min(size, 180), // aperçu toujours 180 max
+    background: '#ffffff',
+    foreground: '#1673B2',
+    level: 'Q',
+    padding: 6,
+  });
+}
+
+function doInsertQR() {
+  const url     = document.getElementById('qr-url').value || 'https://www.casuffit.be/agir';
+  const size    = parseInt(document.getElementById('qr-size').value) || 180;
+  const align   = document.getElementById('qr-align').value;
+  const caption = document.getElementById('qr-caption').value.trim();
+
+  // Générer en vraie taille
+  const tmpCanvas = document.createElement('canvas');
+  new QRious({
+    element: tmpCanvas,
+    value: url,
+    size: size,
+    background: '#ffffff',
+    foreground: '#1673B2',
+    level: 'Q',
+    padding: Math.round(size * 0.04),
+  });
+  const dataUrl = tmpCanvas.toDataURL('image/png');
+
+  // Construire le HTML
+  const margin = align === 'center' ? 'margin:10px auto' :
+                 align === 'right'  ? 'margin:10px 0 10px auto' :
+                                      'margin:10px 0';
+  let html = `<div style="text-align:${align};${margin==='margin:10px auto'?'':''}">`;
+  html += `<img src="${dataUrl}" width="${size}" height="${size}" alt="QR code ${url}"
+                style="display:block;${margin};border:8px solid #fff;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.1)">`;
+  if (caption) {
+    html += `<p style="font-size:.75rem;color:#888;text-align:center;margin:4px 0 10px">${caption}</p>`;
+  }
+  html += '</div>';
+
+  // Insérer dans le WYSIWYG
+  const ed = document.getElementById('wysiwyg-fr');
+  ed.focus();
+  document.execCommand('insertHTML', false, html);
+  syncFR(); updatePreview();
+  closeQRModal();
+}
+
+// Fermer modale sur clic extérieur
+document.getElementById('qr-modal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeQRModal();
+});
 </script>
 </body>
 </html>
