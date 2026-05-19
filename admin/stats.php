@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../config.php';
-requireAdmin();
+session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 $msg = '';
@@ -24,8 +25,8 @@ $looker_url = cfg('looker_url', '');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Statistiques — Admin ça suffit !</title>
-<?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>
 <style>
+<?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>
 .stats-wrap { padding: 24px; max-width: 1400px; }
 .stats-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
 .stats-header h1 { font-size:1.3rem; font-weight:700; color:#0e3d6b; margin:0; }
