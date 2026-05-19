@@ -66,6 +66,6 @@ return [
     'annonce.equals'       => 'ça suffit ! ASBL',
 
     // ── SEO / Open Graph ─────────────────────────────────────────────────
-    'seo.description'      => 'Mobilisation citoyenne contre les nuisances aériennes de la piste 01 de Brussels Airport — Action en justice, surveillance météo en temps réel, communauté de riverains du Brabant wallon et de la région bruxelloise.',
-    'seo.og_title'         => 'ça suffit ! ASBL — Stop aux nuisances de la piste 01',
+    'seo.description'      => 'Mobilisation citoyenne contre les nuisances aériennes de Brussels Airport — Action en justice, surveillance météo en temps réel, communauté de riverains du Brabant wallon et de la région bruxelloise.',
+    'seo.og_title'         => 'ça suffit ! ASBL — Stop aux nuisances aériennes de Brussels Airport',
 ];

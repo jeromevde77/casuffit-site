@@ -66,6 +66,6 @@ return [
     'annonce.equals'       => 'ça suffit ! VZW',
 
     // ── SEO / Open Graph ─────────────────────────────────────────────────
-    'seo.description'      => 'Burgermobilisatie tegen de geluidshinder van baan 01 van Brussels Airport — Juridische actie, real-time weermonitoring, gemeenschap van omwonenden uit Vlaams- en Waals-Brabant en het Brussels Gewest.',
-    'seo.og_title'         => 'ça suffit ! VZW — Stop de hinder van baan 01',
+    'seo.description'      => 'Burgermobilisatie tegen de geluidshinder van Brussels Airport — Juridische actie, real-time weermonitoring, gemeenschap van omwonenden uit Vlaams- en Waals-Brabant en het Brussels Gewest.',
+    'seo.og_title'         => 'ça suffit ! VZW — Stop de geluidshinder van Brussels Airport',
 ];
