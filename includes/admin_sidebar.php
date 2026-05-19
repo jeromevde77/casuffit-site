@@ -26,6 +26,8 @@
     <a href="coda.php"        <?= basename($_SERVER['PHP_SELF'])==='coda.php'        ?'class="active"':'' ?>>Import CODA</a>
     <a href="import_wix.php"  <?= basename($_SERVER['PHP_SELF'])==='import_wix.php'  ?'class="active"':'' ?>>Import Wix</a>
     <div class="nav-section">Outils</div>
+    <a href="qr.php" <?= basename($_SERVER['PHP_SELF'])==='qr.php' ?'class="active"':'' ?>>QR Codes</a>
+    <a href="landing_stats.php" <?= basename($_SERVER['PHP_SELF'])==='landing_stats.php' ?'class="active"':'' ?>>Stats flyers</a>
     <a href="backup.php" <?= basename($_SERVER['PHP_SELF'])==='backup.php' ?'class="active"':'' ?>>Backup &amp; Export</a>
     <div class="nav-section">Newsletter</div>
     <a href="subscribers.php" <?= basename($_SERVER['PHP_SELF'])==='subscribers.php' ?'class="active"':'' ?>>Abonnés</a>
