@@ -228,7 +228,42 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
 
 <div class="wrap">
 
-  <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor(); majApercu()"></div>
+  <!-- ÉDITEUR -->
+  <div class="editor">
+    <div class="editor-head">
+      <h2>✉ Composer une newsletter</h2>
+      <p>Aperçu en temps réel → avec les styles du site</p>
+    </div>
+    <div class="editor-body">
+      <?php if ($msg): ?><div class="flash-ok"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
+      <?php if ($error): ?><div class="flash-err"><?= htmlspecialchars($error) ?></div><?php endif; ?>
+
+      <form method="POST" id="nlf">
+        <input type="hidden" name="nl_id" value="<?= $nl ? $nl['id'] : 0 ?>">
+
+        <label>Sujet de l'email *</label>
+        <input type="text" name="sujet" id="f-sujet" placeholder="Ex: Mise à jour — Action en référé"
+               value="<?= htmlspecialchars($nl ? $nl['sujet'] : '') ?>" oninput="majApercu()">
+
+        <label>Contenu HTML</label>
+        <div id="wysiwyg-toolbar">
+          <button type="button" class="wt-btn" onclick="fmt('bold')"><b>G</b></button>
+          <button type="button" class="wt-btn" onclick="fmt('italic')"><i>I</i></button>
+          <button type="button" class="wt-btn" onclick="fmt('underline')"><u>S</u></button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="fmtBlock('h2')">H2</button>
+          <button type="button" class="wt-btn" onclick="fmtBlock('h3')">H3</button>
+          <button type="button" class="wt-btn" onclick="fmtBlock('p')">¶</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="fmt('insertUnorderedList')">• —</button>
+          <button type="button" class="wt-btn" onclick="fmt('insertOrderedList')">1.</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="insertLink()">🔗</button>
+          <button type="button" class="wt-btn" onclick="fmt('removeFormat')">Tx</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="openPalette(this)" style="background:#1673B2;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
+        </div>
+        <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor(); majApercu()"></div>
         <textarea name="contenu_html" id="f-contenu" style="display:none"><?= htmlspecialchars($nl ? $nl['contenu_html'] : '') ?></textarea>
         <script>(function(){var t=document.getElementById('f-contenu');var e=document.getElementById('wysiwyg-editor');if(t&&e)e.innerHTML=t.value;})();</script>
       </form>
