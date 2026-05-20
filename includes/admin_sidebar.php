@@ -19,17 +19,17 @@
     <a href="site_config.php" <?= basename($_SERVER['PHP_SELF'])==='site_config.php' ?'class="active"':'' ?>>Paramètres</a>
     <div class="nav-section">Contenu & Widgets</div>
     <a href="widgets.php"     <?= basename($_SERVER['PHP_SELF'])==='widgets.php'     ?'class="active"':'' ?>>Widgets</a>
-    <a href="translations.php" <?= basename($_SERVER['PHP_SELF'])==='translations.php' ?'class="active"':'' ?>>🌐 Traductions NL</a>
+    <a href="translations.php" <?= basename($_SERVER['PHP_SELF'])==='translations.php' ?'class="active"':'' ?>>Traductions NL</a>
     <div class="nav-section">Membres & Dons</div>
     <a href="members.php"     <?= basename($_SERVER['PHP_SELF'])==='members.php'     ?'class="active"':'' ?>>Membres</a>
     <a href="dons_all.php"    <?= basename($_SERVER['PHP_SELF'])==='dons_all.php'    ?'class="active"':'' ?>>Tous les dons</a>
     <a href="coda.php"        <?= basename($_SERVER['PHP_SELF'])==='coda.php'        ?'class="active"':'' ?>>Import CODA</a>
     <a href="import_wix.php"  <?= basename($_SERVER['PHP_SELF'])==='import_wix.php'  ?'class="active"':'' ?>>Import Wix</a>
     <div class="nav-section">Outils</div>
-    <a href="landing.php" <?= basename($_SERVER['PHP_SELF'])==='landing.php' ?'class="active"':'' ?>>✏️ Landing /agir</a>
+    <a href="landing.php" <?= basename($_SERVER['PHP_SELF'])==='landing.php' ?'class="active"':'' ?>>Landing /agir</a>
     <a href="qr.php" <?= basename($_SERVER['PHP_SELF'])==='qr.php' ?'class="active"':'' ?>>QR Codes</a>
     <a href="landing_stats.php" <?= basename($_SERVER['PHP_SELF'])==='landing_stats.php' ?'class="active"':'' ?>>Stats flyers</a>
-    <a href="email_templates.php" <?= basename($_SERVER['PHP_SELF'])==='email_templates.php' ?'class="active"':'' ?>>✉ Templates email</a>
+    <a href="email_templates.php" <?= basename($_SERVER['PHP_SELF'])==='email_templates.php' ?'class="active"':'' ?>>Templates email</a>
     <a href="backup.php" <?= basename($_SERVER['PHP_SELF'])==='backup.php' ?'class="active"':'' ?>>Backup &amp; Export</a>
     <div class="nav-section">Newsletter</div>
     <a href="subscribers.php" <?= basename($_SERVER['PHP_SELF'])==='subscribers.php' ?'class="active"':'' ?>>Abonnés</a>
