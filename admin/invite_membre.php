@@ -4,6 +4,7 @@ require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/mail_helper.php';
+require_once __DIR__ . '/../includes/email_renderer.php';
 
 header('Content-Type: application/json; charset=utf-8');
 ini_set('display_errors', 0);
@@ -63,9 +64,13 @@ foreach ($abonnes as $ab) {
     $url    = $site_url . '/membre/inscription.php?invite=' . $token;
     $prenom = $ab['prenom'] ?: '';
     $nom    = trim($ab['prenom'].' '.$ab['nom']);
-    $html   = buildInviteHtml($prenom, $url, $ab['email'], $site_url);
-    $text   = buildInviteText($prenom, $url, $ab['email']);
-    $subj   = 'Votre espace membre vous attend — Ça suffit ! ASBL';
+    $vars   = ['{{prenom}}'=>$prenom, '{{url}}'=>$url, '{{email}}'=>$ab['email']];
+
+    // Charger depuis BDD, fallback sur template par défaut
+    $tpl  = renderEmailTemplate($db, 'invite_membre', $vars, 'fr');
+    $subj = $tpl['sujet'] ?: 'Votre espace membre vous attend — Ça suffit ! ASBL';
+    $html = $tpl['html'] ?: buildInviteHtml($prenom, $url, $ab['email'], $site_url);
+    $text = $tpl['text'] ?: buildInviteText($prenom, $url, $ab['email']);
 
     $ok = sendMail($ab['email'], $nom ?: $ab['email'], $subj, $html, $text);
 

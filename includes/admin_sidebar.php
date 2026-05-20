@@ -29,6 +29,7 @@
     <a href="landing.php" <?= basename($_SERVER['PHP_SELF'])==='landing.php' ?'class="active"':'' ?>>✏️ Landing /agir</a>
     <a href="qr.php" <?= basename($_SERVER['PHP_SELF'])==='qr.php' ?'class="active"':'' ?>>QR Codes</a>
     <a href="landing_stats.php" <?= basename($_SERVER['PHP_SELF'])==='landing_stats.php' ?'class="active"':'' ?>>Stats flyers</a>
+    <a href="email_templates.php" <?= basename($_SERVER['PHP_SELF'])==='email_templates.php' ?'class="active"':'' ?>>✉ Templates email</a>
     <a href="backup.php" <?= basename($_SERVER['PHP_SELF'])==='backup.php' ?'class="active"':'' ?>>Backup &amp; Export</a>
     <div class="nav-section">Newsletter</div>
     <a href="subscribers.php" <?= basename($_SERVER['PHP_SELF'])==='subscribers.php' ?'class="active"':'' ?>>Abonnés</a>
