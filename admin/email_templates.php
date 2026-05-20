@@ -97,6 +97,23 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 .sujet-input::placeholder{color:#bbb}
 .code-editor{flex:1;padding:14px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:.78rem;line-height:1.6;border:none;outline:none;resize:none;background:#1e1e2e;color:#cdd6f4;tab-size:2}
 
+/* WYSIWYG */
+.wysiwyg-toolbar{display:flex;gap:3px;flex-wrap:wrap;padding:6px 10px;background:#fff;border-bottom:1px solid #e0e8f0;flex-shrink:0;align-items:center}
+.wt-btn{padding:4px 9px;border:1px solid #d0d8e0;border-radius:4px;background:#fafbfc;font-size:.78rem;cursor:pointer;font-family:inherit;line-height:1}
+.wt-btn:hover{background:#1673B2;color:#fff;border-color:#1673B2}
+.wt-btn.active-mode{background:#1673B2;color:#fff;border-color:#1673B2}
+.wt-sep{width:1px;height:18px;background:#e0e8f0;margin:0 3px;flex-shrink:0}
+.wysiwyg-editor{flex:1;overflow-y:auto;padding:14px;outline:none;cursor:text;background:#fff;font-size:.88rem;line-height:1.7;min-height:0}
+.wysiwyg-editor:focus{background:#fffef8}
+.source-mode .wysiwyg-editor{display:none}
+.source-mode .code-editor{display:flex !important}
+.wysiwyg-mode .code-editor{display:none !important}
+.wysiwyg-mode .wysiwyg-editor{display:block !important}
+/* Styles dans le WYSIWYG pour mimer le rendu email */
+.wysiwyg-editor table{width:100%;border-collapse:collapse}
+.wysiwyg-editor td{padding:4px}
+.wysiwyg-editor a[style*="FF9900"],.wysiwyg-editor a[style*="1673B2"]{display:inline-block;padding:8px 16px;border-radius:6px;color:#fff!important;font-weight:700}
+
 /* Variables badge */
 .vars-bar{padding:6px 14px;background:#fff8ee;border-bottom:1px solid #ffe4b5;display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex-shrink:0}
 .var-badge{background:#fff;border:1px solid #FF9900;color:#c47700;padding:2px 7px;border-radius:10px;font-size:.7rem;font-family:monospace;cursor:pointer}
@@ -189,8 +206,24 @@ iframe#email-preview{flex:1;border:none;background:#f0f4f8}
           <input class="sujet-input" type="text" name="sujet_fr" id="sujet-fr"
                  value="<?= htmlspecialchars($active['sujet_fr']) ?>"
                  placeholder="Sujet de l'email (FR)">
+          <div class="wysiwyg-toolbar">
+            <button type="button" class="wt-btn" onclick="fmt('bold','fr')"><b>G</b></button>
+            <button type="button" class="wt-btn" onclick="fmt('italic','fr')"><i>I</i></button>
+            <button type="button" class="wt-btn" onclick="fmt('underline','fr')"><u>S</u></button>
+            <div class="wt-sep"></div>
+            <button type="button" class="wt-btn" onclick="fmtBlock('h2','fr')">H2</button>
+            <button type="button" class="wt-btn" onclick="fmtBlock('p','fr')">¶</button>
+            <div class="wt-sep"></div>
+            <button type="button" class="wt-btn" onclick="insertVarAtCursor('fr')">+ Variable</button>
+            <button type="button" class="wt-btn" onclick="fmt('removeFormat','fr')">Tx</button>
+            <div class="wt-sep"></div>
+            <button type="button" class="wt-btn" onclick="toggleSource('fr')" id="src-btn-fr">&lt;/&gt; Source</button>
+          </div>
+          <div id="wysiwyg-fr" class="wysiwyg-editor" contenteditable="true"
+               oninput="syncWysiwyg('fr'); updatePreview()"></div>
           <textarea class="code-editor" name="contenu_fr" id="contenu-fr"
-                    spellcheck="false" oninput="updatePreview()"><?= htmlspecialchars($active['contenu_fr'] ?? '') ?></textarea>
+                    spellcheck="false" oninput="syncSource('fr'); updatePreview()"
+                    style="display:none"><?= htmlspecialchars($active['contenu_fr'] ?? '') ?></textarea>
         </div>
 
         <!-- NL -->
@@ -198,8 +231,22 @@ iframe#email-preview{flex:1;border:none;background:#f0f4f8}
           <input class="sujet-input" type="text" name="sujet_nl" id="sujet-nl"
                  value="<?= htmlspecialchars($active['sujet_nl']) ?>"
                  placeholder="Onderwerp (NL)">
+          <div class="wysiwyg-toolbar">
+            <button type="button" class="wt-btn" onclick="fmt('bold','nl')"><b>G</b></button>
+            <button type="button" class="wt-btn" onclick="fmt('italic','nl')"><i>I</i></button>
+            <div class="wt-sep"></div>
+            <button type="button" class="wt-btn" onclick="fmtBlock('h2','nl')">H2</button>
+            <button type="button" class="wt-btn" onclick="fmtBlock('p','nl')">¶</button>
+            <div class="wt-sep"></div>
+            <button type="button" class="wt-btn" onclick="fmt('removeFormat','nl')">Tx</button>
+            <div class="wt-sep"></div>
+            <button type="button" class="wt-btn" onclick="toggleSource('nl')" id="src-btn-nl">&lt;/&gt; Source</button>
+          </div>
+          <div id="wysiwyg-nl" class="wysiwyg-editor" contenteditable="true"
+               oninput="syncWysiwyg('nl')"></div>
           <textarea class="code-editor" name="contenu_nl" id="contenu-nl"
-                    spellcheck="false"><?= htmlspecialchars($active['contenu_nl'] ?? '') ?></textarea>
+                    spellcheck="false" oninput="syncSource('nl')"
+                    style="display:none"><?= htmlspecialchars($active['contenu_nl'] ?? '') ?></textarea>
         </div>
       </form>
       <?php endif; ?>
@@ -225,9 +272,124 @@ iframe#email-preview{flex:1;border:none;background:#f0f4f8}
 
 <?php if ($active): ?>
 <script>
-// ── Init preview ──────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', updatePreview);
+// ── Modes : 'wysiwyg' | 'source' par langue ─────────────────────────────
+const modes = {fr: 'wysiwyg', nl: 'wysiwyg'};
 
+// ── Init WYSIWYG depuis textarea ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  ['fr','nl'].forEach(lang => {
+    const ta  = document.getElementById('contenu-' + lang);
+    const ed  = document.getElementById('wysiwyg-' + lang);
+    if (ta && ed) ed.innerHTML = ta.value;
+  });
+  updatePreview();
+});
+
+// ── Sync WYSIWYG → textarea ──────────────────────────────────────────────
+function syncWysiwyg(lang) {
+  const ed = document.getElementById('wysiwyg-' + lang);
+  const ta = document.getElementById('contenu-' + lang);
+  if (ed && ta) ta.value = ed.innerHTML;
+}
+
+// ── Sync textarea → WYSIWYG ──────────────────────────────────────────────
+function syncSource(lang) {
+  const ta = document.getElementById('contenu-' + lang);
+  const ed = document.getElementById('wysiwyg-' + lang);
+  if (ta && ed) ed.innerHTML = ta.value;
+}
+
+// ── Toggle mode source / WYSIWYG ─────────────────────────────────────────
+function toggleSource(lang) {
+  const ed  = document.getElementById('wysiwyg-' + lang);
+  const ta  = document.getElementById('contenu-' + lang);
+  const btn = document.getElementById('src-btn-' + lang);
+  if (!ed || !ta) return;
+
+  if (modes[lang] === 'wysiwyg') {
+    // Passer en source
+    syncWysiwyg(lang);
+    ed.style.display  = 'none';
+    ta.style.display  = 'flex';
+    ta.style.flex     = '1';
+    ta.style.background = '#1e1e2e';
+    ta.style.color    = '#cdd6f4';
+    ta.style.fontFamily = "'SF Mono',Monaco,Consolas,monospace";
+    ta.style.fontSize = '.78rem';
+    ta.style.padding  = '14px';
+    ta.style.border   = 'none';
+    ta.style.outline  = 'none';
+    ta.style.resize   = 'none';
+    if (btn) btn.classList.add('active-mode');
+    modes[lang] = 'source';
+  } else {
+    // Repasser en WYSIWYG
+    syncSource(lang);
+    ta.style.display  = 'none';
+    ed.style.display  = 'block';
+    if (btn) btn.classList.remove('active-mode');
+    modes[lang] = 'wysiwyg';
+    updatePreview();
+  }
+}
+
+// ── Formatage ─────────────────────────────────────────────────────────────
+function fmt(cmd, lang) {
+  if (modes[lang] !== 'wysiwyg') return;
+  document.getElementById('wysiwyg-' + lang)?.focus();
+  document.execCommand(cmd, false, null);
+  syncWysiwyg(lang);
+  if (lang === 'fr') updatePreview();
+}
+function fmtBlock(tag, lang) {
+  if (modes[lang] !== 'wysiwyg') return;
+  document.getElementById('wysiwyg-' + lang)?.focus();
+  document.execCommand('formatBlock', false, tag);
+  syncWysiwyg(lang);
+  if (lang === 'fr') updatePreview();
+}
+
+// ── Insérer variable au curseur ───────────────────────────────────────────
+function insertVarAtCursor(lang) {
+  const vars = <?= json_encode($vars ?? []) ?>;
+  if (!vars.length) return;
+  const v = prompt('Variable à insérer :\n' + vars.join('\n'));
+  if (!v) return;
+  if (modes[lang] === 'wysiwyg') {
+    document.getElementById('wysiwyg-' + lang)?.focus();
+    document.execCommand('insertText', false, v);
+    syncWysiwyg(lang);
+  } else {
+    const ta = document.getElementById('contenu-' + lang);
+    if (!ta) return;
+    const s = ta.selectionStart;
+    ta.value = ta.value.slice(0,s) + v + ta.value.slice(ta.selectionEnd);
+    ta.selectionStart = ta.selectionEnd = s + v.length;
+    ta.focus();
+  }
+  if (lang === 'fr') updatePreview();
+}
+
+// ── Insérer variable (clic badge) ─────────────────────────────────────────
+function insertVar(v) {
+  const activeLang = document.querySelector('.lang-tab.active')?.textContent?.includes('NL') ? 'nl' : 'fr';
+  if (modes[activeLang] === 'wysiwyg') {
+    const ed = document.getElementById('wysiwyg-' + activeLang);
+    ed?.focus();
+    document.execCommand('insertText', false, v);
+    syncWysiwyg(activeLang);
+  } else {
+    const ta = document.getElementById('contenu-' + activeLang);
+    if (!ta) return;
+    const s = ta.selectionStart;
+    ta.value = ta.value.slice(0,s) + v + ta.value.slice(ta.selectionEnd);
+    ta.selectionStart = ta.selectionEnd = s + v.length;
+    ta.focus();
+  }
+  if (activeLang === 'fr') updatePreview();
+}
+
+// ── Preview ───────────────────────────────────────────────────────────────
 function updatePreview() {
   const html = document.getElementById('contenu-fr')?.value || '';
   const iframe = document.getElementById('email-preview');
@@ -243,30 +405,18 @@ function switchLang(lang, btn) {
   document.getElementById('section-' + lang).classList.add('active');
   btn.classList.add('active');
 
-  if (lang === 'fr') updatePreview();
-  else {
+  if (lang === 'fr') {
+    updatePreview();
+  } else {
     const html = document.getElementById('contenu-nl')?.value || '';
     const iframe = document.getElementById('email-preview');
     if (iframe) { const d = iframe.contentDocument||iframe.contentWindow.document; d.open(); d.write(html); d.close(); }
   }
 }
 
-// ── Insérer une variable ─────────────────────────────────────────────────
-function insertVar(v) {
-  const ta = document.activeElement;
-  const target = (ta && (ta.tagName === 'TEXTAREA' || ta.tagName === 'INPUT')) ? ta
-               : document.getElementById('contenu-fr');
-  if (!target) return;
-  const s = target.selectionStart, e = target.selectionEnd;
-  target.value = target.value.slice(0, s) + v + target.value.slice(e);
-  target.selectionStart = target.selectionEnd = s + v.length;
-  target.focus();
-  updatePreview();
-}
-
 // ── Simuler les variables dans l'aperçu ──────────────────────────────────
 function substituteVars() {
-  const vars = <?= json_encode($vars) ?>;
+  const vars = <?= json_encode($vars ?? []) ?>;
   const demos = {
     '{{prenom}}':       'Jérôme',
     '{{nom}}':          'Vanden Eynde',
@@ -279,10 +429,8 @@ function substituteVars() {
     '{{lien}}':         'https://www.casuffit.be/membre/confirm_email.php?token=exemple',
     '{{expiry}}':       '21/05/2026 à 14h00',
   };
-  const section = document.querySelector('.tpl-section.active');
-  const ta = section?.querySelector('textarea');
-  if (!ta) return;
-  let html = ta.value;
+  const activeLang = document.querySelector('.lang-tab.active')?.textContent?.includes('NL') ? 'nl' : 'fr';
+  let html = document.getElementById('contenu-' + activeLang)?.value || '';
   vars.forEach(v => { if (demos[v]) html = html.replaceAll(v, demos[v]); });
   const iframe = document.getElementById('email-preview');
   if (iframe) { const d = iframe.contentDocument||iframe.contentWindow.document; d.open(); d.write(html); d.close(); }
@@ -290,6 +438,8 @@ function substituteVars() {
 
 // ── Sauvegarder ──────────────────────────────────────────────────────────
 function saveTemplate() {
+  // S'assurer que les textareas sont à jour avant submit
+  ['fr','nl'].forEach(lang => { if (modes[lang]==='wysiwyg') syncWysiwyg(lang); });
   document.getElementById('tpl-form').submit();
 }
 </script>
