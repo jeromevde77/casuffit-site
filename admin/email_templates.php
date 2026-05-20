@@ -85,6 +85,7 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 
 /* Éditeur */
 .editor-pane{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid #e0e8f0}
+.editor-pane form{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 .editor-section{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .editor-section-head{padding:8px 14px;background:#f5f7fa;border-bottom:1px solid #e0e8f0;font-size:.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
 .lang-tabs{display:flex;border-bottom:1px solid #e0e8f0;flex-shrink:0}
