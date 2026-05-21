@@ -126,7 +126,39 @@ h1{font-size:1.3rem;color:#1673B2;font-weight:700;margin-bottom:6px}
   <div class="top-actions">
     <a href="/cron/ebbr_tracks.php?secret=<?= urlencode(defined('CRON_SECRET')?CRON_SECRET:'') ?>&date=<?= date('Y-m-d', strtotime('yesterday')) ?>"
        class="btn btn-blue" target="_blank">Lancer la collecte (hier)</a>
+    <button class="btn btn-orange" onclick="openInitModal()">Initialiser les 30 derniers jours</button>
     <span style="font-size:.78rem;color:#aaa">Le cron tourne automatiquement chaque nuit à 03:00 UTC</span>
+  </div>
+
+  <!-- Modale initialisation 30 jours -->
+  <div id="init-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:12px;padding:28px;width:520px;max-width:95vw;box-shadow:0 12px 40px rgba(0,0,0,.2)">
+      <h3 style="color:#1673B2;font-size:1rem;font-weight:700;margin-bottom:8px">Initialiser les 30 derniers jours</h3>
+      <p style="font-size:.83rem;color:#666;margin-bottom:16px;line-height:1.5">
+        Lance la collecte OpenSky pour chaque jour non traité des 30 derniers jours.<br>
+        <strong>Durée estimée : 15-45 min</strong> (rate limiting OpenSky). Ne fermez pas cette fenêtre.
+      </p>
+
+      <div id="init-days-list" style="max-height:180px;overflow-y:auto;border:1px solid #e0e8f0;border-radius:6px;margin-bottom:16px;font-size:.78rem">
+        <div style="padding:10px;color:#aaa;text-align:center">Chargement...</div>
+      </div>
+
+      <div id="init-progress-wrap" style="display:none;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;color:#555;margin-bottom:5px">
+          <span id="init-status">Démarrage...</span>
+          <span id="init-count">0 / 0</span>
+        </div>
+        <div style="height:10px;background:#e8eef3;border-radius:5px;overflow:hidden">
+          <div id="init-bar" style="height:100%;background:#FF9900;border-radius:5px;width:0%;transition:width .4s"></div>
+        </div>
+        <div id="init-log" style="margin-top:10px;max-height:120px;overflow-y:auto;background:#f5f7fa;border-radius:6px;padding:8px;font-family:monospace;font-size:.72rem;color:#333"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-gray" onclick="closeInitModal()" id="btn-init-cancel">Annuler</button>
+        <button class="btn btn-orange" onclick="startInit()" id="btn-init-start">Lancer l'initialisation</button>
+      </div>
+    </div>
   </div>
 
   <!-- Grille des journées -->
@@ -197,10 +229,100 @@ function openLight(src) {
   document.getElementById('lightbox-img').src = src;
   document.getElementById('lightbox').classList.add('open');
 }
-function closeLight() {
-  document.getElementById('lightbox').classList.remove('open');
+function closeLight() { document.getElementById('lightbox').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeLight(); });
+
+// ── Initialisation 30 jours ───────────────────────────────────────────────
+const CRON_SECRET = '<?= htmlspecialchars(defined('CRON_SECRET') ? CRON_SECRET : '') ?>';
+
+// Jours déjà traités (depuis PHP)
+const DONE_DATES = new Set(<?= json_encode(array_column($days, 'track_date')) ?>);
+
+function getDatesToProcess(n = 30) {
+  const dates = [];
+  for (let i = 1; i <= n; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const s = d.toISOString().slice(0, 10);
+    if (!DONE_DATES.has(s)) dates.push(s);
+  }
+  return dates;
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLight(); });
+
+function openInitModal() {
+  const dates = getDatesToProcess(30);
+  const list = document.getElementById('init-days-list');
+  if (dates.length === 0) {
+    list.innerHTML = '<div style="padding:12px;color:#2e7d32;text-align:center">✓ Tous les 30 derniers jours sont déjà traités !</div>';
+    document.getElementById('btn-init-start').disabled = true;
+  } else {
+    list.innerHTML = dates.map(d =>
+      `<div style="padding:6px 12px;border-bottom:1px solid #f0f3f7;display:flex;justify-content:space-between">
+        <span>${d}</span><span style="color:#aaa;font-size:.72rem">non traité</span>
+      </div>`
+    ).join('');
+    document.getElementById('btn-init-start').disabled = false;
+  }
+  document.getElementById('init-progress-wrap').style.display = 'none';
+  document.getElementById('init-modal').style.display = 'flex';
+}
+
+function closeInitModal() {
+  document.getElementById('init-modal').style.display = 'none';
+}
+
+let _initRunning = false;
+
+async function startInit() {
+  if (_initRunning) return;
+  const dates = getDatesToProcess(30);
+  if (!dates.length) return;
+
+  _initRunning = true;
+  document.getElementById('btn-init-start').disabled = true;
+  document.getElementById('btn-init-cancel').textContent = 'Fermer (continue en arrière-plan)';
+  document.getElementById('init-progress-wrap').style.display = 'block';
+
+  const log = document.getElementById('init-log');
+  const bar = document.getElementById('init-bar');
+  const status = document.getElementById('init-status');
+  const count = document.getElementById('init-count');
+  const total = dates.length;
+
+  for (let i = 0; i < dates.length; i++) {
+    const date = dates[i];
+    const pct = Math.round(i / total * 100);
+    bar.style.width = pct + '%';
+    count.textContent = `${i} / ${total}`;
+    status.textContent = `Traitement du ${date}...`;
+    log.innerHTML += `<div>▶ ${date}</div>`;
+    log.scrollTop = log.scrollHeight;
+
+    try {
+      const url = `/cron/ebbr_tracks.php?secret=${encodeURIComponent(CRON_SECRET)}&date=${date}`;
+      const resp = await fetch(url, { signal: AbortSignal.timeout(700000) });
+      const text = await resp.text();
+      // Extraire le dernier message du log
+      const lines = text.trim().split('\n').filter(Boolean);
+      const last = lines[lines.length - 1] || '';
+      const hasFlights = lines.some(l => l.includes('RWY 01') || l.includes('RWY 07'));
+      const icon = hasFlights ? '✓' : '○';
+      log.innerHTML += `<div style="color:${hasFlights?'#2e7d32':'#888'}">${icon} ${last}</div>`;
+    } catch (e) {
+      log.innerHTML += `<div style="color:#c53030">✗ ${e.message}</div>`;
+    }
+    log.scrollTop = log.scrollHeight;
+  }
+
+  bar.style.width = '100%';
+  bar.style.background = '#2e7d32';
+  count.textContent = `${total} / ${total}`;
+  status.textContent = '✅ Initialisation terminée !';
+  log.innerHTML += '<div style="color:#2e7d32;font-weight:bold">═══ Terminé — rechargez la page ═══</div>';
+  document.getElementById('btn-init-cancel').textContent = 'Recharger la page';
+  document.getElementById('btn-init-cancel').onclick = () => location.reload();
+  _initRunning = false;
+}
 </script>
 </body>
 </html>
