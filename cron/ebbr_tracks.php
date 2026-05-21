@@ -126,72 +126,79 @@ logit("=== Terminé ===");
 // ════════════════════════════════════════════════════════════════════════
 
 /**
- * Récupère un token OAuth2 OpenSky (même mécanisme que api/flights.php).
+ * Récupère un token OAuth2 OpenSky — même logique que api/flights.php.
  */
 function get_opensky_token(): ?string {
     if (!defined('OPENSKY_CLIENT_ID') || !defined('OPENSKY_CLIENT_SECRET')) return null;
-    if (empty(OPENSKY_CLIENT_ID) || empty(OPENSKY_CLIENT_SECRET)) return null;
+    if (!OPENSKY_CLIENT_ID || !OPENSKY_CLIENT_SECRET) return null;
 
-    $ctx = stream_context_create(['http' => [
-        'method'        => 'POST',
-        'header'        => "Content-Type: application/x-www-form-urlencoded\r\n"
-                         . "User-Agent: casuffit.be/track-collector\r\n",
-        'content'       => http_build_query([
+    // Cache fichier (évite de re-demander un token à chaque appel)
+    $cache = sys_get_temp_dir() . '/opensky_token_cron.json';
+    if (file_exists($cache)) {
+        $d = json_decode(file_get_contents($cache), true);
+        if (!empty($d['access_token']) && ($d['expires_at'] ?? 0) > time() + 60) {
+            return $d['access_token'];
+        }
+    }
+
+    // Endpoint token OpenSky (Keycloak)
+    $ch = curl_init('https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_POSTFIELDS     => http_build_query([
             'grant_type'    => 'client_credentials',
             'client_id'     => OPENSKY_CLIENT_ID,
             'client_secret' => OPENSKY_CLIENT_SECRET,
         ]),
-        'timeout'       => 15,
-        'ignore_errors' => true,
-    ]]);
-    $resp = @file_get_contents('https://opensky-network.org/api/auth/token', false, $ctx);
-    if (!$resp) return null;
-    $data = json_decode($resp, true);
-    return $data['access_token'] ?? null;
+        CURLOPT_HTTPHEADER  => ['Content-Type: application/x-www-form-urlencoded'],
+        CURLOPT_USERAGENT   => 'casuffit.be/track-collector',
+    ]);
+    $raw  = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($code !== 200 || !$raw) {
+        logit("  Token request failed — HTTP $code");
+        return null;
+    }
+    $data = json_decode($raw, true);
+    if (empty($data['access_token'])) return null;
+
+    // Mettre en cache
+    @file_put_contents($cache, json_encode([
+        'access_token' => $data['access_token'],
+        'expires_at'   => time() + ($data['expires_in'] ?? 1800),
+    ]), LOCK_EX);
+
+    return $data['access_token'];
 }
 
 /**
- * Appel API OpenSky avec token Bearer (ou anonyme si token null).
+ * Appel API OpenSky avec curl + Bearer token.
  */
 function opensky_get(string $url, ?string $token): mixed {
-    $auth_header = $token ? "Authorization: Bearer $token\r\n" : '';
-    $ctx = stream_context_create(['http' => [
-        'method'        => 'GET',
-        'header'        => "User-Agent: casuffit.be/track-collector contact:info@casuffit.be\r\n"
-                         . $auth_header,
-        'timeout'       => 30,
-        'ignore_errors' => true,
-    ]]);
+    $headers = ['User-Agent: casuffit.be/track-collector contact:info@casuffit.be'];
+    if ($token) $headers[] = "Authorization: Bearer $token";
 
-    $resp = @file_get_contents($url, false, $ctx);
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_HTTPHEADER     => $headers,
+    ]);
+    $raw  = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
 
-    // Récupérer le code HTTP pour diagnostics
-    $code = 0;
-    if (isset($http_response_header)) {
-        preg_match('/HTTP\/\S+ (\d+)/', $http_response_header[0] ?? '', $m);
-        $code = (int)($m[1] ?? 0);
-    }
+    if ($code === 403) { logit("  HTTP 403 — accès refusé"); return null; }
+    if ($code === 429) { logit("  HTTP 429 — rate limit"); return null; }
+    if ($code >= 400)  { logit("  HTTP $code — erreur"); return null; }
+    if (!$raw)         { logit("  Réponse vide"); return null; }
 
-    if (!$resp) {
-        logit("  HTTP $code — réponse vide");
-        return null;
-    }
-    if ($code === 403) {
-        logit("  HTTP 403 — accès refusé (credentials invalides ou API non accessible)");
-        return null;
-    }
-    if ($code === 429) {
-        logit("  HTTP 429 — rate limit dépassé, attendre avant de relancer");
-        return null;
-    }
-    if ($code >= 400) {
-        logit("  HTTP $code — erreur : " . substr($resp, 0, 100));
-        return null;
-    }
-
-    $decoded = json_decode($resp, true);
-    // null JSON = aucun résultat (ex: aucun vol ce jour) → tableau vide
-    if ($decoded === null && $resp === 'null') return [];
+    $decoded = json_decode($raw, true);
+    if ($decoded === null && trim($raw) === 'null') return [];
     return $decoded;
 }
 
