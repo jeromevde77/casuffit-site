@@ -26,16 +26,16 @@ $date = $_GET['date'] ?? date('Y-m-d', strtotime('yesterday'));
 
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) { die('Date invalide'); }
 
-function logit($m) { global $log; $log[] = '['.date('H:i:s').'] '.$m; echo $log[array_key_last($log)]."\n"; flush(); }
+// Paramètres ajustables via URL
+$DELAY_SEC   = (int)($_GET['delay'] ?? 12);          // secondes entre chaque appel tracks/all
+$TIME_BUDGET = (int)($_GET['budget'] ?? 280);        // budget temps en secondes (< timeout serveur)
+$MAX_FLIGHTS = (int)($_GET['max'] ?? 0);             // 0 = tous
 
+function logit($m) { global $log; $log[] = '['.date('H:i:s').'] '.$m; echo end($log)."\n"; @ob_flush(); @flush(); }
+
+$t_start = time();
 logit("=== Collecte EBBR traces — $date ===");
-
-// Vérifier déjà traité
-$already = $db->prepare("SELECT COUNT(*) FROM ebbr_runway_tracks WHERE track_date=?");
-$already->execute([$date]);
-if ($already->fetchColumn() > 0 && !isset($_GET['force'])) {
-    logit("Déjà traité — ajoutez &force=1 pour forcer"); exit;
-}
+logit("Paramètres : délai={$DELAY_SEC}s, budget={$TIME_BUDGET}s" . ($MAX_FLIGHTS?", max={$MAX_FLIGHTS}":""));
 
 $begin = strtotime($date.' 00:00:00');
 $end   = strtotime($date.' 23:59:59');
@@ -49,77 +49,120 @@ logit("Appel OpenSky flights/arrival...");
 $flights = opensky_get($url, $opensky_token);
 
 if ($flights === null) {
-    logit("ERREUR : réponse nulle (403 / rate limit / réseau)"); exit;
+    logit("ERREUR : réponse nulle (403 / rate limit / réseau)"); finish();
 }
 if ($flights === []) {
-    logit("Aucune arrivée EBBR enregistrée pour le $date (réponse vide)"); exit;
+    logit("Aucune arrivée EBBR enregistrée pour le $date"); finish();
 }
 if (!is_array($flights)) {
-    logit("ERREUR : réponse inattendue : " . json_encode($flights)); exit;
+    logit("ERREUR : réponse inattendue : " . json_encode($flights)); finish();
 }
 logit(count($flights)." arrivées EBBR reçues");
 
-$saved_01 = 0; $saved_07 = 0; $skipped = 0;
+// ── Reprise : charger les icao24 DÉJÀ TRAITÉS (succès ou échec définitif) ──
+// Table de suivi : ebbr_track_progress (track_date, icao24, status)
+$done = [];
+try {
+    $stmt = $db->prepare("SELECT icao24 FROM ebbr_track_progress WHERE track_date=?");
+    $stmt->execute([$date]);
+    $done = array_flip($stmt->fetchAll(PDO::FETCH_COLUMN));
+} catch (Exception $e) {
+    logit("  (table progress absente — pas de reprise)");
+}
+$nb_done = count($done);
+if ($nb_done) logit("Reprise : $nb_done vol(s) déjà traités, on les saute");
 
-// ── 2. Traiter chaque vol ─────────────────────────────────────────────────
-foreach ($flights as $i => $flight) {
+$saved_01 = 0; $saved_07 = 0; $skipped = 0; $processed = 0; $rate_limited = false;
+
+// ── 2. Traiter chaque vol non encore traité ───────────────────────────────
+foreach ($flights as $flight) {
     $icao24    = strtolower(trim($flight['icao24'] ?? ''));
     $callsign  = trim($flight['callsign'] ?? '');
     $last_seen = (int)($flight['lastSeen'] ?? 0);
 
     if (!$icao24 || !$last_seen) { $skipped++; continue; }
+    if (isset($done[$icao24]))   { continue; } // déjà traité — reprise
 
-    // Délai rate limit (OpenSky : ~1 req/s anonyme, plus rapide avec token)
-    usleep($opensky_token ? 500000 : 1200000);
+    // Budget temps : arrêt propre avant le timeout serveur
+    if (time() - $t_start > $TIME_BUDGET) {
+        logit("⏸ Budget temps atteint — relancez le cron pour continuer (".($processed)." traités cette passe)");
+        break;
+    }
+    if ($MAX_FLIGHTS && $processed >= $MAX_FLIGHTS) {
+        logit("⏸ Limite max atteinte ($MAX_FLIGHTS) — relancez pour continuer");
+        break;
+    }
+
+    // Espacement entre appels (sauf le premier)
+    if ($processed > 0) sleep($DELAY_SEC);
 
     $track_url  = "https://opensky-network.org/api/tracks/all?icao24=$icao24&time=".($last_seen - 3600);
     $track_data = opensky_get($track_url, $opensky_token);
+    $processed++;
 
-    if (empty($track_data['path'])) { $skipped++; continue; }
-
-    $waypoints = $track_data['path'];
-    // Format : [[timestamp, lat, lon, baro_alt, geo_alt, on_ground], ...]
-
-    // Détecter la piste
-    $runway = detect_runway($waypoints);
-    if (!$runway) { $skipped++; continue; }
-
-    // Extraire l'approche (depuis altitude ~3000m / 10000ft jusqu'au touchdown)
-    $approach = extract_approach($waypoints);
-    if (count($approach) < 8) { $skipped++; continue; }
-
-    // Sauvegarder
-    try {
-        $db->prepare("INSERT INTO ebbr_runway_tracks
-            (track_date, callsign, icao24, runway, waypoints, arr_timestamp, created_at)
-            VALUES (?,?,?,?,?,?,NOW())
-            ON DUPLICATE KEY UPDATE waypoints=VALUES(waypoints)")
-           ->execute([$date, $callsign ?: $icao24, $icao24, $runway, json_encode($approach), $last_seen]);
-
-        if ($runway === '01') $saved_01++; else $saved_07++;
-        logit("  ✓ ".str_pad($callsign ?: $icao24, 8)." → RWY $runway  ".count($approach)." pts");
-    } catch (Exception $e) {
-        logit("  DB: ".$e->getMessage());
+    // Rate limit → arrêt immédiat (on reprendra plus tard)
+    if ($track_data === null && $GLOBALS['last_http_code'] === 429) {
+        logit("⏸ Rate limit (429) — arrêt. Relancez plus tard pour continuer.");
+        $rate_limited = true;
+        break;
     }
+
+    $status = 'no_track';
+    if (!empty($track_data['path'])) {
+        $runway = detect_runway($track_data['path']);
+        if ($runway) {
+            $approach = extract_approach($track_data['path']);
+            if (count($approach) >= 8) {
+                try {
+                    $db->prepare("INSERT INTO ebbr_runway_tracks
+                        (track_date, callsign, icao24, runway, waypoints, arr_timestamp, created_at)
+                        VALUES (?,?,?,?,?,?,NOW())
+                        ON DUPLICATE KEY UPDATE waypoints=VALUES(waypoints)")
+                       ->execute([$date, $callsign ?: $icao24, $icao24, $runway, json_encode($approach), $last_seen]);
+                    if ($runway === '01') $saved_01++; else $saved_07++;
+                    $status = 'rwy'.$runway;
+                    logit("  ✓ ".str_pad($callsign ?: $icao24, 8)." → RWY $runway  ".count($approach)." pts");
+                } catch (Exception $e) {
+                    logit("  DB: ".$e->getMessage());
+                    $status = 'db_error';
+                }
+            } else { $status = 'too_short'; $skipped++; }
+        } else { $status = 'other_runway'; $skipped++; }
+    } else { $skipped++; }
+
+    // Marquer comme traité (pour la reprise)
+    try {
+        $db->prepare("INSERT INTO ebbr_track_progress (track_date, icao24, status, created_at)
+            VALUES (?,?,?,NOW()) ON DUPLICATE KEY UPDATE status=VALUES(status)")
+           ->execute([$date, $icao24, $status]);
+    } catch (Exception $e) {}
 }
 
-logit("Résultat : RWY 01 = $saved_01 | RWY 07 = $saved_07 | ignorés = $skipped");
+$total_done = $nb_done + $processed;
+$remaining  = count($flights) - $total_done;
+logit("Cette passe : $processed traités | RWY 01 = $saved_01 | RWY 07 = $saved_07 | ignorés = $skipped");
+logit("Progression : $total_done / ".count($flights)." vols" . ($remaining > 0 ? " — RESTE $remaining (relancez le cron)" : " — TERMINÉ ✓"));
 
-// ── 3. Générer l'image PNG si vols trouvés ────────────────────────────────
-if ($saved_01 + $saved_07 > 0) {
-    $tracks_stmt = $db->prepare("SELECT * FROM ebbr_runway_tracks WHERE track_date=? ORDER BY runway, arr_timestamp");
-    $tracks_stmt->execute([$date]);
-    $all_tracks = $tracks_stmt->fetchAll();
+// ── 3. Générer/régénérer l'image si des vols sont en base ─────────────────
+$tracks_stmt = $db->prepare("SELECT * FROM ebbr_runway_tracks WHERE track_date=? ORDER BY runway, arr_timestamp");
+$tracks_stmt->execute([$date]);
+$all_tracks = $tracks_stmt->fetchAll();
+$tot_01 = count(array_filter($all_tracks, fn($t)=>$t['runway']==='01'));
+$tot_07 = count(array_filter($all_tracks, fn($t)=>$t['runway']==='07'));
 
+if (count($all_tracks) > 0) {
     @mkdir(__DIR__.'/../medias/tracks', 0755, true);
     $img_path = __DIR__.'/../medias/tracks/'.$date.'.png';
-    $ok = generate_track_image($all_tracks, $date, $saved_01, $saved_07, $img_path);
-    logit($ok ? "Image PNG générée : $img_path" : "ERREUR génération image");
+    $ok = generate_track_image($all_tracks, $date, $tot_01, $tot_07, $img_path);
+    logit($ok ? "Image PNG régénérée ($tot_01+$tot_07 traces)" : "ERREUR génération image");
 } else {
-    logit("Aucun vol piste 01/07 ce jour — pas d'image");
+    logit("Aucune trace 01/07 en base pour ce jour — pas d'image");
 }
 
-logit("=== Terminé ===");
+logit("=== Fin de passe (".(time()-$t_start)."s) ===");
+finish();
+
+function finish() { exit; }
 
 // ════════════════════════════════════════════════════════════════════════
 // FONCTIONS
@@ -129,11 +172,24 @@ logit("=== Terminé ===");
  * Récupère un token OAuth2 OpenSky — même logique que api/flights.php.
  */
 function get_opensky_token(): ?string {
-    if (!defined('OPENSKY_CLIENT_ID') || !defined('OPENSKY_CLIENT_SECRET')) return null;
-    if (!OPENSKY_CLIENT_ID || !OPENSKY_CLIENT_SECRET) return null;
+    // Token dédié aux traces en priorité, sinon fallback sur le compte principal
+    if (defined('OPENSKY_TRACKS_CLIENT_ID') && OPENSKY_TRACKS_CLIENT_ID
+        && defined('OPENSKY_TRACKS_CLIENT_SECRET') && OPENSKY_TRACKS_CLIENT_SECRET
+        && OPENSKY_TRACKS_CLIENT_ID !== 'votre-2eme-pseudo-api-client') {
+        $cid = OPENSKY_TRACKS_CLIENT_ID;
+        $csec = OPENSKY_TRACKS_CLIENT_SECRET;
+        $cache_suffix = 'tracks';
+    } elseif (defined('OPENSKY_CLIENT_ID') && OPENSKY_CLIENT_ID
+        && defined('OPENSKY_CLIENT_SECRET') && OPENSKY_CLIENT_SECRET) {
+        $cid = OPENSKY_CLIENT_ID;
+        $csec = OPENSKY_CLIENT_SECRET;
+        $cache_suffix = 'main';
+    } else {
+        return null;
+    }
 
-    // Cache fichier (évite de re-demander un token à chaque appel)
-    $cache = sys_get_temp_dir() . '/opensky_token_cron.json';
+    // Cache fichier
+    $cache = sys_get_temp_dir() . '/opensky_token_' . $cache_suffix . '.json';
     if (file_exists($cache)) {
         $d = json_decode(file_get_contents($cache), true);
         if (!empty($d['access_token']) && ($d['expires_at'] ?? 0) > time() + 60) {
@@ -141,7 +197,6 @@ function get_opensky_token(): ?string {
         }
     }
 
-    // Endpoint token OpenSky (Keycloak)
     $ch = curl_init('https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
@@ -149,8 +204,8 @@ function get_opensky_token(): ?string {
         CURLOPT_TIMEOUT        => 10,
         CURLOPT_POSTFIELDS     => http_build_query([
             'grant_type'    => 'client_credentials',
-            'client_id'     => OPENSKY_CLIENT_ID,
-            'client_secret' => OPENSKY_CLIENT_SECRET,
+            'client_id'     => $cid,
+            'client_secret' => $csec,
         ]),
         CURLOPT_HTTPHEADER  => ['Content-Type: application/x-www-form-urlencoded'],
         CURLOPT_USERAGENT   => 'casuffit.be/track-collector',
@@ -166,7 +221,6 @@ function get_opensky_token(): ?string {
     $data = json_decode($raw, true);
     if (empty($data['access_token'])) return null;
 
-    // Mettre en cache
     @file_put_contents($cache, json_encode([
         'access_token' => $data['access_token'],
         'expires_at'   => time() + ($data['expires_in'] ?? 1800),
@@ -191,6 +245,8 @@ function opensky_get(string $url, ?string $token): mixed {
     $raw  = curl_exec($ch);
     $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+
+    $GLOBALS['last_http_code'] = $code;
 
     if ($code === 403) { logit("  HTTP 403 — accès refusé"); return null; }
     if ($code === 429) { logit("  HTTP 429 — rate limit"); return null; }

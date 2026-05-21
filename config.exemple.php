@@ -27,6 +27,17 @@ define('CRON_TOKEN', 'CHANGEZ_MOI_TOKEN_ALEATOIRE_HEX');
 // Sans ces credentials, l'API tombe en mode anonyme (rate limit strict)
 define('OPENSKY_CLIENT_ID',     'votre-pseudo-api-client');
 define('OPENSKY_CLIENT_SECRET', 'CHANGEZ_MOI_SECRET_OPENSKY');
+
+// ── OPENSKY pour les TRACES EBBR (compte séparé recommandé) ──────────────
+// Token dédié à la collecte des traces radar (cron/ebbr_tracks.php).
+// Permet d'isoler le quota de crédits du compte utilisé par l'outil temps réel.
+// Si absent, le cron retombe sur OPENSKY_CLIENT_ID/SECRET ci-dessus.
+define('OPENSKY_TRACKS_CLIENT_ID',     'votre-2eme-pseudo-api-client');
+define('OPENSKY_TRACKS_CLIENT_SECRET', 'CHANGEZ_MOI_SECRET_OPENSKY_TRACKS');
+
+// Secret pour protéger l'accès au cron (cron-job.org)
+define('CRON_SECRET', 'CHANGEZ_MOI_SECRET_CRON');
+
 // Option B : SMTP OVH
 define('SMTP_HOST',      'ssl0.ovh.net');
 define('SMTP_PORT',      465);
