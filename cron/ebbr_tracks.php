@@ -40,17 +40,22 @@ if ($already->fetchColumn() > 0 && !isset($_GET['force'])) {
 $begin = strtotime($date.' 00:00:00');
 $end   = strtotime($date.' 23:59:59');
 
-$opensky_user = defined('OPENSKY_USER') ? OPENSKY_USER : '';
-$opensky_pass = defined('OPENSKY_PASS') ? OPENSKY_PASS : '';
-$auth_b64     = ($opensky_user && $opensky_pass) ? base64_encode("$opensky_user:$opensky_pass") : null;
+$opensky_token = get_opensky_token();
+logit("Token OAuth2 : " . ($opensky_token ? "OK" : "ABSENT — appel anonyme"));
 
 // ── 1. Récupérer toutes les arrivées EBBR du jour ────────────────────────
 $url     = "https://opensky-network.org/api/flights/arrival?airport=EBBR&begin=$begin&end=$end";
 logit("Appel OpenSky flights/arrival...");
-$flights = opensky_get($url, $auth_b64);
+$flights = opensky_get($url, $opensky_token);
 
+if ($flights === null) {
+    logit("ERREUR : réponse nulle (403 / rate limit / réseau)"); exit;
+}
+if ($flights === []) {
+    logit("Aucune arrivée EBBR enregistrée pour le $date (réponse vide)"); exit;
+}
 if (!is_array($flights)) {
-    logit("ERREUR arrivals : " . print_r($flights, true)); exit;
+    logit("ERREUR : réponse inattendue : " . json_encode($flights)); exit;
 }
 logit(count($flights)." arrivées EBBR reçues");
 
@@ -64,12 +69,11 @@ foreach ($flights as $i => $flight) {
 
     if (!$icao24 || !$last_seen) { $skipped++; continue; }
 
-    // Rate limiting : max 1 req/s en anonymous, 2 req/s avec compte
-    usleep($auth_b64 ? 600000 : 1300000);
+    // Délai rate limit (OpenSky : ~1 req/s anonyme, plus rapide avec token)
+    usleep($opensky_token ? 500000 : 1200000);
 
-    // Récupérer la trace — time = 1h avant atterrissage (couvre l'approche complète)
     $track_url  = "https://opensky-network.org/api/tracks/all?icao24=$icao24&time=".($last_seen - 3600);
-    $track_data = opensky_get($track_url, $auth_b64);
+    $track_data = opensky_get($track_url, $opensky_token);
 
     if (empty($track_data['path'])) { $skipped++; continue; }
 
@@ -121,18 +125,74 @@ logit("=== Terminé ===");
 // FONCTIONS
 // ════════════════════════════════════════════════════════════════════════
 
-function opensky_get(string $url, ?string $auth64): ?array {
-    $headers = "User-Agent: casuffit.be/track-collector contact:info@casuffit.be\r\n";
-    if ($auth64) $headers .= "Authorization: Basic $auth64\r\n";
-    $ctx  = stream_context_create(['http'=>[
+/**
+ * Récupère un token OAuth2 OpenSky (même mécanisme que api/flights.php).
+ */
+function get_opensky_token(): ?string {
+    if (!defined('OPENSKY_CLIENT_ID') || !defined('OPENSKY_CLIENT_SECRET')) return null;
+    if (empty(OPENSKY_CLIENT_ID) || empty(OPENSKY_CLIENT_SECRET)) return null;
+
+    $ctx = stream_context_create(['http' => [
+        'method'        => 'POST',
+        'header'        => "Content-Type: application/x-www-form-urlencoded\r\n"
+                         . "User-Agent: casuffit.be/track-collector\r\n",
+        'content'       => http_build_query([
+            'grant_type'    => 'client_credentials',
+            'client_id'     => OPENSKY_CLIENT_ID,
+            'client_secret' => OPENSKY_CLIENT_SECRET,
+        ]),
+        'timeout'       => 15,
+        'ignore_errors' => true,
+    ]]);
+    $resp = @file_get_contents('https://opensky-network.org/api/auth/token', false, $ctx);
+    if (!$resp) return null;
+    $data = json_decode($resp, true);
+    return $data['access_token'] ?? null;
+}
+
+/**
+ * Appel API OpenSky avec token Bearer (ou anonyme si token null).
+ */
+function opensky_get(string $url, ?string $token): mixed {
+    $auth_header = $token ? "Authorization: Bearer $token\r\n" : '';
+    $ctx = stream_context_create(['http' => [
         'method'        => 'GET',
-        'header'        => $headers,
+        'header'        => "User-Agent: casuffit.be/track-collector contact:info@casuffit.be\r\n"
+                         . $auth_header,
         'timeout'       => 30,
         'ignore_errors' => true,
     ]]);
+
     $resp = @file_get_contents($url, false, $ctx);
-    if (!$resp) return null;
-    return json_decode($resp, true);
+
+    // Récupérer le code HTTP pour diagnostics
+    $code = 0;
+    if (isset($http_response_header)) {
+        preg_match('/HTTP\/\S+ (\d+)/', $http_response_header[0] ?? '', $m);
+        $code = (int)($m[1] ?? 0);
+    }
+
+    if (!$resp) {
+        logit("  HTTP $code — réponse vide");
+        return null;
+    }
+    if ($code === 403) {
+        logit("  HTTP 403 — accès refusé (credentials invalides ou API non accessible)");
+        return null;
+    }
+    if ($code === 429) {
+        logit("  HTTP 429 — rate limit dépassé, attendre avant de relancer");
+        return null;
+    }
+    if ($code >= 400) {
+        logit("  HTTP $code — erreur : " . substr($resp, 0, 100));
+        return null;
+    }
+
+    $decoded = json_decode($resp, true);
+    // null JSON = aucun résultat (ex: aucun vol ce jour) → tableau vide
+    if ($decoded === null && $resp === 'null') return [];
+    return $decoded;
 }
 
 /**
