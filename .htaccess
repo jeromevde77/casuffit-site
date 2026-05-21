@@ -31,6 +31,9 @@ AddDefaultCharset UTF-8
     # Bloquer UNIQUEMENT les requêtes HTTP directes (pas les include PHP internes)
     # %{REQUEST_FILENAME} = fichier demandé directement par le navigateur
     RewriteCond %{ENV:REDIRECT_STATUS} ^$
+    RewriteRule ^cron/ebbr_tracks\.php$ cron/ebbr_tracks.php [L,QSA]
+
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteRule ^cron/(.*)$      - [F,L]
 
     RewriteCond %{ENV:REDIRECT_STATUS} ^$
