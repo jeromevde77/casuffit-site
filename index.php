@@ -592,30 +592,36 @@ header.site-header {
 }
 @media (max-width: 430px) {
   /* ── iPhone : agrandir la lisibilité du contenu texte ── */
-  /* On fixe la taille de base sur le conteneur uniquement, en rem (pas en %),
-     pour éviter que les % se multiplient sur les éléments imbriqués. */
+  /* Taille de base en rem (pas en %) pour éviter le cumul sur les imbrications */
   .tab-panel.active,
   .news-contenu,
   .apanel-inner {
     font-size: 1.02rem;
-    line-height: 1.65;
+    line-height: 1.6;
   }
-  /* Les paragraphes et listes héritent de la taille du conteneur */
   .tab-panel.active p,
   .tab-panel.active li,
+  .news-contenu,
   .news-contenu p,
   .news-contenu li,
   .apanel-inner p,
   .apanel-inner li {
     font-size: 1.02rem;
     font-weight: 300;
-    line-height: 1.65;
+    line-height: 1.6;
   }
   /* Titres */
   .tab-panel.active h2 { font-size: 1.3rem; }
   .tab-panel.active h3 { font-size: 1.15rem; }
   .tab-panel.active .section-title { font-size: 1.2rem; }
-  .tab-panel.active { padding: 14px 14px; }
+  /* News : titre + date lisibles */
+  .news-titre { font-size: 1.1rem; }
+  .news-date  { font-size: .82rem; }
+  /* ── Récupérer de l'espace : réduire les marges latérales ── */
+  .tab-panel.active { padding: 12px 8px; }
+  .news-item { padding: 14px 12px; }
+  .main-wrap, .content-wrap { padding-left: 8px; padding-right: 8px; }
+  .tabs-wrap { padding: 12px 8px 0; }
 }
 
 @media (max-width: 680px) {
