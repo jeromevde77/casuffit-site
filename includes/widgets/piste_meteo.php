@@ -903,9 +903,19 @@ function renderTaf(forecast, rawTaf){
     ];
     var comps = f.components || {};
 
+    // Piste 01 : possible uniquement si le vent vient du secteur 335°–040°
+    // (axe d'atterrissage de la 01, cap ~014°). Hors de ce secteur, atterrir en 01
+    // signifierait un vent arrière ou de travers inacceptable.
+    function dir01Possible(wdir, variable) {
+      if (variable) return false; // vent variable → pas d'atterrissage 01 justifié
+      return (wdir >= 335 || wdir <= 40);
+    }
+
     // Une config est impossible si vent arrière moyen > 7kt OU si PRS actif et config non-PRS
     function cfgImpossible(rwys, label) {
       if (f.prs_active && label !== '25R/25L' && label !== '19/25R') return true;
+      // Contrainte directionnelle 01
+      if (rwys.indexOf('01') !== -1 && !dir01Possible(f.wdir||0, f.variable)) return true;
       return rwys.some(function(rwy){
         var c = comps[rwy]; if(!c) return false;
         return (c.tw||0) > 7;
@@ -1128,12 +1138,23 @@ function renderBatc(d) {
   var prsActif2013 = d.aip2013 && d.aip2013.prs_active;
   var prsActifNow  = d.aip_pratique && d.aip_pratique.prs_active;
   var configEstPRS = (batcRwy === '25R/25L' || batcRwy === '19/25R');
+
+  // Contrainte directionnelle : la piste 01 n'est justifiée que si le vent
+  // vient du secteur 335°–040° (axe d'atterrissage de la 01). Sinon, atterrir
+  // en 01 implique un vent arrière/de travers inacceptable.
+  var wdir01 = d.wdir || 0;
+  var dir01OK = !d.variable && (wdir01 >= 335 || wdir01 <= 40);
+  var configA01 = batcPistes.indexOf('01') !== -1;
+  var violation01 = configA01 && !dir01OK;
+
   var ok2013 = batcPistes.length > 0
     && batcPistes.every(function(r){ return pisteOk(r, 7, 10); })
-    && (!prsActif2013 || configEstPRS);
+    && (!prsActif2013 || configEstPRS)
+    && !violation01;
   var okNow  = batcPistes.length > 0
     && batcPistes.every(function(r){ return pisteOk(r, 7, 7); })
-    && (!prsActifNow || configEstPRS);
+    && (!prsActifNow || configEstPRS)
+    && !violation01;
   var prsViolation2013 = prsActif2013 && !configEstPRS;
   var prsViolationNow  = prsActifNow  && !configEstPRS;
 
@@ -1145,10 +1166,18 @@ function renderBatc(d) {
 
   var cls, txt;
 
-  // ── Cas prioritaire : VIOLATION PRS pure ──
-  // Le PRS est actif (conditions calmes → pistes 25 imposées) mais BATC
-  // utilise une autre configuration : c'est une violation du plan, indépendamment du vent.
-  if (prsViolation2013 || prsViolationNow) {
+  // ── Cas prioritaire : VIOLATION DIRECTIONNELLE de la piste 01 ──
+  // La 01 est utilisée alors que le vent n'est pas dans son secteur (335°–040°).
+  if (violation01) {
+    cls = 'pmw-verdict-danger';
+    var dirInfo = d.variable
+      ? 'le vent est variable (aucune direction dominante)'
+      : 'le vent vient du ' + wdir01 + '° (' + (typeof dirText==='function'?dirText(wdir01):'') + ')';
+    txt = '⚠ PISTE 01 INJUSTIFIÉE — La configuration ' + batcRwy + ' utilise la piste 01, '
+        + 'mais celle-ci n\'est justifiée que si le vent vient du secteur 335°–040° (son axe d\'atterrissage). '
+        + 'Or ' + dirInfo + ', ce qui implique un vent arrière ou de travers. '
+        + 'Configuration attendue : ' + ((a.runways||[]).join('/')||'25R/25L') + '.';
+  } else if (prsViolation2013 || prsViolationNow) {
     cls = 'pmw-verdict-danger';
     txt = '⚠ VIOLATION DU PRS — Le PRS est actif (les conditions imposent les pistes préférentielles 25), '
         + 'or BATC indique la configuration ' + batcRwy + ' qui n\'est pas conforme. '
