@@ -621,7 +621,13 @@ header.site-header {
   .tab-panel.active { padding: 12px 8px; }
   .news-item { padding: 14px 12px; }
   .main-wrap, .content-wrap { padding-left: 8px; padding-right: 8px; }
-  .tabs-wrap { padding: 12px 8px 0; }
+  .tabs-wrap { padding: 6px 8px 0; }
+  /* ── Réduire les espaces VERTICAUX entre les blocs ── */
+  .progress-section { padding: 14px 12px; }
+  .prog-header { margin-bottom: 6px; }
+  .bar-wrap { margin-bottom: 10px; }
+  .prog-stats { gap: 18px; }
+  .tabs-mobile { padding: 8px 10px; }
 }
 
 @media (max-width: 680px) {
