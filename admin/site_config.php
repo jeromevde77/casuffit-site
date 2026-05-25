@@ -41,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'montant_initial', 'montant_recolte', 'montant_objectif',
         // Annonce
         'annonce_active', 'annonce_titre', 'annonce_texte',
+        // Analytics
+        'ga_id',
     );
     foreach ($fields as $cle) {
         $val = isset($_POST[$cle]) ? trim($_POST[$cle]) : '';
