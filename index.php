@@ -591,26 +591,30 @@ header.site-header {
   align-items: start;
 }
 @media (max-width: 430px) {
-  /* ── iPhone : agrandir uniquement les zones de contenu texte ── */
+  /* ── iPhone : agrandir la lisibilité du contenu texte ── */
+  /* On fixe la taille de base sur le conteneur uniquement, en rem (pas en %),
+     pour éviter que les % se multiplient sur les éléments imbriqués. */
   .tab-panel.active,
+  .news-contenu,
+  .apanel-inner {
+    font-size: 1.02rem;
+    line-height: 1.65;
+  }
+  /* Les paragraphes et listes héritent de la taille du conteneur */
   .tab-panel.active p,
   .tab-panel.active li,
-  .tab-panel.active div,
-  .tab-panel.active span,
-  .news-contenu,
   .news-contenu p,
   .news-contenu li,
-  .apanel-inner,
   .apanel-inner p,
   .apanel-inner li {
-    font-size: 112%;
+    font-size: 1.02rem;
     font-weight: 300;
     line-height: 1.65;
   }
-  /* Titres et éléments spécifiques */
-  .tab-panel.active h2,
-  .tab-panel.active h3 { font-size: 115%; }
-  .tab-panel.active .section-title { font-size: 19px; }
+  /* Titres */
+  .tab-panel.active h2 { font-size: 1.3rem; }
+  .tab-panel.active h3 { font-size: 1.15rem; }
+  .tab-panel.active .section-title { font-size: 1.2rem; }
   .tab-panel.active { padding: 14px 14px; }
 }
 
