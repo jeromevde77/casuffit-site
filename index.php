@@ -1274,6 +1274,11 @@ blockquote {
 }
 
 /* ── TABS MOBILE ──────────────────────────────────────────────────── */
+/* Sur desktop : la barre d'onglets fait doublon avec le menu du haut → masquée.
+   La navigation desktop se fait via le menu header (qui appelle showTab).
+   Sur mobile (≤900px) : le menu header est caché (burger), les tabs prennent le relais. */
+.tabs-desktop { display: none; }
+.tabs-wrap { display: none; }
 .tabs-mobile { display: none; padding: 10px 12px; }
 .tabs-mobile select {
   width: 100%;
@@ -1309,6 +1314,7 @@ blockquote {
 }
 
 @media (max-width: 900px) {
+  .tabs-wrap { display: block; }
   .tabs-desktop { display: none !important; }
   .tabs-mobile { display: block; }
   .tabs-wrap { background: #fff; border-bottom: 1px solid var(--bleu-ciel); }
