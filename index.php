@@ -673,6 +673,14 @@ header.site-header {
 /* ══ PANNEAUX CONTENU ════════════════════════════════════════════════ */
 .tab-panel { display: none; }
 .tab-panel.active { display: block; padding: 20px 24px; }
+/* Les images insérées dans le contenu (éditeur WYSIWYG) ne dépassent jamais leur conteneur */
+.tab-panel img, .apanel-inner img, .news-full img, .news-contenu img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 12px auto;
+  border-radius: 8px;
+}
 
 /* ── Hub de sous-pages (page parent sur desktop) ── */
 .parent-hub { margin-bottom: 4px; }
