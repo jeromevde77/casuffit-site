@@ -644,6 +644,24 @@ header.site-header {
 /* ══ PANNEAUX CONTENU ════════════════════════════════════════════════ */
 .tab-panel { display: none; }
 .tab-panel.active { display: block; padding: 20px 24px; }
+
+/* ── Hub de sous-pages (page parent sur desktop) ── */
+.parent-hub { margin-bottom: 4px; }
+.parent-hub-title { font-size: 1.4rem; font-weight: 800; color: var(--bleu-fonce); margin-bottom: 16px; }
+.parent-hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.parent-hub-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; background: #f7fafd; border: 1.5px solid var(--bleu-ciel);
+  border-radius: 10px; text-decoration: none; color: var(--bleu-fonce);
+  font-weight: 600; font-size: .95rem; transition: all .15s;
+}
+.parent-hub-btn:hover { background: var(--bleu-hex); color: #fff; border-color: var(--bleu-hex); transform: translateY(-1px); }
+.parent-hub-btn-arr { font-size: 1.1rem; opacity: .5; transition: opacity .15s; }
+.parent-hub-btn:hover .parent-hub-btn-arr { opacity: 1; }
+/* Sur mobile, le hub est masqué : le sélecteur de sous-onglets prend le relais */
+@media (max-width: 900px) {
+  .parent-hub { display: none; }
+}
 /* Limiter la largeur quand pas de colonne droite */
 #colonne-gauche { min-width: 0; }
 
@@ -1718,10 +1736,34 @@ foreach ($header_widgets as $w_slug) {
     ?>
     <div class="tab-panel <?= $first_tab_slug===$p['slug'] ? 'active' : '' ?>" id="tab-<?= htmlspecialchars($p['slug']) ?>">
       <?php
+      // Si cette page est un PARENT avec des sous-pages, afficher un sommaire de boutons (desktop)
+      $p_children = isset($menu_children[$p['id']]) ? $menu_children[$p['id']] : array();
+      if (!empty($p_children)):
+      ?>
+      <div class="parent-hub">
+        <div class="parent-hub-title"><?= htmlspecialchars(tdb($p,'titre') ?? $p['titre']) ?></div>
+        <div class="parent-hub-grid">
+          <?php foreach ($p_children as $c):
+            if (!empty($c['lien_url'])):
+          ?>
+          <a href="/<?= htmlspecialchars($c['lien_url']) ?>" class="parent-hub-btn">
+            <span class="parent-hub-btn-label"><?= htmlspecialchars(tdb($c,'titre') ?? $c['titre']) ?></span>
+            <span class="parent-hub-btn-arr">→</span>
+          </a>
+          <?php else: ?>
+          <a href="#" onclick="goToSubPage('<?= $c['slug'] ?>'); return false;" class="parent-hub-btn">
+            <span class="parent-hub-btn-label"><?= htmlspecialchars(tdb($c,'titre') ?? $c['titre']) ?></span>
+            <span class="parent-hub-btn-arr">→</span>
+          </a>
+          <?php endif; endforeach; ?>
+        </div>
+      </div>
+      <?php endif; ?>
+      <?php
       // Contenu texte uniquement — les widgets sont gérés par updateColonneDroite() en JS
       $contenu = tdb($p, 'contenu');
       if (!empty($contenu)): ?>
-        <?= $contenu ?>
+        <div class="parent-hub-content"><?= $contenu ?></div>
       <?php endif; ?>
     </div><!-- /tab-<?= htmlspecialchars($p['slug']) ?> -->
     <?php endforeach; ?>
@@ -1991,12 +2033,16 @@ function showTab(id, el) {
     if (parentBtn) {
       parentBtn.classList.add('active');
     } else {
-      // Pas de bouton parent → activer le premier sous-tab
+      // Pas de bouton parent dans les sous-tabs.
+      // Sur DESKTOP : on garde le panel parent affiché (il contient le hub de sous-pages).
+      // Sur MOBILE : on bascule vers le premier sous-tab (pas de hub sur mobile).
+      var isMobile = window.innerWidth <= 900;
       var firstBtn = myGroup.querySelector('.subtab-btn');
-      if (firstBtn) {
+      if (firstBtn && isMobile) {
         firstBtn.classList.add('active');
         showSubTab(firstBtn.dataset.slug, firstBtn, true);
       }
+      // Sur desktop, on ne fait rien : le panel parent (tab-{id}) reste actif avec son hub.
     }
     // Sync select mobile sous-tabs
     var stSel = document.getElementById('subtabs-sel');
@@ -2062,6 +2108,21 @@ function showSubTab(id, el, noScroll) {
   if (!noScroll && window.innerWidth <= 900) {
     var w = document.querySelector('.subtabs-wrap');
     if (w) window.scrollTo({top: w.offsetTop - 60, behavior: 'smooth'});
+  }
+}
+
+// Depuis le hub d'une page parent : naviguer vers une sous-page
+function goToSubPage(slug) {
+  // Trouver le vrai bouton de sous-tab correspondant (il porte le contexte du groupe)
+  var btn = document.querySelector('.subtab-btn[data-slug="' + slug + '"]');
+  if (btn) {
+    showSubTab(slug, btn, true);
+    // Mémoriser le scroll en haut du contenu
+    var panel = document.getElementById('tab-' + slug);
+    if (panel) window.scrollTo({top: 0, behavior: 'smooth'});
+  } else {
+    // Repli : afficher directement le panel
+    showTab(slug, null);
   }
 }
 
