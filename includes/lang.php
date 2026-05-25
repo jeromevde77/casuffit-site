@@ -142,7 +142,14 @@ function cfgLang(string $cle, string $default = ''): string {
             foreach ($db->query("SELECT cle, valeur, valeur_nl FROM site_config") as $r) {
                 $cache[$r['cle']] = $r;
             }
-        } catch (Throwable $e) { /* table absente */ }
+        } catch (Throwable $e) {
+            // Colonne valeur_nl absente — recharger sans elle
+            try {
+                foreach ($db->query("SELECT cle, valeur FROM site_config") as $r) {
+                    $cache[$r['cle']] = array('valeur' => $r['valeur'], 'valeur_nl' => null);
+                }
+            } catch (Throwable $e2) { /* table absente */ }
+        }
     }
     if (!isset($cache[$cle])) return $default;
     if (LANG === 'nl' && !empty($cache[$cle]['valeur_nl'])) {

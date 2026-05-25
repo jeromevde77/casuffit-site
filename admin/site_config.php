@@ -51,14 +51,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db->prepare("INSERT INTO site_config (cle,valeur) VALUES (?,?) ON DUPLICATE KEY UPDATE valeur=?")
            ->execute(array($cle, $val, $val));
     }
-    // Champs traduisibles en néerlandais (colonne valeur_nl)
-    $fields_nl = array('urgence_texte', 'annonce_titre', 'annonce_texte', 'site_slogan', 'don_texte');
-    foreach ($fields_nl as $cle) {
-        $key_nl = $cle . '_nl';
-        if (isset($_POST[$key_nl])) {
-            $val_nl = trim($_POST[$key_nl]);
-            $db->prepare("INSERT INTO site_config (cle,valeur,valeur_nl) VALUES (?,'',?) ON DUPLICATE KEY UPDATE valeur_nl=?")
-               ->execute(array($cle, $val_nl, $val_nl));
+    // Champs traduisibles en néerlandais (colonne valeur_nl si elle existe)
+    $hasNlCol = false;
+    try { $chk = $db->query("SHOW COLUMNS FROM site_config LIKE 'valeur_nl'")->fetch(); $hasNlCol = !empty($chk); }
+    catch (Exception $e) { $hasNlCol = false; }
+    if ($hasNlCol) {
+        $fields_nl = array('urgence_texte', 'annonce_titre', 'annonce_texte', 'site_slogan', 'don_texte');
+        foreach ($fields_nl as $cle) {
+            $key_nl = $cle . '_nl';
+            if (isset($_POST[$key_nl])) {
+                $val_nl = trim($_POST[$key_nl]);
+                $db->prepare("INSERT INTO site_config (cle,valeur,valeur_nl) VALUES (?,'',?) ON DUPLICATE KEY UPDATE valeur_nl=?")
+                   ->execute(array($cle, $val_nl, $val_nl));
+            }
         }
     }
     // Logo upload
@@ -82,10 +87,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
 
-// Lire toute la config
-$rows = $db->query("SELECT cle,valeur,valeur_nl FROM site_config")->fetchAll();
+// Lire toute la config (valeur_nl peut ne pas exister encore)
 $c = array(); $c_nl = array();
-foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; $c_nl[$r['cle']] = $r['valeur_nl'] ?? ''; }
+try {
+    $rows = $db->query("SELECT cle,valeur,valeur_nl FROM site_config")->fetchAll();
+    foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; $c_nl[$r['cle']] = $r['valeur_nl'] ?? ''; }
+} catch (Exception $e) {
+    // Colonne valeur_nl absente — lecture sans traduction
+    $rows = $db->query("SELECT cle,valeur FROM site_config")->fetchAll();
+    foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; $c_nl[$r['cle']] = ''; }
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
