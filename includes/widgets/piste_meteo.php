@@ -438,7 +438,6 @@
 .pmw-cmp3-col{border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:7px}
 .pmw-cmp3-legal{background:#f0fdf6;border:2px solid #b2f0d0}
 .pmw-cmp3-now{background:#fff8ee;border:2px solid #ffd080}
-.pmw-cmp3-batc{background:#f5f0ff;border:2px solid #ddd6fe}
 .pmw-cmp3-head{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#0e3d6b}
 .pmw-cmp3-sub{font-size:.67rem;color:#666;line-height:1.4}
 .pmw-cmp3-seuils{font-size:.68rem;color:#555;line-height:1.6;background:rgba(255,255,255,.6);border-radius:5px;padding:5px 8px}
@@ -466,24 +465,24 @@
 .pmw-planning-arr{color:#555;font-weight:600}
 .pmw-planning-plage{color:#888;font-size:.68rem}
 .pmw-planning-note-txt{color:#aaa;font-style:italic;font-size:.65rem}
-.pmw-batc-link{font-size:.67rem;color:#7c3aed;text-decoration:underline;font-weight:700}
+.pmw-batc-link{font-size:.67rem;color:#1673B2;text-decoration:underline;font-weight:700}
 .pmw-batc-link:hover{text-decoration:underline}
 .pmw-batc-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
 .pmw-batc-explain{margin:4px 0 8px;text-align:left}
 .pmw-batc-explain-intro{font-size:.66rem;color:#777;line-height:1.4;margin:0 0 6px}
 .pmw-batc-step{display:flex;align-items:flex-start;gap:6px;font-size:.66rem;color:#555;line-height:1.35;margin-bottom:4px}
-.pmw-batc-step-num{flex-shrink:0;width:15px;height:15px;border-radius:50%;background:#7c3aed;color:#fff;font-size:.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
-.pmw-batc-step a{color:#7c3aed;font-weight:700}
-.pmw-batc-btn{padding:4px 10px;border-radius:7px;border:1.5px solid #c8b8f0;background:#fff;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;color:#5b21b6;transition:all .15s}
+.pmw-batc-step-num{flex-shrink:0;width:15px;height:15px;border-radius:50%;background:#1673B2;color:#fff;font-size:.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.pmw-batc-step a{color:#1673B2;font-weight:700}
+.pmw-batc-btn{padding:4px 10px;border-radius:7px;border:1.5px solid #c8dcef;background:#fff;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;color:#0e3d6b;transition:all .15s}
 /* classes pmw-bc-* supprimées — boutons BATC neutres */
-.pmw-batc-btn:hover{background:#ede9fe;border-color:#7c3aed}
-.pmw-batc-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.pmw-batc-btn:hover{background:#e8f0fa;border-color:#1673B2}
+.pmw-batc-btn.active{background:#1673B2;color:#fff;border-color:#1673B2}
 .pmw-batc-clear{color:#e53e3e;border-color:#fca5a5;background:#fff5f5}
 .pmw-batc-clear:hover{background:#fee2e2}
-/* ── Bloc BATC séparé visuellement ── */
-.pmw-batc-block{margin-top:6px;background:linear-gradient(135deg,#faf7ff,#f3eeff);border:2px solid #ddd6fe;border-radius:12px;padding:14px 16px}
+/* ── Bloc BATC séparé visuellement (neutre) ── */
+.pmw-batc-block{margin-top:6px;background:#fafbfc;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px 16px}
 .pmw-batc-block-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.pmw-batc-block-title{font-size:.82rem;font-weight:800;color:#5b21b6}
+.pmw-batc-block-title{font-size:.82rem;font-weight:800;color:#0e3d6b}
 .pmw-batc-result{margin-top:10px}
 .pmw-verdict-txt{margin-bottom:8px;line-height:1.5}
 .pmw-mail-btn{display:block;width:100%;margin-top:8px;padding:10px 14px;background:#0e3d6b;color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;transition:background .15s}
@@ -1420,13 +1419,15 @@ window.pmwToggleSection = function(name) {
 };
 
 // Restaurer l'état mémorisé des 3 sections au chargement
+// Défauts : composantes + prévisions déployées, comparaison réglementaire repliée
 (function pmwRestoreSections(){
-  var sections = ['composantes','previsions','reglementaire'];
+  var defaults = { composantes:'1', previsions:'1', reglementaire:'0' }; // 1=déployé, 0=replié
   function apply(){
-    sections.forEach(function(name){
+    Object.keys(defaults).forEach(function(name){
       var saved;
       try { saved = localStorage.getItem('pmw_sec_' + name); } catch(e){ saved = null; }
-      if(saved === '0'){ // 0 = replié
+      var state = (saved === '0' || saved === '1') ? saved : defaults[name];
+      if(state === '0'){ // replié
         var body = document.getElementById('pmw-sec-' + name);
         var icon = document.getElementById('pmw-icon-' + name);
         if(body) body.classList.add('collapsed');
