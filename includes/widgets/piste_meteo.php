@@ -57,6 +57,16 @@
       </div>
     </div>
 
+    <!-- Planning PRS — au-dessus du tableau composantes -->
+    <div class="pmw-section">
+      <div class="pmw-planning-common" id="pmw-planning-box" style="display:none">
+        <div class="pmw-planning-common-title">
+          📅 Planning PRS — commun aux deux AIP
+        </div>
+        <div id="pmw-planning-detail" class="pmw-planning-common-detail"></div>
+      </div>
+    </div>
+
     <!-- ── TABLEAU COMPOSANTES ──────────────────────────────────────── -->
     <div class="pmw-section">
       <div class="pmw-section-title pmw-collapse-toggle" onclick="pmwToggleSection('composantes')" title="Cliquer pour afficher/masquer">
@@ -106,27 +116,17 @@
       </div>
     </div>
 
-    <!-- Planning PRS — affiché en dehors de la comparaison -->
     <div class="pmw-section">
-      <div class="pmw-planning-common" id="pmw-planning-box" style="display:none">
-        <div class="pmw-planning-common-title">
-          📅 Planning PRS — commun aux deux AIP
-        </div>
-        <div id="pmw-planning-detail" class="pmw-planning-common-detail"></div>
-      </div>
-    </div>
-
-    <div class="pmw-section">
-      <!-- Explication AIP, juste au-dessus de la comparaison, style neutre -->
-      <div class="pmw-aip-note">
-        ⚖ L'AIP sept. 2013 découle de l'instruction ministérielle du 17/07/2013 — seule base légale valide.
-        L'AIP actuel (skeyes) applique des seuils plus permissifs, jugés illégaux.
-      </div>
       <div class="pmw-section-title pmw-collapse-toggle" onclick="pmwToggleSection('reglementaire')" title="Cliquer pour afficher/masquer">
         Comparaison réglementaire
         <span class="pmw-toggle-icon" id="pmw-icon-reglementaire">▼</span>
       </div>
       <div id="pmw-sec-reglementaire" class="pmw-collapse-body">
+      <!-- Explication AIP, dans la comparaison, style neutre -->
+      <div class="pmw-aip-note">
+        ⚖ L'AIP sept. 2013 découle de l'instruction ministérielle du 17/07/2013 — seule base légale valide.
+        L'AIP actuel (skeyes) applique des seuils plus permissifs, jugés illégaux.
+      </div>
 
       <div class="pmw-cmp3-grid pmw-cmp2-grid">
 
