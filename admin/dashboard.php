@@ -41,6 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['maintenance_action'])
     }
 }
 
+// Toggle annonce en haut de site
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['annonce_action']) && $_POST['annonce_action'] === 'toggle') {
+    $cur = $db->query("SELECT valeur FROM site_config WHERE cle='annonce_active'")->fetchColumn();
+    $new = ($cur === '1' || $cur === null) ? '0' : '1';
+    $db->prepare("INSERT INTO site_config (cle,valeur) VALUES ('annonce_active',?) ON DUPLICATE KEY UPDATE valeur=?")
+       ->execute([$new, $new]);
+    header('Location: dashboard.php'); exit;
+}
+$annonce_active = ($db->query("SELECT valeur FROM site_config WHERE cle='annonce_active'")->fetchColumn() ?? '1') === '1';
+
 $membres_recents = $db->query("SELECT prenom, nom, code_membre, date_inscription FROM members ORDER BY date_inscription DESC LIMIT 5")->fetchAll();
 $nb_sub_new  = $db->query("SELECT COUNT(*) FROM subscribers WHERE date_inscription >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn();
 ?>
@@ -382,6 +392,24 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
       ✅ Cookie de bypass réinitialisé — les visiteurs avec l'ancien cookie devront retaper le code.
     </div>
   <?php endif; ?>
+
+  <div class="actions-title" style="margin-top:24px">📢 Annonce en haut de site</div>
+  <div class="maint-box<?= $annonce_active ? ' maint-active' : '' ?>">
+    <div class="maint-status" style="margin-bottom:0">
+      <div class="maint-dot<?= $annonce_active ? ' on' : '' ?>" style="<?= $annonce_active ? 'background:#FF9900;box-shadow:0 0 6px #FF9900' : '' ?>"></div>
+      <span><?= $annonce_active ? 'AFFICHÉE — Le bandeau d\'annonce est visible en haut du site' : 'Masquée — Aucun bandeau d\'annonce affiché' ?></span>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <a href="site_config.php" class="maint-toggle-btn" style="background:#e8eef3;color:#555;text-decoration:none">Modifier le texte</a>
+        <form method="post">
+          <input type="hidden" name="annonce_action" value="toggle">
+          <button type="submit" class="maint-toggle-btn<?= $annonce_active ? ' off' : ' on' ?>">
+            <?= $annonce_active ? '⏹ Masquer l\'annonce' : '▶ Afficher l\'annonce' ?>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <div class="actions-title" style="margin-top:24px">🚧 Mode maintenance</div>
   <div class="maint-box<?= $maint_mode==='1' ? ' maint-active' : '' ?>" id="maint-box">
 
