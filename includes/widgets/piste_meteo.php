@@ -6,7 +6,10 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
       Conditions de vent — Brussels Airport (EBBR)
     </div>
-    <div class="pmw-upd" id="pmw-upd">Chargement…</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="pmw-help-btn" onclick="pmwOpenHelp()" title="Mode d'emploi" aria-label="Mode d'emploi">?</button>
+      <div class="pmw-upd" id="pmw-upd">Chargement…</div>
+    </div>
   </div>
 
   <div class="pmw-body">
@@ -199,6 +202,53 @@
   </div><!-- /pmw-body -->
 </div>
 
+<!-- Modale mode d'emploi -->
+<div class="pmw-help-overlay" id="pmw-help-overlay" onclick="if(event.target===this) pmwCloseHelp()">
+  <div class="pmw-help-modal">
+    <div class="pmw-help-head">
+      <span>Comment lire cet outil ?</span>
+      <button class="pmw-help-close" onclick="pmwCloseHelp()" aria-label="Fermer">✕</button>
+    </div>
+    <div class="pmw-help-body">
+
+      <div class="pmw-help-block">
+        <div class="pmw-help-q">À quoi sert cet outil ?</div>
+        <p>Il compare automatiquement les <strong>conditions de vent réelles</strong> à l'aéroport de Bruxelles-National avec les <strong>règles du Plan de Répartition du Survol (PRS)</strong>. Objectif : détecter quand une piste est utilisée alors que les conditions météo ne le justifient pas.</p>
+      </div>
+
+      <div class="pmw-help-block">
+        <div class="pmw-help-q">D'où viennent les données ?</div>
+        <p>Le vent, les rafales et le METAR proviennent des relevés officiels de l'aéroport (METAR EBBR), récupérés <strong>automatiquement toutes les 30 minutes</strong>. Vous n'avez rien à faire : les données s'affichent et se mettent à jour seules.</p>
+      </div>
+
+      <div class="pmw-help-block">
+        <div class="pmw-help-q">Le badge vert / rouge (PRS)</div>
+        <p><span class="pmw-help-badge pmw-help-on">PRS RESPECTÉ</span> : la configuration de pistes attendue selon le vent correspond aux règles.<br>
+        <span class="pmw-help-badge pmw-help-off">PRS NON RESPECTÉ</span> : les conditions de vent ne justifient pas la piste utilisée — c'est une situation potentiellement contestable.</p>
+      </div>
+
+      <div class="pmw-help-block">
+        <div class="pmw-help-q">La colonne « Réel BATC »</div>
+        <p>L'outil <strong>ne connaît pas automatiquement</strong> quelle piste est réellement en service à un instant donné. Pour le savoir, cliquez sur le lien <strong>« Voir batc.be ↗ »</strong> : il ouvre le site officiel de Brussels Airport qui indique la configuration en cours.</p>
+        <p>Revenez ensuite sur l'outil et <strong>cliquez sur le bouton correspondant</strong> à la configuration que vous avez lue (ex : <em>25R/25L</em>, <em>01/07R</em>…). L'outil compare alors cette piste réelle aux règles et vous dit si elle est conforme.</p>
+      </div>
+
+      <div class="pmw-help-block">
+        <div class="pmw-help-q">Générer une plainte</div>
+        <p>Si une violation est constatée, le bouton <strong>« Générer une plainte »</strong> prépare un message complet (données météo, configuration, analyse réglementaire) que vous copiez en un clic pour le coller dans votre email à l'autorité compétente.</p>
+      </div>
+
+      <div class="pmw-help-note">
+        Cet outil est un appui citoyen : il met en forme des données publiques. Il ne remplace pas une démarche officielle mais la facilite.
+      </div>
+
+    </div>
+    <div class="pmw-help-foot">
+      <button class="pmw-help-ok" onclick="pmwCloseHelp()">J'ai compris</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modale plainte -->
 <div class="pmw-plainte-overlay" id="pmw-plainte-overlay" onclick="if(event.target===this) pmwClosePlainte()">
   <div class="pmw-plainte-modal">
@@ -208,14 +258,20 @@
     <img id="pmw-plainte-img" class="pmw-plainte-capture" style="display:none" alt="Capture conditions EBBR">
     <div class="pmw-plainte-mail" id="pmw-plainte-mail"></div>
     <div class="pmw-plainte-actions">
+      <button class="pmw-plainte-btn pmw-plainte-btn-copy" onclick="pmwCopyComplaint()">📋 Copier le message de plainte</button>
       <button class="pmw-plainte-btn pmw-plainte-btn-dl" onclick="pmwDownloadCapture()">⬇ Télécharger l'image</button>
-      <button class="pmw-plainte-btn pmw-plainte-btn-copy" onclick="pmwCopyMail()">📋 Copier le texte</button>
-      <button class="pmw-plainte-btn pmw-plainte-btn-mail" onclick="pmwOpenMailto()">📧 Télécharger .eml (ouvre dans Mail)</button>
       <button class="pmw-plainte-btn pmw-plainte-btn-close" onclick="pmwClosePlainte()">✕ Fermer</button>
     </div>
-    <p style="font-size:.68rem;color:#aaa;margin-top:10px;line-height:1.4">
-      Joignez l'image téléchargée à votre email. Le texte contient toutes les données météo et réglementaires au moment de la plainte.
-    </p>
+    <div class="pmw-plainte-steps">
+      <div class="pmw-plainte-steps-title">Comment envoyer votre plainte :</div>
+      <ol>
+        <li><strong>Cliquez sur « Copier le message de plainte »</strong> ci-dessus — tout le contenu (texte + tableau) est copié.</li>
+        <li>Ouvrez votre messagerie (Gmail, Outlook, Mail…) et créez un nouvel email.</li>
+        <li>Adressez-le à <strong>l'autorité compétente</strong> (médiateur Brussels Airport, votre commune…).</li>
+        <li><strong>Collez</strong> le contenu dans le corps du message (Ctrl+V ou Cmd+V).</li>
+        <li>Téléchargez et joignez l'image en pièce jointe pour preuve visuelle.</li>
+      </ol>
+    </div>
   </div>
 </div>
 
@@ -413,14 +469,40 @@
 .pmw-plainte-mail{background:#f7fafd;border-radius:8px;padding:12px;font-size:.75rem;font-family:monospace;white-space:pre-wrap;line-height:1.5;color:#333;max-height:200px;overflow-y:auto;margin-bottom:12px;border:1px solid #dde8f0}
 .pmw-plainte-actions{display:flex;gap:8px;flex-wrap:wrap}
 .pmw-plainte-btn{flex:1;padding:10px;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-width:120px}
-.pmw-plainte-btn-dl{background:#1673B2;color:#fff}
-.pmw-plainte-btn-dl:hover{background:#0e3d6b}
-.pmw-plainte-btn-copy{background:#e8f0fa;color:#1673B2}
-.pmw-plainte-btn-copy:hover{background:#d0e3f7}
-.pmw-plainte-btn-mail{background:#F5A623;color:#fff}
-.pmw-plainte-btn-mail:hover{background:#c97200}
+.pmw-plainte-btn-dl{background:#e8f0fa;color:#1673B2}
+.pmw-plainte-btn-dl:hover{background:#d0e3f7}
+.pmw-plainte-btn-copy{background:#F5A623;color:#fff;flex:2 1 100%;font-size:.9rem;padding:13px}
+.pmw-plainte-btn-copy:hover{background:#e0950f}
+.pmw-plainte-btn-copy.pmw-copied{background:#1a7a4a}
 .pmw-plainte-btn-close{background:#f0f0f0;color:#555}
 .pmw-plainte-btn-close:hover{background:#e0e0e0}
+.pmw-plainte-steps{margin-top:14px;background:#f7fafd;border-radius:8px;padding:12px 14px;border-left:3px solid #1673B2}
+.pmw-plainte-steps-title{font-size:.78rem;font-weight:700;color:#0e3d6b;margin-bottom:6px}
+.pmw-plainte-steps ol{margin:0;padding-left:18px;font-size:.74rem;color:#555;line-height:1.6}
+.pmw-plainte-steps li{margin-bottom:3px}
+
+/* ── Bouton aide "?" ── */
+.pmw-help-btn{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.12);color:#fff;font-weight:700;font-size:.8rem;cursor:pointer;flex-shrink:0;line-height:1;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:background .15s}
+.pmw-help-btn:hover{background:rgba(255,255,255,.28)}
+
+/* ── Modale mode d'emploi ── */
+.pmw-help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:center;justify-content:center;padding:16px}
+.pmw-help-overlay.open{display:flex}
+.pmw-help-modal{background:#fff;border-radius:14px;max-width:520px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.pmw-help-head{background:#0e3d6b;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:.95rem;flex-shrink:0}
+.pmw-help-close{background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:.9rem;font-family:inherit}
+.pmw-help-close:hover{background:rgba(255,255,255,.3)}
+.pmw-help-body{padding:20px;overflow-y:auto}
+.pmw-help-block{margin-bottom:18px}
+.pmw-help-q{font-weight:700;color:#1673B2;font-size:.86rem;margin-bottom:5px}
+.pmw-help-body p{font-size:.82rem;color:#444;line-height:1.6;margin:0 0 6px}
+.pmw-help-badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:.68rem;font-weight:700;margin:2px 0}
+.pmw-help-on{background:#e8f8f0;color:#1a7a4a;border:1.5px solid #b2f0d0}
+.pmw-help-off{background:#fde8e8;color:#c0392b;border:1.5px solid #fca5a5}
+.pmw-help-note{background:#f7fafd;border-left:3px solid #1673B2;border-radius:7px;padding:11px 14px;font-size:.76rem;color:#666;line-height:1.5;font-style:italic}
+.pmw-help-foot{padding:14px 20px;border-top:1px solid #f0f4f8;flex-shrink:0}
+.pmw-help-ok{width:100%;padding:12px;background:#1673B2;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.86rem;cursor:pointer;font-family:inherit}
+.pmw-help-ok:hover{background:#0e3d6b}
 .pmw-verdict-ok{background:#e8f8f0;border:1.5px solid #b2f0d0;color:#1a5c35}
 .pmw-verdict-warn{background:#fff8ee;border:1.5px solid #ffd080;color:#7a4400}
 .pmw-verdict-danger{background:#fff0f0;border:1.5px solid #fca5a5;color:#7a1a1a}
@@ -1319,11 +1401,19 @@ window.pmwToggleTable = function() {
   if(icon) icon.classList.toggle('collapsed', !pmwTableOpen);
 };
 
-window.pmwOpenMailto = function() {
+window.pmwOpenHelp = function() {
+  var o = document.getElementById('pmw-help-overlay');
+  if(o) o.classList.add('open');
+};
+window.pmwCloseHelp = function() {
+  var o = document.getElementById('pmw-help-overlay');
+  if(o) o.classList.remove('open');
+};
+
+window.pmwCopyComplaint = function() {
   var now = new Date();
   var dateStr = now.toLocaleDateString('fr-BE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   var timeStr = now.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'});
-  var subject = 'Plainte nuisance aérienne EBBR — '+window._currentBatcRwy+' — '+dateStr+' '+timeStr;
 
   // Données météo
   var pmwState = window._pmwData ? window._pmwData() : {};
@@ -1333,73 +1423,62 @@ window.pmwOpenMailto = function() {
   var whyArr = pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1]
     ? pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1].split('\u2022').slice(1).map(function(w){return w.trim().split('\n')[0];}) : [];
 
-  // ── HTML du corps du mail ─────────────────────────────────────────────
   var captureHtml = pmwCaptureDataUrl
     ? '<p><img src="'+pmwCaptureDataUrl+'" style="max-width:100%;border:1px solid #ddd;border-radius:8px" alt="Capture conditions EBBR"></p>' : '';
 
-  var htmlBody = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif;color:#333;max-width:700px;margin:0 auto;padding:20px">'
-    + '<div style="background:#0e3d6b;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0">'
-    + '<div style="font-size:1.2em;font-weight:bold">✉ Plainte — Nuisance aérienne Brussels Airport</div>'
-    + '<div style="font-size:.85em;opacity:.8;margin-top:4px">'+dateStr+' à '+timeStr+'</div>'
-    + '</div>'
-    + '<div style="border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;padding:24px">'
+  // ── HTML riche du message (collable dans Gmail/Outlook/Mail) ──────────
+  var htmlBody = '<div style="font-family:Arial,sans-serif;color:#333;max-width:700px">'
     + '<p>Madame, Monsieur,</p>'
     + '<p>Je vous contacte suite à des nuisances aériennes constatées au-dessus de ma commune. Les conditions météorologiques relevées démontrent une violation du Plan de Répartition du Survol (PRS).</p>'
-    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px">📊 Conditions météo EBBR</h3>'
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px">Conditions météo EBBR</h3>'
     + '<table style="width:100%;border-collapse:collapse;font-size:.9em">'
     + '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Date / Heure</td><td style="padding:8px 12px">'+dateStr+' à '+timeStr+'</td></tr>'
     + '<tr><td style="padding:8px 12px;font-weight:bold">METAR</td><td style="padding:8px 12px;font-family:monospace;font-size:.85em">'+(d.metar||'—')+'</td></tr>'
     + '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Vent moyen</td><td style="padding:8px 12px">'+(d.wspd||'—')+' kt — '+(d.wdir||'—')+'°</td></tr>'
     + '<tr><td style="padding:8px 12px;font-weight:bold">Rafales</td><td style="padding:8px 12px">'+(d.wgst ? d.wgst+' kt' : '—')+(d.wgst_irm?' (IRM: '+d.wgst_irm+' kt)':'')+'</td></tr>'
     + '</table>'
-    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">✈ Configuration BATC en service</h3>'
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Configuration BATC en service</h3>'
     + '<div style="display:inline-block;background:#fde8e8;border:2px solid #e53e3e;border-radius:8px;padding:10px 20px;font-size:1.1em;font-weight:bold;color:#c0392b">'+window._currentBatcRwy+' — NON AUTORISÉE</div>'
-    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">📅 Planning PRS applicable</h3>'
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Planning PRS applicable</h3>'
     + '<div style="background:#f0f4f8;padding:12px;border-radius:6px;font-family:monospace;font-size:.85em;white-space:pre-wrap">'+planStr+'</div>'
-    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">⚖ Analyse réglementaire</h3>'
+    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Analyse réglementaire</h3>'
     + '<table style="width:100%;border-collapse:collapse;font-size:.85em">'
     + '<tr style="background:#0e3d6b;color:#fff"><th style="padding:8px 12px;text-align:left">Critère</th><th style="padding:8px 12px;text-align:left">AIP 2013 (légal)</th><th style="padding:8px 12px;text-align:left">AIP Actuel (skeyes)</th></tr>'
     + '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent arrière piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (max 10 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (pratique ~6.5 kt)</td></tr>'
-    + '<tr style="background:#f9f9f9"><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent latéral piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">15 kt (max 20 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">20 kt ⚠</td></tr>'
+    + '<tr style="background:#f9f9f9"><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent latéral piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">15 kt (max 20 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">20 kt</td></tr>'
     + '</table>'
-    + '<h3 style="color:#c0392b;border-bottom:2px solid #c0392b;padding-bottom:6px;margin-top:20px">🚨 Violations constatées</h3>'
+    + '<h3 style="color:#c0392b;border-bottom:2px solid #c0392b;padding-bottom:6px;margin-top:20px">Violations constatées</h3>'
     + '<ul style="background:#fde8e8;border-radius:6px;padding:16px 16px 16px 32px">'
     + whyArr.map(function(w){return '<li>'+w+'</li>';}).join('')
     + '</ul>'
     + captureHtml
     + '<p style="margin-top:8px;font-size:.85em;color:#666">Selon l\'instruction ministérielle du 17/07/2013 (IM 2013) — seule base légale valide.</p>'
-    + '<p style="color:#aaa;font-size:.8em;margin-top:16px">— Via <strong>Ça suffit ! ASBL</strong> — casuffit.be</p>'
-    + '</div></body></html>';
+    + '<p>Je vous remercie de bien vouloir prendre en compte cette plainte et de m\'informer des suites qui y seront données.</p>'
+    + '<p>Cordialement,</p>'
+    + '</div>';
 
-  // ── Générer le fichier .eml ───────────────────────────────────────────
-  var boundary = 'boundary_' + Date.now();
-  var emlLines = [
-    'MIME-Version: 1.0',
-    'Content-Type: multipart/alternative; boundary="'+boundary+'"',
-    'Subject: '+subject,
-    'From: plainte@casuffit.be',
-    '',
-    '--'+boundary,
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: 8bit',
-    '',
-    pmwMailBody,
-    '--'+boundary,
-    'Content-Type: text/html; charset=UTF-8',
-    'Content-Transfer-Encoding: 8bit',
-    '',
-    htmlBody,
-    '--'+boundary+'--'
-  ];
+  var btn = document.querySelector('.pmw-plainte-btn-copy');
 
-  var blob = new Blob([emlLines.join('\r\n')], {type: 'message/rfc822'});
-  var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
-  a.href = url;
-  a.download = 'plainte_EBBR_'+now.toISOString().slice(0,10)+'.eml';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function(){URL.revokeObjectURL(url);}, 5000);
+  // Copie HTML riche via Clipboard API moderne (garde la mise en forme)
+  function copyOk() {
+    if(btn){ btn.textContent = '✓ Message copié ! Collez-le dans votre email'; btn.classList.add('pmw-copied');
+      setTimeout(function(){ btn.textContent = '📋 Copier le message de plainte'; btn.classList.remove('pmw-copied'); }, 4000); }
+  }
+  function copyFallback() {
+    navigator.clipboard.writeText(pmwMailBody).then(copyOk).catch(function(){
+      alert('Copie impossible. Sélectionnez et copiez le texte manuellement.');
+    });
+  }
+
+  if (navigator.clipboard && window.ClipboardItem) {
+    try {
+      var blobHtml = new Blob([htmlBody], {type:'text/html'});
+      var blobText = new Blob([pmwMailBody], {type:'text/plain'});
+      var item = new ClipboardItem({'text/html': blobHtml, 'text/plain': blobText});
+      navigator.clipboard.write([item]).then(copyOk).catch(copyFallback);
+    } catch(e) { copyFallback(); }
+  } else {
+    copyFallback();
+  }
 };
 </script>
