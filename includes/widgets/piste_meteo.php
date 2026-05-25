@@ -59,11 +59,11 @@
 
     <!-- ── TABLEAU COMPOSANTES ──────────────────────────────────────── -->
     <div class="pmw-section">
-      <div class="pmw-section-title pmw-table-toggle" id="pmw-table-toggle" onclick="pmwToggleTable()" title="Cliquer pour afficher/masquer">
+      <div class="pmw-section-title pmw-collapse-toggle" onclick="pmwToggleSection('composantes')" title="Cliquer pour afficher/masquer">
         Composantes de vent par piste
-        <span class="pmw-toggle-icon" id="pmw-toggle-icon">▼</span>
+        <span class="pmw-toggle-icon" id="pmw-icon-composantes">▼</span>
       </div>
-      <div id="pmw-table-wrap">
+      <div id="pmw-sec-composantes" class="pmw-collapse-body">
       <div class="pmw-gust-note">
         💨 Format : <b>vent moyen / rafales</b> — Le seuil PRS (7 kt vent arrière) s'applique rafales incluses. <b>— = pas de rafales dans le METAR</b>
       </div>
@@ -87,19 +87,19 @@
         <span class="pmw-leg pmw-danger">≥ 7 kt — hors PRS</span>
         <span class="pmw-leg pmw-xw">lat. ≥ 20 kt — hors PRS</span>
       </div>
-      </div><!-- /pmw-table-wrap -->
+      </div><!-- /pmw-sec-composantes -->
     </div>
 
     <!-- ── PREVISIONS TAF ───────────────────────────────────────────── -->
     <div class="pmw-section">
-      <div class="pmw-section-title pmw-table-toggle" onclick="pmwToggleTaf()" title="Cliquer pour afficher/masquer">
-        🌤 Prévisions météo à Brussels Airport
+      <div class="pmw-section-title pmw-collapse-toggle" onclick="pmwToggleSection('previsions')" title="Cliquer pour afficher/masquer">
+        Prévisions météo à Brussels Airport
         <span style="display:flex;align-items:center;gap:6px;margin-left:auto">
           <span id="pmw-taf-valid" class="pmw-taf-valid"></span>
-          <span class="pmw-toggle-icon" id="pmw-taf-icon">▼</span>
+          <span class="pmw-toggle-icon" id="pmw-icon-previsions">▼</span>
         </span>
       </div>
-      <div id="pmw-taf-wrap">
+      <div id="pmw-sec-previsions" class="pmw-collapse-body">
       <div id="pmw-taf-grid" class="pmw-taf-grid">
         <div class="pmw-loading">Chargement…</div>
       </div>
@@ -107,7 +107,11 @@
     </div>
 
     <div class="pmw-section">
-      <div class="pmw-section-title">Comparaison réglementaire</div>
+      <div class="pmw-section-title pmw-collapse-toggle" onclick="pmwToggleSection('reglementaire')" title="Cliquer pour afficher/masquer">
+        Comparaison réglementaire
+        <span class="pmw-toggle-icon" id="pmw-icon-reglementaire">▼</span>
+      </div>
+      <div id="pmw-sec-reglementaire" class="pmw-collapse-body">
       <div class="pmw-legal-note">
         ⚖ L'AIP sept. 2013 découle de l'instruction ministérielle du 17/07/2013 — seule base légale valide.
         L'AIP actuel (skeyes) applique des seuils plus permissifs, jugés illégaux.
@@ -121,7 +125,7 @@
         <div id="pmw-planning-detail" class="pmw-planning-common-detail"></div>
       </div>
 
-      <div class="pmw-cmp3-grid">
+      <div class="pmw-cmp3-grid pmw-cmp2-grid">
 
         <!-- Colonne AIP 2013 (légal) -->
         <div class="pmw-cmp3-col pmw-cmp3-legal">
@@ -154,42 +158,45 @@
           <div class="pmw-cmp3-pratique" id="pmw-pratique-note"></div>
         </div>
 
-        <!-- Colonne BATC (réel) -->
-        <div class="pmw-cmp3-col pmw-cmp3-batc">
-          <div class="pmw-cmp3-head">🏠 Réel BATC</div>
-          <div class="pmw-batc-explain">
-            <p class="pmw-batc-explain-intro">La piste réellement en service n'est pas récupérable automatiquement. Pour vérifier si elle est conforme :</p>
-            <div class="pmw-batc-step">
-              <span class="pmw-batc-step-num">1</span>
-              <span>Ouvrez <a href="https://www.batc.be/fr/pistes-en-usage/actuel-prevision" target="_blank" rel="noopener" class="pmw-batc-link">batc.be ↗</a> et notez la configuration affichée</span>
-            </div>
-            <div class="pmw-batc-step">
-              <span class="pmw-batc-step-num">2</span>
-              <span>Cliquez ci-dessous sur la même configuration</span>
-            </div>
-            <div class="pmw-batc-step">
-              <span class="pmw-batc-step-num">3</span>
-              <span>L'outil vous dit si elle respecte le PRS</span>
-            </div>
-          </div>
-          <div class="pmw-cmp3-rwys" id="pmw-batc-rwys">
-            <span style="color:#bbb;font-size:.75rem">Aucune configuration sélectionnée</span>
-          </div>
-          <div class="pmw-batc-row">
-            <button class="pmw-batc-btn" onclick="setBatc('25R/25L')">25R/25L</button>
-            <button class="pmw-batc-btn" onclick="setBatc('19/25R')">19/25R</button>
-            <button class="pmw-batc-btn" onclick="setBatc('07L/07R')">07L/07R</button>
-            <button class="pmw-batc-btn" onclick="setBatc('01/07R')">01/07R</button>
-            <button class="pmw-batc-btn" onclick="setBatc('01/01')">01/01</button>
-            <button class="pmw-batc-btn" onclick="setBatc('19/19')">19/19</button>
-            <button class="pmw-batc-btn pmw-batc-clear" onclick="setBatc(null)">✕</button>
-          </div>
-        </div>
-
       </div>
 
       <!-- Verdict comparaison -->
       <div class="pmw-verdict" id="pmw-verdict" style="display:none"></div>
+      </div><!-- /pmw-sec-reglementaire -->
+    </div>
+
+    <!-- ── VÉRIFICATION BATC (bloc séparé, action de l'utilisateur) ──── -->
+    <div class="pmw-batc-block">
+      <div class="pmw-batc-block-head">
+        <span class="pmw-batc-block-title">Vérifier la piste réellement en service</span>
+      </div>
+      <div class="pmw-batc-explain">
+        <p class="pmw-batc-explain-intro">La piste réellement en service n'est pas récupérable automatiquement. Pour vérifier si elle respecte le PRS :</p>
+        <div class="pmw-batc-step">
+          <span class="pmw-batc-step-num">1</span>
+          <span>Ouvrez <a href="https://www.batc.be/fr/pistes-en-usage/actuel-prevision" target="_blank" rel="noopener" class="pmw-batc-link">batc.be ↗</a> et notez la configuration affichée</span>
+        </div>
+        <div class="pmw-batc-step">
+          <span class="pmw-batc-step-num">2</span>
+          <span>Cliquez ci-dessous sur la même configuration</span>
+        </div>
+        <div class="pmw-batc-step">
+          <span class="pmw-batc-step-num">3</span>
+          <span>L'outil vous dit si elle respecte le PRS et propose de générer une plainte</span>
+        </div>
+      </div>
+      <div class="pmw-batc-row">
+        <button class="pmw-batc-btn" onclick="setBatc('25R/25L')">25R/25L</button>
+        <button class="pmw-batc-btn" onclick="setBatc('19/25R')">19/25R</button>
+        <button class="pmw-batc-btn" onclick="setBatc('07L/07R')">07L/07R</button>
+        <button class="pmw-batc-btn" onclick="setBatc('01/07R')">01/07R</button>
+        <button class="pmw-batc-btn" onclick="setBatc('01/01')">01/01</button>
+        <button class="pmw-batc-btn" onclick="setBatc('19/19')">19/19</button>
+        <button class="pmw-batc-btn pmw-batc-clear" onclick="setBatc(null)">✕</button>
+      </div>
+      <div class="pmw-batc-result" id="pmw-batc-rwys">
+        <span style="color:#bbb;font-size:.78rem">Aucune configuration sélectionnée</span>
+      </div>
     </div>
     <details class="pmw-details">
       <summary>METAR / TAF bruts</summary>
@@ -339,11 +346,12 @@
 /* ── Sections ── */
 .pmw-section{display:flex;flex-direction:column;gap:10px}
 .pmw-section-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#0e3d6b;display:flex;align-items:center;gap:8px}
-.pmw-table-toggle{cursor:pointer;user-select:none;justify-content:space-between}
-.pmw-table-toggle:hover{color:#1673B2}
+.pmw-collapse-toggle{cursor:pointer;user-select:none;justify-content:space-between}
+.pmw-collapse-toggle:hover{color:#1673B2}
 .pmw-toggle-icon{font-size:.7rem;color:#aaa;transition:transform .2s}
 .pmw-toggle-icon.collapsed{transform:rotate(-90deg)}
-#pmw-table-wrap{overflow:hidden;transition:max-height .3s ease}
+.pmw-collapse-body{overflow:hidden}
+.pmw-collapse-body.collapsed{display:none}
 .pmw-taf-valid{font-weight:400;color:#aaa;text-transform:none;letter-spacing:0;font-size:.67rem}
 
 /* ── Tableau composantes ── */
@@ -387,7 +395,6 @@
 .pmw-taf-prs span{font-weight:400;font-size:.65rem;display:block}
 .pmw-taf-prs-ok{background:#e8f8f0;color:#1a7a4a;border:1.5px solid #b2f0d0}
 .pmw-taf-prs-ko{background:#fff8ee;color:#c97200;border:1.5px solid #ffd080}
-#pmw-taf-wrap{overflow:hidden}
 /* ── Config bar TAF ── */
 .pmw-taf-cfgbar{padding:6px 12px 8px;display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid #f0f4f8}
 .pmw-taf-cfggroup{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
@@ -403,8 +410,10 @@
 .pmw-legal-note{font-size:.73rem;color:#5b21b6;background:#f5f0ff;border:1.5px solid #ddd6fe;border-radius:7px;padding:8px 12px;line-height:1.5}
 /* ── Grille 3 colonnes ── */
 .pmw-cmp3-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.pmw-cmp2-grid{grid-template-columns:1fr 1fr}
 @media(max-width:520px){
   .pmw-cmp3-grid{grid-template-columns:1fr}
+  .pmw-cmp2-grid{grid-template-columns:1fr}
   /* ── Bloc vent principal ── */
   .pmw-wind{gap:8px}
   .pmw-compass{width:64px;height:64px;flex-shrink:0}
@@ -471,6 +480,11 @@
 .pmw-batc-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
 .pmw-batc-clear{color:#e53e3e;border-color:#fca5a5;background:#fff5f5}
 .pmw-batc-clear:hover{background:#fee2e2}
+/* ── Bloc BATC séparé visuellement ── */
+.pmw-batc-block{margin-top:6px;background:linear-gradient(135deg,#faf7ff,#f3eeff);border:2px solid #ddd6fe;border-radius:12px;padding:14px 16px}
+.pmw-batc-block-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.pmw-batc-block-title{font-size:.82rem;font-weight:800;color:#5b21b6}
+.pmw-batc-result{margin-top:10px}
 .pmw-verdict-txt{margin-bottom:8px;line-height:1.5}
 .pmw-mail-btn{display:block;width:100%;margin-top:8px;padding:10px 14px;background:#0e3d6b;color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;transition:background .15s}
 .pmw-mail-btn:hover{background:#1673B2}
@@ -1395,27 +1409,35 @@ window.pmwCopyMail = function() {
   }
 };
 
-// ── Toggle Prévisions météo TAF ───────────────────────────────────────────
-var pmwTafOpen = true;
-window.pmwToggleTaf = function() {
-  var wrap = document.getElementById('pmw-taf-wrap');
-  var icon = document.getElementById('pmw-taf-icon');
-  if(!wrap) return;
-  pmwTafOpen = !pmwTafOpen;
-  wrap.style.display = pmwTafOpen ? '' : 'none';
-  if(icon) icon.classList.toggle('collapsed', !pmwTafOpen);
+// ── Sections repliables avec mémorisation (localStorage) ──────────────────
+window.pmwToggleSection = function(name) {
+  var body = document.getElementById('pmw-sec-' + name);
+  var icon = document.getElementById('pmw-icon-' + name);
+  if(!body) return;
+  var collapsed = body.classList.toggle('collapsed');
+  if(icon) icon.classList.toggle('collapsed', collapsed);
+  try { localStorage.setItem('pmw_sec_' + name, collapsed ? '0' : '1'); } catch(e){}
 };
 
-// ── Toggle tableau composantes ───────────────────────────────────────────
-var pmwTableOpen = true;
-window.pmwToggleTable = function() {
-  var wrap = document.getElementById('pmw-table-wrap');
-  var icon = document.getElementById('pmw-toggle-icon');
-  if(!wrap) return;
-  pmwTableOpen = !pmwTableOpen;
-  wrap.style.display = pmwTableOpen ? '' : 'none';
-  if(icon) icon.classList.toggle('collapsed', !pmwTableOpen);
-};
+// Restaurer l'état mémorisé des 3 sections au chargement
+(function pmwRestoreSections(){
+  var sections = ['composantes','previsions','reglementaire'];
+  function apply(){
+    sections.forEach(function(name){
+      var saved;
+      try { saved = localStorage.getItem('pmw_sec_' + name); } catch(e){ saved = null; }
+      if(saved === '0'){ // 0 = replié
+        var body = document.getElementById('pmw-sec-' + name);
+        var icon = document.getElementById('pmw-icon-' + name);
+        if(body) body.classList.add('collapsed');
+        if(icon) icon.classList.add('collapsed');
+      }
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', apply);
+  } else { apply(); }
+})();
 
 window.pmwOpenHelp = function() {
   var o = document.getElementById('pmw-help-overlay');
