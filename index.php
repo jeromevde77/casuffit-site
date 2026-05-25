@@ -1744,7 +1744,7 @@ $site_email = cfg('site_email', 'info@casuffit.be');
     <div class="pied-col pied-col-mission">
       <img src="medias/logo.png" alt="Piste 01, Ça suffit !" class="pied-logo">
       <p class="pied-mission">
-        <strong>Ça suffit ! ASBL</strong><br>
+        <strong>Ça suffit !</strong><br>
         Mobilisation citoyenne contre les nuisances de la piste 01 de Bruxelles-National.
       </p>
     </div>

@@ -60,7 +60,7 @@ return [
 
     // ── Header / Bandeau d'annonce ───────────────────────────────────────
     'header.badge'         => 'Piste 01 · UBCNA · Union citoyenne',
-    'header.brand_suffix'  => 'ASBL',
+    'header.brand_suffix'  => '',
     'annonce.date'         => 'Annonce — Mai 2026',
     'annonce.close'        => 'Fermer',
     'annonce.equals'       => 'Ça suffit ! ASBL',

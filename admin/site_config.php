@@ -51,6 +51,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db->prepare("INSERT INTO site_config (cle,valeur) VALUES (?,?) ON DUPLICATE KEY UPDATE valeur=?")
            ->execute(array($cle, $val, $val));
     }
+    // Champs traduisibles en néerlandais (colonne valeur_nl)
+    $fields_nl = array('urgence_texte', 'annonce_titre', 'annonce_texte', 'site_slogan', 'don_texte');
+    foreach ($fields_nl as $cle) {
+        $key_nl = $cle . '_nl';
+        if (isset($_POST[$key_nl])) {
+            $val_nl = trim($_POST[$key_nl]);
+            $db->prepare("INSERT INTO site_config (cle,valeur,valeur_nl) VALUES (?,'',?) ON DUPLICATE KEY UPDATE valeur_nl=?")
+               ->execute(array($cle, $val_nl, $val_nl));
+        }
+    }
     // Logo upload
     if (!empty($_FILES['logo']['tmp_name'])) {
         $ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
@@ -73,9 +83,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
 
 // Lire toute la config
-$rows = $db->query("SELECT cle,valeur FROM site_config")->fetchAll();
-$c = array();
-foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; }
+$rows = $db->query("SELECT cle,valeur,valeur_nl FROM site_config")->fetchAll();
+$c = array(); $c_nl = array();
+foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; $c_nl[$r['cle']] = $r['valeur_nl'] ?? ''; }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -164,6 +174,9 @@ foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; }
       <label>Texte du bandeau urgence (laisser vide pour masquer)</label>
       <input type="text" name="urgence_texte" value="<?= htmlspecialchars($c['urgence_texte'] ?? '') ?>" placeholder="✈ Mobilisation nécessaire — ...">
       <div class="hint">Ce texte défile en haut du site en fond orange.</div>
+      <label style="color:#1673B2">🇳🇱 Bandeau urgence (néerlandais)</label>
+      <input type="text" name="urgence_texte_nl" value="<?= htmlspecialchars($c_nl['urgence_texte'] ?? '') ?>" placeholder="Vertaling NL...">
+      <div class="hint">Affiché sur la version /nl du site. Si vide, le texte FR est utilisé.</div>
 
       <label>Logo du site</label>
       <img src="../medias/logo.png" class="logo-preview" alt="Logo actuel" onerror="this.style.display='none'">
@@ -183,7 +196,11 @@ foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; }
       <input type="text" name="annonce_titre" value="<?= htmlspecialchars($c['annonce_titre'] ?? '') ?>">
       <label>Texte de l'annonce</label>
       <textarea name="annonce_texte" rows="2"><?= htmlspecialchars($c['annonce_texte'] ?? '') ?></textarea>
-    </div>
+      <label style="color:#1673B2;margin-top:12px">🇳🇱 Titre de l'annonce (néerlandais)</label>
+      <input type="text" name="annonce_titre_nl" value="<?= htmlspecialchars($c_nl['annonce_titre'] ?? '') ?>" placeholder="Titel NL...">
+      <label style="color:#1673B2">🇳🇱 Texte de l'annonce (néerlandais)</label>
+      <textarea name="annonce_texte_nl" rows="2" placeholder="Tekst NL..."><?= htmlspecialchars($c_nl['annonce_texte'] ?? '') ?></textarea>
+      <div class="hint">Si vide, le texte FR est utilisé sur la version /nl.</div>
 
     <!-- Réseaux sociaux -->
     <div class="card">

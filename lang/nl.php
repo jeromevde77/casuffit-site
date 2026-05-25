@@ -60,7 +60,7 @@ return [
 
     // ── Header / Aankondigingsbanner ────────────────────────────────────
     'header.badge'         => 'Baan 01 · UBCNA · Burgerunie',
-    'header.brand_suffix'  => 'VZW',
+    'header.brand_suffix'  => '',
     'annonce.date'         => 'Aankondiging — Mei 2026',
     'annonce.close'        => 'Sluiten',
     'annonce.equals'       => 'Ça suffit ! VZW',
