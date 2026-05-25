@@ -1,5 +1,13 @@
 <?php // includes/widgets/piste_meteo.php — v5 METAR + composantes + TAF ?>
-<div class="pmw" id="pmw">
+<?php
+// Destinataires de la plainte — configurable dans Admin → Paramètres (clé plainte_destinataires)
+// Format en base : adresses séparées par virgule, point-virgule ou retour à la ligne
+$pmw_dest_raw = function_exists('cfg') ? cfg('plainte_destinataires', 'airportmediation@mobilit.fgov.be') : 'airportmediation@mobilit.fgov.be';
+$pmw_dest_list = preg_split('/[,;\n\r]+/', $pmw_dest_raw);
+$pmw_dest_list = array_values(array_filter(array_map('trim', $pmw_dest_list)));
+if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be'];
+?>
+<div class="pmw" id="pmw" data-plainte-dest="<?= htmlspecialchars(implode(',', $pmw_dest_list)) ?>">
 
   <div class="pmw-header">
     <div class="pmw-title">
@@ -274,7 +282,7 @@
 <div class="pmw-plainte-overlay" id="pmw-plainte-overlay" onclick="if(event.target===this) pmwClosePlainte()">
   <div class="pmw-plainte-modal">
     <div class="pmw-plainte-title">✉ Envoyer une plainte</div>
-    <div class="pmw-plainte-sub">Au Service de Médiation pour l'Aéroport de Bruxelles-National</div>
+    <div class="pmw-plainte-sub">Aux autorités compétentes (médiateur, communes, associations…)</div>
 
     <!-- Mode d'emploi en 3 étapes -->
     <div class="pmw-plainte-steps">
@@ -284,7 +292,7 @@
       </div>
       <div class="pmw-plainte-step-row">
         <span class="pmw-plainte-step-n">2</span>
-        <div><b>Ouvrez un nouvel email</b> vers le médiateur (bouton ci-dessous, l'adresse est pré-remplie).</div>
+        <div><b>Ouvrez un nouvel email</b> vers les destinataires (bouton ci-dessous, les adresses sont pré-remplies).</div>
       </div>
       <div class="pmw-plainte-step-row">
         <span class="pmw-plainte-step-n">3</span>
@@ -295,7 +303,7 @@
     <!-- Boutons principaux -->
     <div class="pmw-plainte-actions">
       <button class="pmw-plainte-btn pmw-plainte-btn-copy" onclick="pmwCopyComplaint()">📋 Copier le contenu de la plainte</button>
-      <button class="pmw-plainte-btn pmw-plainte-btn-mail" onclick="pmwOpenMail()">✉ Ouvrir un email vers le médiateur</button>
+      <button class="pmw-plainte-btn pmw-plainte-btn-mail" onclick="pmwOpenMail()">✉ Ouvrir un email pré-adressé</button>
     </div>
 
     <!-- Capture image : option discrète -->
@@ -1467,7 +1475,10 @@ window.pmwOpenMail = function() {
   var cfg = window._currentBatcRwy || '';
   var sujet = 'Plainte nuisance aérienne EBBR — ' + (cfg ? cfg + ' — ' : '') + dateStr + ' ' + timeStr;
   var corps = 'Bonjour,\n\n(Collez ici le contenu copié depuis l\'outil — Ctrl+V / Cmd+V)\n';
-  var mailto = 'mailto:airportmediation@mobilit.fgov.be'
+  // Destinataires configurés dans l'admin (attribut data sur le widget)
+  var pmwEl = document.getElementById('pmw');
+  var dest = (pmwEl && pmwEl.getAttribute('data-plainte-dest')) || 'airportmediation@mobilit.fgov.be';
+  var mailto = 'mailto:' + encodeURIComponent(dest).replace(/%2C/g, ',')
              + '?subject=' + encodeURIComponent(sujet)
              + '&body=' + encodeURIComponent(corps);
   window.location.href = mailto;

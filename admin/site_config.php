@@ -43,6 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'annonce_active', 'annonce_titre', 'annonce_texte',
         // Analytics
         'ga_id',
+        // Plainte
+        'plainte_destinataires',
     );
     foreach ($fields as $cle) {
         $val = isset($_POST[$cle]) ? trim($_POST[$cle]) : '';
@@ -238,6 +240,18 @@ try {
       <p style="font-size:.72rem;color:#999;margin-top:6px">
         Format : <code>G-XXXXXXXXXX</code> — Laisser vide pour désactiver le tracking.
         Modifiable ici lors du changement de domaine.
+      </p>
+    </div>
+
+    <!-- Destinataires des plaintes -->
+    <div class="card">
+      <h3>✉ Destinataires des plaintes</h3>
+      <label>Adresses email qui recevront les plaintes (outil météo)</label>
+      <textarea name="plainte_destinataires" rows="4"
+                placeholder="airportmediation@mobilit.fgov.be&#10;bourgmestre@macommune.be&#10;contact@autreasso.be"><?= htmlspecialchars($c['plainte_destinataires'] ?? 'airportmediation@mobilit.fgov.be') ?></textarea>
+      <p style="font-size:.72rem;color:#999;margin-top:6px">
+        Une adresse par ligne (ou séparées par des virgules). Toutes ces adresses seront pré-remplies
+        dans l'email de plainte généré par l'outil « Conditions de vent ». Vous pouvez en ajouter ou en retirer à tout moment.
       </p>
     </div>
 
