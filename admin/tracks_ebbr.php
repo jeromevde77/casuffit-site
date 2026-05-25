@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 require_once __DIR__ . '/../includes/csrf.php';
-require_once __DIR__ . '/../includes/admin_sidebar_css.php';
 $db = getDB();
 
 // Action : régénérer une image
