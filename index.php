@@ -1249,6 +1249,15 @@ blockquote {
   font-weight: 700;
 }
 .mobile-menu a.nav-cta-m:hover { background: #e68800; }
+.mobile-menu a.nav-mobilisation-m {
+  background: #FF9900;
+  color: #fff !important;
+  font-weight: 800;
+  border-radius: 8px;
+  margin: 4px 0;
+  box-shadow: 0 2px 8px rgba(255,153,0,.4);
+}
+.mobile-menu a.nav-mobilisation-m:hover { background: #e68800; color: #fff !important; }
 .mobile-menu a.nav-membre-m {
   background: rgba(255,255,255,.1);
   color: rgba(255,255,255,.9);
@@ -1589,13 +1598,13 @@ function navBtnClass($p) {
     $prefix  = $isChild ? '└ ' : '';
   ?>
   <?php if (!empty($p['lien_url'])): ?>
-    <a href="/<?= htmlspecialchars($p['lien_url']) ?>" style="<?= $indent ?>" class="<?= navBtnClass($p) ?>">
+    <a href="/<?= htmlspecialchars($p['lien_url']) ?>" style="<?= $indent ?>" class="<?= navBtnClass($p) ?><?= (!$isChild && $p['slug']==='mobilisation') ? ' nav-mobilisation-m' : '' ?>">
       <?= $prefix ?><?= menuLabel($p) ?>
     </a>
   <?php else: ?>
     <a href="#" style="<?= $indent ?>"
        onclick="showTab('<?= $p['slug'] ?>', this); document.getElementById('burger').classList.remove('open'); document.getElementById('mobile-menu').classList.remove('open'); return false;"
-       class="<?= navBtnClass($p) ?>">
+       class="<?= navBtnClass($p) ?><?= (!$isChild && $p['slug']==='mobilisation') ? ' nav-mobilisation-m' : '' ?>">
       <?= $prefix ?><?= menuLabel($p) ?>
     </a>
   <?php endif; ?>
@@ -1662,7 +1671,7 @@ foreach ($header_widgets as $w_slug) {
         if (($p['menu_position'] ?? 'all') === 'header') continue;
       ?>
       <option value="<?= !empty($p['lien_url']) ? 'url:'.$p['lien_url'] : $p['slug'] ?>" <?= $first_sel?'selected':'' ?>>
-        <?= menuLabel($p) ?>
+        <?= $p['slug']==='mobilisation' ? '★ ' : '' ?><?= menuLabel($p) ?>
       </option>
       <?php $first_sel = false; endforeach; ?>
     </select>
