@@ -568,6 +568,20 @@ if ($edit_page) {
             <?php if (!$p['visible']): ?>
               <span style="color:#e53e3e">○ caché</span> ·
             <?php endif; ?>
+            <?php
+            $ppos = $p['menu_position'] ?? 'all';
+            if ($p['dans_menu'] ?? 1) {
+              if ($ppos === 'tabs_only') {
+                echo '<span class="pitem-flag" style="background:#fde8e8;color:#c0392b" title="Invisible sur desktop !">⚠ mobile seul</span>';
+              } elseif ($ppos === 'header') {
+                echo '<span class="pitem-flag" style="background:#e8f0fa;color:#1673B2">desktop+burger</span>';
+              } else {
+                echo '<span class="pitem-flag" style="background:#eef6ee;color:#1a7a4a">menu complet</span>';
+              }
+            } else {
+              echo '<span class="pitem-flag" style="background:#f0f0f0;color:#999">hors menu</span>';
+            }
+            ?>
             <span class="pitem-flag pitem-flag-fr">🇫🇷 FR</span>
             <?php if ($has_nl): ?>
               <?php if ($nl_status === 'relu'): ?>
@@ -646,12 +660,15 @@ if ($edit_page) {
         <details class="adv-toggle" <?= $has_adv ? 'open' : '' ?>>
           <summary>⚙ Options avancées du menu</summary>
           <div class="adv-toggle-body">
-            <label>Position dans le menu</label>
+            <label>Où afficher cette page dans la navigation ?</label>
             <select name="menu_position">
-              <option value="all"       <?= $pos==='all'       ?'selected':'' ?>>Partout (header + tabs + burger)</option>
-              <option value="tabs_only" <?= $pos==='tabs_only' ?'selected':'' ?>>Tabs uniquement</option>
-              <option value="header"    <?= $pos==='header'    ?'selected':'' ?>>Header + burger uniquement</option>
+              <option value="all"       <?= $pos==='all'       ?'selected':'' ?>>Partout — menu du haut (desktop) + onglets (mobile) + burger</option>
+              <option value="header"    <?= $pos==='header'    ?'selected':'' ?>>Desktop seulement — menu du haut + burger mobile</option>
+              <option value="tabs_only" <?= $pos==='tabs_only' ?'selected':'' ?>>⚠ Mobile seulement — onglets (invisible sur desktop !)</option>
             </select>
+            <div style="font-size:.72rem;color:#888;margin:-4px 0 8px;line-height:1.4">
+              Depuis que les onglets sont masqués sur desktop, choisissez <b>« Partout »</b> ou <b>« Desktop seulement »</b> pour qu'une page reste accessible sur ordinateur. « Mobile seulement » la rend invisible aux visiteurs desktop.
+            </div>
             <label>Affichage dans le menu</label>
             <select name="affichage_menu">
               <option value="texte"       <?= $aff==='texte'       ?'selected':'' ?>>Texte uniquement</option>
