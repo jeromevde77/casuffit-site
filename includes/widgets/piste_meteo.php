@@ -157,12 +157,23 @@
         <!-- Colonne BATC (réel) -->
         <div class="pmw-cmp3-col pmw-cmp3-batc">
           <div class="pmw-cmp3-head">🏠 Réel BATC</div>
-          <div class="pmw-cmp3-sub">
-            <a href="https://www.batc.be/fr/pistes-en-usage/actuel-prevision" target="_blank" rel="noopener" class="pmw-batc-link">Voir batc.be ↗</a><br>puis saisir :
+          <div class="pmw-batc-explain">
+            <p class="pmw-batc-explain-intro">La piste réellement en service n'est pas récupérable automatiquement. Pour vérifier si elle est conforme :</p>
+            <div class="pmw-batc-step">
+              <span class="pmw-batc-step-num">1</span>
+              <span>Ouvrez <a href="https://www.batc.be/fr/pistes-en-usage/actuel-prevision" target="_blank" rel="noopener" class="pmw-batc-link">batc.be ↗</a> et notez la configuration affichée</span>
+            </div>
+            <div class="pmw-batc-step">
+              <span class="pmw-batc-step-num">2</span>
+              <span>Cliquez ci-dessous sur la même configuration</span>
+            </div>
+            <div class="pmw-batc-step">
+              <span class="pmw-batc-step-num">3</span>
+              <span>L'outil vous dit si elle respecte le PRS</span>
+            </div>
           </div>
-          <div class="pmw-cmp3-seuils" style="color:#aaa;font-style:italic">Piste réellement<br>en service</div>
           <div class="pmw-cmp3-rwys" id="pmw-batc-rwys">
-            <span style="color:#bbb;font-size:.75rem">Non saisi</span>
+            <span style="color:#bbb;font-size:.75rem">Aucune configuration sélectionnée</span>
           </div>
           <div class="pmw-batc-row">
             <button class="pmw-batc-btn" onclick="setBatc('25R/25L')">25R/25L</button>
@@ -446,9 +457,14 @@
 .pmw-planning-arr{color:#555;font-weight:600}
 .pmw-planning-plage{color:#888;font-size:.68rem}
 .pmw-planning-note-txt{color:#aaa;font-style:italic;font-size:.65rem}
-.pmw-batc-link{font-size:.67rem;color:#7c3aed;text-decoration:none}
+.pmw-batc-link{font-size:.67rem;color:#7c3aed;text-decoration:underline;font-weight:700}
 .pmw-batc-link:hover{text-decoration:underline}
 .pmw-batc-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.pmw-batc-explain{margin:4px 0 8px;text-align:left}
+.pmw-batc-explain-intro{font-size:.66rem;color:#777;line-height:1.4;margin:0 0 6px}
+.pmw-batc-step{display:flex;align-items:flex-start;gap:6px;font-size:.66rem;color:#555;line-height:1.35;margin-bottom:4px}
+.pmw-batc-step-num{flex-shrink:0;width:15px;height:15px;border-radius:50%;background:#7c3aed;color:#fff;font-size:.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.pmw-batc-step a{color:#7c3aed;font-weight:700}
 .pmw-batc-btn{padding:4px 10px;border-radius:7px;border:1.5px solid #c8b8f0;background:#fff;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;color:#5b21b6;transition:all .15s}
 /* classes pmw-bc-* supprimées — boutons BATC neutres */
 .pmw-batc-btn:hover{background:#ede9fe;border-color:#7c3aed}
