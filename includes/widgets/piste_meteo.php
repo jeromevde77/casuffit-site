@@ -163,8 +163,6 @@
 
       </div>
 
-      <!-- Verdict comparaison -->
-      <div class="pmw-verdict" id="pmw-verdict" style="display:none"></div>
       </div><!-- /pmw-sec-reglementaire -->
     </div>
 
@@ -200,6 +198,8 @@
       <div class="pmw-batc-result" id="pmw-batc-rwys">
         <span style="color:#bbb;font-size:.78rem">Aucune configuration sélectionnée</span>
       </div>
+      <!-- Verdict + bouton plainte -->
+      <div class="pmw-verdict" id="pmw-verdict" style="display:none"></div>
     </div>
     <details class="pmw-details">
       <summary>METAR / TAF bruts</summary>
@@ -1126,7 +1126,24 @@ function renderBatc(d) {
 
   var cls, txt;
 
-  if (ok2013 && okNow) {
+  // ── Cas prioritaire : VIOLATION PRS pure ──
+  // Le PRS est actif (conditions calmes → pistes 25 imposées) mais BATC
+  // utilise une autre configuration : c'est une violation du plan, indépendamment du vent.
+  if (prsViolation2013 || prsViolationNow) {
+    cls = 'pmw-verdict-danger';
+    txt = '⚠ VIOLATION DU PRS — Le PRS est actif (les conditions imposent les pistes préférentielles 25), '
+        + 'or BATC indique la configuration ' + batcRwy + ' qui n\'est pas conforme. '
+        + 'Configuration attendue : ' + ((a.runways||[]).join('/')||'25R/25L') + '.';
+    // Compléter avec le détail vent si une piste dépasse aussi un seuil
+    var whyPrs = [];
+    batcPistes.forEach(function(rwy){
+      var c2 = comps[rwy]; if(!c2) return;
+      var m = c2.tw||0, g = (c2.tw_g!==null&&c2.tw_g!==undefined)?c2.tw_g:m;
+      if(m>7) whyPrs.push('piste '+rwy+' : vent arrière '+m.toFixed(1)+'kt > 7kt');
+      else if(g>10) whyPrs.push('piste '+rwy+' : rafale arrière '+g.toFixed(1)+'kt > 10kt');
+    });
+    if(whyPrs.length) txt += ' De plus : ' + whyPrs.join(', ') + '.';
+  } else if (ok2013 && okNow) {
     cls = 'pmw-verdict-ok';
     txt = '✓ Config justifiée — '+batcRwy+' est possible selon les deux AIP dans les conditions actuelles.';
   } else if (!ok2013 && !okNow) {
