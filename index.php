@@ -442,6 +442,35 @@ header.site-header {
 }
 .header-nav a.nav-outline:hover { background: rgba(255,255,255,0.15); }
 
+/* ── Bouton Mobilisation : CTA orange plein très visible (desktop) ── */
+.header-nav a.nav-mobilisation {
+  background: #FF9900;
+  color: #fff !important;
+  font-weight: 800;
+  border-radius: 8px;
+  padding: 0 18px;
+  margin-right: 6px;
+  box-shadow: 0 2px 8px rgba(255,153,0,.4);
+  position: relative;
+}
+.header-nav a.nav-mobilisation:hover {
+  background: #e68800;
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255,153,0,.5);
+}
+.header-nav a.nav-mobilisation.active {
+  background: #e68800;
+  color: #fff !important;
+}
+/* Léger pulse pour attirer l'œil au chargement */
+@keyframes navMobPulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(255,153,0,.4); }
+  50%      { box-shadow: 0 2px 16px rgba(255,153,0,.7); }
+}
+.header-nav a.nav-mobilisation { animation: navMobPulse 2.5s ease-in-out 2; }
+
+
 /* ── Sélecteur de langue ─────────────────────────────────────────────── */
 .lang-switch {
   display: inline-flex; align-items: center; justify-content: center;
@@ -1516,12 +1545,12 @@ function navBtnClass($p) {
         </div>
       </div>
       <?php elseif (!empty($p['lien_url'])): ?>
-        <a href="/<?= htmlspecialchars($p['lien_url']) ?>" class="<?= htmlspecialchars($btnCls) ?>">
+        <a href="/<?= htmlspecialchars($p['lien_url']) ?>" class="<?= htmlspecialchars($btnCls) ?><?= $p['slug']==='mobilisation' ? ' nav-mobilisation' : '' ?>">
           <?= menuLabel($p) ?>
         </a>
       <?php else: ?>
         <a href="#" onclick="showTab('<?= $p['slug'] ?>', this); return false;"
-           class="<?= htmlspecialchars($btnCls) ?>">
+           class="<?= htmlspecialchars($btnCls) ?><?= $p['slug']==='mobilisation' ? ' nav-mobilisation' : '' ?>">
           <?= menuLabel($p) ?>
         </a>
       <?php endif; ?>
