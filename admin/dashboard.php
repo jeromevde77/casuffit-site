@@ -112,17 +112,20 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 /* ── STATS GRID ── */
 .stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:24px; }
 .stat-card {
+  min-width:0;
   background:#fff; border-radius:12px; padding:16px 18px;
   box-shadow:0 2px 8px rgba(0,0,0,.06);
   display:flex; align-items:center; gap:14px;
   text-decoration:none; color:inherit;
   transition:all .2s; border:2px solid transparent;
 }
+.stat-info { min-width:0; }
 .stat-card:hover { border-color:#1673B2; transform:translateY(-2px); box-shadow:0 6px 18px rgba(22,115,178,.12); }
 .stat-icon { font-size:1.6rem; flex-shrink:0; }
 .stat-info .val { font-size:1.5rem; font-weight:800; color:#0e3d6b; line-height:1; }
 .stat-info .lbl { font-size:.68rem; color:#999; text-transform:uppercase; letter-spacing:.04em; margin-top:3px; }
-.stat-info .sub { font-size:.7rem; color:#FF9900; font-weight:600; margin-top:2px; }
+.stat-info .sub { font-size:.7rem; color:#FF9900; font-weight:600; margin-top:2px; line-height:1.3; }
+.stat-info .lbl, .stat-info .val { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 /* ── ACTIONS RAPIDES ── */
 .actions-title { font-size:.7rem; font-weight:700; color:#999; text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
