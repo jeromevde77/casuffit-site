@@ -276,7 +276,7 @@ $don_texte   = cfgLang('don_texte', 'Combat juridique — Suite de nos actions')
   <meta property="og:title" content="<?= t('seo.og_title') ?>">
   <meta property="og:description" content="<?= t('seo.description') ?>">
   <meta property="og:url" content="https://www.casuffit.be<?= $_SERVER['REQUEST_URI'] ?>">
-  <meta property="og:image" content="https://www.casuffit.be/medias/og-image.jpg">
+  <meta property="og:image" content="https://www.casuffit.be/assets/img/og-image.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:locale" content="<?= LANG === 'nl' ? 'nl_BE' : 'fr_BE' ?>">
@@ -286,7 +286,7 @@ $don_texte   = cfgLang('don_texte', 'Combat juridique — Suite de nos actions')
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<?= t('seo.og_title') ?>">
   <meta name="twitter:description" content="<?= t('seo.description') ?>">
-  <meta name="twitter:image" content="https://www.casuffit.be/medias/og-image.jpg">
+  <meta name="twitter:image" content="https://www.casuffit.be/assets/img/og-image.jpg">
 
   <!-- Multilingue -->
   <link rel="alternate" hreflang="fr-BE" href="https://www.casuffit.be/">
