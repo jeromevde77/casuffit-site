@@ -110,22 +110,19 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 .ch-meta strong { color:#FF9900; }
 
 /* ── STATS GRID ── */
-.stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:24px; }
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
 .stat-card {
-  min-width:0;
   background:#fff; border-radius:12px; padding:16px 18px;
   box-shadow:0 2px 8px rgba(0,0,0,.06);
   display:flex; align-items:center; gap:14px;
   text-decoration:none; color:inherit;
   transition:all .2s; border:2px solid transparent;
 }
-.stat-info { min-width:0; }
 .stat-card:hover { border-color:#1673B2; transform:translateY(-2px); box-shadow:0 6px 18px rgba(22,115,178,.12); }
 .stat-icon { font-size:1.6rem; flex-shrink:0; }
 .stat-info .val { font-size:1.5rem; font-weight:800; color:#0e3d6b; line-height:1; }
 .stat-info .lbl { font-size:.68rem; color:#999; text-transform:uppercase; letter-spacing:.04em; margin-top:3px; }
-.stat-info .sub { font-size:.7rem; color:#FF9900; font-weight:600; margin-top:2px; line-height:1.3; }
-.stat-info .lbl, .stat-info .val { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.stat-info .sub { font-size:.7rem; color:#FF9900; font-weight:600; margin-top:2px; }
 
 /* ── ACTIONS RAPIDES ── */
 .actions-title { font-size:.7rem; font-weight:700; color:#999; text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
@@ -186,12 +183,6 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 /* Mode maintenance */
 .maint-box { background: #f0f6fb; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; border: 2px solid #c8dff0; width: 100%; box-sizing: border-box; }
 .maint-box.maint-active { background: #fff8ee; border-color: #FF9900; }
-/* Grille pour regrouper Annonce + Urgence côte à côte */
-.controls-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px; }
-.controls-grid .maint-box { margin-bottom:0; }
-.controls-grid .maint-status { flex-direction:column; align-items:flex-start; gap:10px; }
-.controls-grid .maint-status > div[style*="margin-left"] { margin-left:0 !important; width:100%; }
-@media (max-width:768px){ .controls-grid { grid-template-columns:1fr; } }
 .maint-status { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
 .maint-dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
 .maint-dot.on { background: #e53e3e; box-shadow: 0 0 6px #e53e3e; animation: blink 1.2s ease-in-out infinite; }
@@ -432,46 +423,39 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
     </div>
   <?php endif; ?>
 
-  <div class="actions-title" style="margin-top:24px">Contrôles d'affichage du site</div>
-  <div class="controls-grid">
+  <div class="actions-title" style="margin-top:24px">📢 Annonce en haut de site</div>
   <div class="maint-box<?= $annonce_active ? ' maint-active' : '' ?>">
     <div class="maint-status" style="margin-bottom:0">
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="maint-dot<?= $annonce_active ? ' on' : '' ?>" style="<?= $annonce_active ? 'background:#FF9900;box-shadow:0 0 6px #FF9900' : '' ?>"></div>
-        <strong style="font-size:.82rem;color:#0e3d6b">📢 Annonce en haut de site</strong>
-      </div>
-      <span style="font-size:.76rem"><?= $annonce_active ? 'AFFICHÉE — visible en haut du site' : 'Masquée — aucun bandeau affiché' ?></span>
+      <div class="maint-dot<?= $annonce_active ? ' on' : '' ?>" style="<?= $annonce_active ? 'background:#FF9900;box-shadow:0 0 6px #FF9900' : '' ?>"></div>
+      <span><?= $annonce_active ? 'AFFICHÉE — Le bandeau d\'annonce est visible en haut du site' : 'Masquée — Aucun bandeau d\'annonce affiché' ?></span>
       <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
         <a href="site_config.php" class="maint-toggle-btn" style="background:#e8eef3;color:#555;text-decoration:none">Modifier le texte</a>
         <form method="post">
           <input type="hidden" name="annonce_action" value="toggle">
           <button type="submit" class="maint-toggle-btn<?= $annonce_active ? ' off' : ' on' ?>">
-            <?= $annonce_active ? '⏹ Masquer' : '▶ Afficher' ?>
+            <?= $annonce_active ? '⏹ Masquer l\'annonce' : '▶ Afficher l\'annonce' ?>
           </button>
         </form>
       </div>
     </div>
   </div>
 
+  <div class="actions-title" style="margin-top:24px">⚠️ Bandeau urgence (orange)</div>
   <div class="maint-box<?= $urgence_active ? ' maint-active' : '' ?>">
     <div class="maint-status" style="margin-bottom:0">
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="maint-dot<?= $urgence_active ? ' on' : '' ?>" style="<?= $urgence_active ? 'background:#FF9900;box-shadow:0 0 6px #FF9900' : '' ?>"></div>
-        <strong style="font-size:.82rem;color:#0e3d6b">⚠️ Bandeau urgence (orange)</strong>
-      </div>
-      <span style="font-size:.76rem"><?= $urgence_active ? 'AFFICHÉ — visible en haut du site' : 'Masqué — aucun bandeau affiché' ?></span>
+      <div class="maint-dot<?= $urgence_active ? ' on' : '' ?>" style="<?= $urgence_active ? 'background:#FF9900;box-shadow:0 0 6px #FF9900' : '' ?>"></div>
+      <span><?= $urgence_active ? 'AFFICHÉ — Le bandeau orange est visible en haut du site' : 'Masqué — Aucun bandeau urgence affiché' ?></span>
       <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
         <a href="site_config.php" class="maint-toggle-btn" style="background:#e8eef3;color:#555;text-decoration:none">Modifier le texte</a>
         <form method="post">
           <input type="hidden" name="urgence_action" value="toggle">
           <button type="submit" class="maint-toggle-btn<?= $urgence_active ? ' off' : ' on' ?>">
-            <?= $urgence_active ? '⏹ Masquer' : '▶ Afficher' ?>
+            <?= $urgence_active ? '⏹ Masquer le bandeau' : '▶ Afficher le bandeau' ?>
           </button>
         </form>
       </div>
     </div>
   </div>
-  </div><!-- /controls-grid -->
 
   <div class="actions-title" style="margin-top:24px">🚧 Mode maintenance</div>
   <div class="maint-box<?= $maint_mode==='1' ? ' maint-active' : '' ?>" id="maint-box">
