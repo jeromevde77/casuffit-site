@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_news'])) {
     $image    = trim(isset($_POST['image_url'])? $_POST['image_url']: '');
     $statut   = in_array(isset($_POST['statut']) ? $_POST['statut'] : '', array('brouillon','publie','archive')) ? $_POST['statut'] : 'brouillon';
     $epingle  = isset($_POST['epingle']) ? 1 : 0;
+    $deploye  = isset($_POST['deploye_defaut']) ? 1 : 0;
     $date_pub = trim(isset($_POST['date_publication']) ? $_POST['date_publication'] : '');
 
     // ── Champs NL ──
@@ -30,6 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_news'])) {
     $hasNlNews = false;
     try { $c = $db->query("SHOW COLUMNS FROM news LIKE 'titre_nl'")->fetch(); $hasNlNews = !empty($c); }
     catch(Exception $e) { $hasNlNews = false; }
+    // Vérifier si la colonne deploye_defaut existe
+    $hasDeploye = false;
+    try { $c = $db->query("SHOW COLUMNS FROM news LIKE 'deploye_defaut'")->fetch(); $hasDeploye = !empty($c); }
+    catch(Exception $e) { $hasDeploye = false; }
     $date_pub = $date_pub ? date('Y-m-d H:i:s', strtotime($date_pub)) : date('Y-m-d H:i:s');
 
     if (empty($titre)) {
@@ -53,6 +58,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_news'])) {
                    ->execute(array($titre,$accroche,$contenu,$image,$statut,$epingle,$date_pub,ADMIN_USER));
             }
             $msg = '✅ Actualité créée.';
+            if ($id == 0) { $id = (int)$db->lastInsertId(); }
+        }
+        // Mettre à jour deploye_defaut (colonne optionnelle)
+        if ($hasDeploye && $id > 0) {
+            $db->prepare("UPDATE news SET deploye_defaut=? WHERE id=?")->execute(array($deploye, $id));
         }
         header('Location: news.php?msg='.urlencode($msg)); exit;
     }
@@ -473,8 +483,18 @@ $news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation
         <label class="epingle-check">
           <input type="checkbox" name="epingle" value="1" <?= $edit && $edit['epingle'] ? 'checked' : '' ?>>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>
-          Épingler cette actualité en haut
+          Épingler cette actualité en haut (à la une)
         </label>
+        <div style="font-size:.72rem;color:#999;margin-left:24px;margin-top:2px">Place l'actualité tout en haut de la liste.</div>
+      </div>
+
+      <div class="frow">
+        <label class="epingle-check">
+          <input type="checkbox" name="deploye_defaut" value="1" <?= $edit && !empty($edit['deploye_defaut']) ? 'checked' : '' ?>>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+          Afficher dépliée par défaut
+        </label>
+        <div style="font-size:.72rem;color:#999;margin-left:24px;margin-top:2px">L'actualité s'affiche déjà ouverte (contenu visible) sans clic. Indépendant de l'épinglage.</div>
       </div>
 
       <!-- Champs NL soumis avec le form (alimentés par syncNl() depuis le bloc NL ci-dessous) -->
