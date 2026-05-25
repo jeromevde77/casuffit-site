@@ -36,14 +36,19 @@ $pct = $obj_total > 0 ? round($obj_actuel / $obj_total * 100) : 0;
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
-<title><?= $is_nl ? 'Doe mee' : 'Agir' ?> — Ça suffit ! <?= $is_nl ? 'VZW' : 'ASBL' ?></title>
+<title><?= $is_nl ? 'Doe mee' : 'Agir' ?> — Ça suffit !</title>
 <meta name="description" content="<?= htmlspecialchars(t('seo.description')) ?>">
 <link rel="icon" type="image/png" href="/favicon-32.png">
 
 <!-- Open Graph -->
 <meta property="og:title" content="<?= $is_nl ? 'Sluit u aan — Stop de hinder' : 'Rejoignez-nous — Stop aux nuisances' ?>">
 <meta property="og:description" content="<?= htmlspecialchars(t('seo.description')) ?>">
-<meta property="og:image" content="https://www.casuffit.be/medias/og-image.jpg">
+<meta property="og:image" content="https://www.casuffit.be/assets/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.casuffit.be/assets/img/og-image.jpg">
 <meta property="og:url" content="https://www.casuffit.be/agir">
 
 <style>
