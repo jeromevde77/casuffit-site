@@ -172,8 +172,8 @@ foreach ($rows as $r) { $c[$r['cle']] = $r['valeur']; $c_nl[$r['cle']] = $r['val
         </div>
       </div>
       <label>Texte du bandeau urgence (laisser vide pour masquer)</label>
-      <input type="text" name="urgence_texte" value="<?= htmlspecialchars($c['urgence_texte'] ?? '') ?>" placeholder="✈ Mobilisation nécessaire — ...">
-      <div class="hint">Ce texte défile en haut du site en fond orange.</div>
+      <input type="text" name="urgence_texte" value="<?= htmlspecialchars($c['urgence_texte'] ?? '') ?>" placeholder="Mobilisation nécessaire — ... (vide = masqué)">
+      <div class="hint">Bandeau orange en haut du site. Laissez vide pour le masquer complètement.</div>
       <label style="color:#1673B2">🇳🇱 Bandeau urgence (néerlandais)</label>
       <input type="text" name="urgence_texte_nl" value="<?= htmlspecialchars($c_nl['urgence_texte'] ?? '') ?>" placeholder="Vertaling NL...">
       <div class="hint">Affiché sur la version /nl du site. Si vide, le texte FR est utilisé.</div>

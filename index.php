@@ -140,6 +140,7 @@ $annonce_texte  = cfgLang('annonce_texte', '');
 
 // Urgence texte
 $urgence_texte = cfgLang('urgence_texte', 'Piste 01 & UBCNA unis — Ensemble pour faire cesser les nuisances !');
+$urgence_active = cfg('urgence_active', '1') === '1';
 
 // Config don
 $iban        = cfg('iban', 'BE41 0689 0149 6910');
@@ -1549,9 +1550,11 @@ function navBtnClass($p) {
 </nav>
 
 <!-- URGENCE -->
+<?php if ($urgence_active && trim($urgence_texte) !== ''): ?>
 <div class="urgence">
-  ✈ &nbsp; <?= htmlspecialchars($urgence_texte) ?> &nbsp; ✈
+  <?= htmlspecialchars($urgence_texte) ?>
 </div>
+<?php endif; ?>
 
 <!-- ZONE HEADER — widgets globaux (affichés sur toutes les pages) -->
 <?php

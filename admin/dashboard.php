@@ -51,6 +51,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['annonce_action']) && 
 }
 $annonce_active = ($db->query("SELECT valeur FROM site_config WHERE cle='annonce_active'")->fetchColumn() ?? '1') === '1';
 
+// Toggle bandeau urgence
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['urgence_action']) && $_POST['urgence_action'] === 'toggle') {
+    $cur = $db->query("SELECT valeur FROM site_config WHERE cle='urgence_active'")->fetchColumn();
+    $new = ($cur === '1' || $cur === null) ? '0' : '1';
+    $db->prepare("INSERT INTO site_config (cle,valeur) VALUES ('urgence_active',?) ON DUPLICATE KEY UPDATE valeur=?")
+       ->execute([$new, $new]);
+    header('Location: dashboard.php'); exit;
+}
+$urgence_active = ($db->query("SELECT valeur FROM site_config WHERE cle='urgence_active'")->fetchColumn() ?? '1') === '1';
+
 $membres_recents = $db->query("SELECT prenom, nom, code_membre, date_inscription FROM members ORDER BY date_inscription DESC LIMIT 5")->fetchAll();
 $nb_sub_new  = $db->query("SELECT COUNT(*) FROM subscribers WHERE date_inscription >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn();
 ?>
@@ -404,6 +414,23 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
           <input type="hidden" name="annonce_action" value="toggle">
           <button type="submit" class="maint-toggle-btn<?= $annonce_active ? ' off' : ' on' ?>">
             <?= $annonce_active ? '⏹ Masquer l\'annonce' : '▶ Afficher l\'annonce' ?>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-title" style="margin-top:24px">⚠️ Bandeau urgence (orange)</div>
+  <div class="maint-box<?= $urgence_active ? ' maint-active' : '' ?>">
+    <div class="maint-status" style="margin-bottom:0">
+      <div class="maint-dot<?= $urgence_active ? ' on' : '' ?>" style="<?= $urgence_active ? 'background:#FF9900;box-shadow:0 0 6px #FF9900' : '' ?>"></div>
+      <span><?= $urgence_active ? 'AFFICHÉ — Le bandeau orange est visible en haut du site' : 'Masqué — Aucun bandeau urgence affiché' ?></span>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <a href="site_config.php" class="maint-toggle-btn" style="background:#e8eef3;color:#555;text-decoration:none">Modifier le texte</a>
+        <form method="post">
+          <input type="hidden" name="urgence_action" value="toggle">
+          <button type="submit" class="maint-toggle-btn<?= $urgence_active ? ' off' : ' on' ?>">
+            <?= $urgence_active ? '⏹ Masquer le bandeau' : '▶ Afficher le bandeau' ?>
           </button>
         </form>
       </div>
