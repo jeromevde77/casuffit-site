@@ -41,7 +41,7 @@ $begin = strtotime($date.' 00:00:00');
 $end   = strtotime($date.' 23:59:59');
 
 $opensky_token = get_opensky_token();
-logit("Token OAuth2 : " . ($opensky_token ? "OK" : "ABSENT — appel anonyme"));
+logit("Token OAuth2 : " . ($opensky_token ? "OK" : "ABSENT — appel anonyme") . ($opensky_token && isset($GLOBALS['opensky_account']) ? " · compte " . $GLOBALS['opensky_account'] : ""));
 
 // ── 1. Récupérer toutes les arrivées EBBR du jour ────────────────────────
 $url     = "https://opensky-network.org/api/flights/arrival?airport=EBBR&begin=$begin&end=$end";
@@ -179,11 +179,13 @@ function get_opensky_token(): ?string {
         $cid = OPENSKY_TRACKS_CLIENT_ID;
         $csec = OPENSKY_TRACKS_CLIENT_SECRET;
         $cache_suffix = 'tracks';
+        $GLOBALS['opensky_account'] = 'dédié (OPENSKY_TRACKS)';
     } elseif (defined('OPENSKY_CLIENT_ID') && OPENSKY_CLIENT_ID
         && defined('OPENSKY_CLIENT_SECRET') && OPENSKY_CLIENT_SECRET) {
         $cid = OPENSKY_CLIENT_ID;
         $csec = OPENSKY_CLIENT_SECRET;
         $cache_suffix = 'main';
+        $GLOBALS['opensky_account'] = 'principal (OPENSKY_CLIENT — partagé avec le temps réel)';
     } else {
         return null;
     }
