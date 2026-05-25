@@ -106,24 +106,27 @@
       </div>
     </div>
 
+    <!-- Planning PRS — affiché en dehors de la comparaison -->
     <div class="pmw-section">
-      <div class="pmw-section-title pmw-collapse-toggle" onclick="pmwToggleSection('reglementaire')" title="Cliquer pour afficher/masquer">
-        Comparaison réglementaire
-        <span class="pmw-toggle-icon" id="pmw-icon-reglementaire">▼</span>
-      </div>
-      <div id="pmw-sec-reglementaire" class="pmw-collapse-body">
-      <div class="pmw-legal-note">
-        ⚖ L'AIP sept. 2013 découle de l'instruction ministérielle du 17/07/2013 — seule base légale valide.
-        L'AIP actuel (skeyes) applique des seuils plus permissifs, jugés illégaux.
-      </div>
-
-      <!-- Planning horaire commun aux deux AIP -->
       <div class="pmw-planning-common" id="pmw-planning-box" style="display:none">
         <div class="pmw-planning-common-title">
           📅 Planning PRS — commun aux deux AIP
         </div>
         <div id="pmw-planning-detail" class="pmw-planning-common-detail"></div>
       </div>
+    </div>
+
+    <div class="pmw-section">
+      <!-- Explication AIP, juste au-dessus de la comparaison, style neutre -->
+      <div class="pmw-aip-note">
+        ⚖ L'AIP sept. 2013 découle de l'instruction ministérielle du 17/07/2013 — seule base légale valide.
+        L'AIP actuel (skeyes) applique des seuils plus permissifs, jugés illégaux.
+      </div>
+      <div class="pmw-section-title pmw-collapse-toggle" onclick="pmwToggleSection('reglementaire')" title="Cliquer pour afficher/masquer">
+        Comparaison réglementaire
+        <span class="pmw-toggle-icon" id="pmw-icon-reglementaire">▼</span>
+      </div>
+      <div id="pmw-sec-reglementaire" class="pmw-collapse-body">
 
       <div class="pmw-cmp3-grid pmw-cmp2-grid">
 
@@ -407,7 +410,7 @@
 .pmw-cfg-ok{background:#fff8ee;color:#c97200;border:1px solid #ffd080}
 
 /* ── Note légale ── */
-.pmw-legal-note{font-size:.73rem;color:#5b21b6;background:#f5f0ff;border:1.5px solid #ddd6fe;border-radius:7px;padding:8px 12px;line-height:1.5}
+.pmw-aip-note{font-size:.73rem;color:#555;background:#fafbfc;border:1.5px solid #e2e8f0;border-radius:7px;padding:8px 12px;line-height:1.5;margin-bottom:10px}
 /* ── Grille 3 colonnes ── */
 .pmw-cmp3-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
 .pmw-cmp2-grid{grid-template-columns:1fr 1fr}
