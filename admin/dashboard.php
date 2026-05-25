@@ -63,8 +63,6 @@ $urgence_active = ($db->query("SELECT valeur FROM site_config WHERE cle='urgence
 
 $membres_recents = $db->query("SELECT prenom, nom, code_membre, date_inscription FROM members ORDER BY date_inscription DESC LIMIT 5")->fetchAll();
 $nb_sub_new  = $db->query("SELECT COUNT(*) FROM subscribers WHERE date_inscription >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn();
-$nb_mbr_new  = $db->query("SELECT COUNT(*) FROM members WHERE statut='actif' AND date_inscription >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn();
-$nb_mbr_today = $db->query("SELECT COUNT(*) FROM members WHERE statut='actif' AND DATE(date_inscription) = CURDATE()")->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -270,16 +268,6 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
         <?php endif; ?>
       </div>
     </a>
-    <a href="members.php" class="stat-card">
-      <span class="stat-icon">👥</span>
-      <div class="stat-info">
-        <div class="val"><?= number_format($nb_membres, 0, ',', ' ') ?></div>
-        <div class="lbl">Membres actifs</div>
-        <?php if ($nb_mbr_new > 0): ?>
-          <div class="sub"><?= $nb_mbr_today > 0 ? '+'.$nb_mbr_today." aujourd'hui · " : '' ?>+<?= $nb_mbr_new ?> cette semaine</div>
-        <?php endif; ?>
-      </div>
-    </a>
     <a href="dons_all.php" class="stat-card">
       <span class="stat-icon">💰</span>
       <div class="stat-info">
@@ -287,6 +275,7 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
         <div class="lbl">Dons confirmés</div>
       </div>
     </a>
+  </div>
 
   <!-- Actions rapides -->
   <div class="actions-title">Actions rapides</div>
@@ -394,20 +383,11 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
         <?php if (empty($membres_recents)): ?>
           <div class="empty-state">Aucun membre.</div>
         <?php else: ?>
-          <?php foreach ($membres_recents as $m):
-            $d_insc = strtotime($m['date_inscription']);
-            $is_today = date('Y-m-d', $d_insc) === date('Y-m-d');
-            $is_week  = $d_insc >= strtotime('-7 days');
-          ?>
+          <?php foreach ($membres_recents as $m): ?>
           <div class="item-row">
             <span class="item-dot dot-green"></span>
-            <span class="item-name">
-              <?= htmlspecialchars($m['prenom'].' '.$m['nom']) ?>
-              <?php if ($is_today): ?><span style="background:#FF9900;color:#fff;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:5px">AUJOURD'HUI</span>
-              <?php elseif ($is_week): ?><span style="background:#e8f0fa;color:#1673B2;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:5px">NOUVEAU</span>
-              <?php endif; ?>
-            </span>
-            <span class="item-meta"><?= date('d/m/Y', $d_insc) ?> · <?= htmlspecialchars($m['code_membre']) ?></span>
+            <span class="item-name"><?= htmlspecialchars($m['prenom'].' '.$m['nom']) ?></span>
+            <span class="item-meta"><?= htmlspecialchars($m['code_membre']) ?></span>
           </div>
           <?php endforeach; ?>
         <?php endif; ?>
