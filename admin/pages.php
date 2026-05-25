@@ -95,6 +95,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_page'])) {
     }
 }
 
+// ── Réordonner une page (flèche haut/bas) ─────────────────────────────────
+if (isset($_GET['move']) && is_numeric($_GET['move']) && isset($_GET['dir'])
+    && hash_equals(csrf_token(), $_GET['_csrf'] ?? '')) {
+    $mid = intval($_GET['move']);
+    $dir = $_GET['dir'] === 'up' ? 'up' : 'down';
+    $cur = $db->query("SELECT id, ordre, COALESCE(parent_id,0) AS pid FROM pages WHERE id=$mid")->fetch();
+    if ($cur) {
+        // Trouver la page voisine (même niveau parent) dans la direction choisie
+        if ($dir === 'up') {
+            $neigh = $db->prepare("SELECT id, ordre FROM pages WHERE COALESCE(parent_id,0)=? AND (ordre < ? OR (ordre = ? AND id < ?)) ORDER BY ordre DESC, id DESC LIMIT 1");
+        } else {
+            $neigh = $db->prepare("SELECT id, ordre FROM pages WHERE COALESCE(parent_id,0)=? AND (ordre > ? OR (ordre = ? AND id > ?)) ORDER BY ordre ASC, id ASC LIMIT 1");
+        }
+        $neigh->execute([$cur['pid'], $cur['ordre'], $cur['ordre'], $mid]);
+        $other = $neigh->fetch();
+        if ($other) {
+            // Échanger les ordres ; si égaux, décaler
+            $o1 = (int)$cur['ordre']; $o2 = (int)$other['ordre'];
+            if ($o1 === $o2) { $o2 = $dir === 'up' ? $o1 - 1 : $o1 + 1; }
+            $db->prepare("UPDATE pages SET ordre=? WHERE id=?")->execute([$o2, $cur['id']]);
+            $db->prepare("UPDATE pages SET ordre=? WHERE id=?")->execute([$o1, $other['id']]);
+        }
+    }
+    header('Location: pages.php'); exit;
+}
+
 // ── Supprimer une page ────────────────────────────────────────────────────
 if (isset($_GET['delete']) && is_numeric($_GET['delete']) && hash_equals(csrf_token(), $_GET['_csrf'] ?? '')) {
     $row = $db->query("SELECT slug FROM pages WHERE id=".intval($_GET['delete']))->fetch();
@@ -172,6 +198,9 @@ if ($edit_page) {
     .pitem.active{background:#e8f3fb;border-left:3px solid #1673B2}
     .pitem.child{padding-left:26px;background:#fafbfc}
     .pitem-ordre{font-size:.7rem;font-weight:700;color:#bbb;flex-shrink:0;width:20px;text-align:center}
+    .pitem-reorder{display:flex;flex-direction:column;gap:1px;flex-shrink:0;width:20px;align-items:center}
+    .reorder-arrow{color:#bbb;font-size:.62rem;line-height:1;text-decoration:none;padding:1px 3px;border-radius:3px;transition:all .12s}
+    .reorder-arrow:hover{color:#1673B2;background:#e8f3fb}
     .pitem-info{flex:1;min-width:0}
     .pitem-name{font-size:.82rem;font-weight:600;color:#0e3d6b;line-height:1.3}
     .pitem-meta{font-size:.68rem;color:#aaa;margin-top:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
@@ -524,10 +553,16 @@ if ($edit_page) {
         $has_nl    = !empty($p['titre_nl']) || !empty($p['contenu_nl']);
         $nl_status = $p['nl_status'] ?? 'vide';
       ?>
-      <div class="pitem <?= ($edit_page && $edit_page['id'] == $p['id']) ? 'active' : '' ?> <?= $is_child ? 'child' : '' ?>"
-           onclick="mobileEdit('pages.php?edit=<?= $p['id'] ?>')">
-        <span class="pitem-ordre"><?= $is_child ? '↳' : $p['ordre'] ?></span>
-        <div class="pitem-info">
+      <div class="pitem <?= ($edit_page && $edit_page['id'] == $p['id']) ? 'active' : '' ?> <?= $is_child ? 'child' : '' ?>">
+        <?php if (!$is_child): ?>
+        <span class="pitem-reorder" onclick="event.stopPropagation()">
+          <a href="pages.php?move=<?= $p['id'] ?>&dir=up&_csrf=<?= urlencode(csrf_token()) ?>" class="reorder-arrow" title="Monter">▲</a>
+          <a href="pages.php?move=<?= $p['id'] ?>&dir=down&_csrf=<?= urlencode(csrf_token()) ?>" class="reorder-arrow" title="Descendre">▼</a>
+        </span>
+        <?php else: ?>
+        <span class="pitem-ordre">↳</span>
+        <?php endif; ?>
+        <div class="pitem-info" onclick="mobileEdit('pages.php?edit=<?= $p['id'] ?>')" style="cursor:pointer">
           <div class="pitem-name"><?= htmlspecialchars($p['titre']) ?></div>
           <div class="pitem-meta">
             <?php if (!$p['visible']): ?>
