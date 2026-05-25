@@ -273,26 +273,39 @@
 <!-- Modale plainte -->
 <div class="pmw-plainte-overlay" id="pmw-plainte-overlay" onclick="if(event.target===this) pmwClosePlainte()">
   <div class="pmw-plainte-modal">
-    <div class="pmw-plainte-title">✉ Générer une plainte</div>
-    <div class="pmw-plainte-sub">Capture du tableau de bord au moment de la plainte</div>
-    <div id="pmw-plainte-loading" class="pmw-plainte-loading">⏳ Génération de la capture en cours…</div>
-    <img id="pmw-plainte-img" class="pmw-plainte-capture" style="display:none" alt="Capture conditions EBBR">
-    <div class="pmw-plainte-mail" id="pmw-plainte-mail"></div>
-    <div class="pmw-plainte-actions">
-      <button class="pmw-plainte-btn pmw-plainte-btn-copy" onclick="pmwCopyComplaint()">📋 Copier le message de plainte</button>
-      <button class="pmw-plainte-btn pmw-plainte-btn-dl" onclick="pmwDownloadCapture()">⬇ Télécharger l'image</button>
-      <button class="pmw-plainte-btn pmw-plainte-btn-close" onclick="pmwClosePlainte()">✕ Fermer</button>
-    </div>
+    <div class="pmw-plainte-title">✉ Envoyer une plainte</div>
+    <div class="pmw-plainte-sub">Au Service de Médiation pour l'Aéroport de Bruxelles-National</div>
+
+    <!-- Mode d'emploi en 3 étapes -->
     <div class="pmw-plainte-steps">
-      <div class="pmw-plainte-steps-title">Comment envoyer votre plainte :</div>
-      <ol>
-        <li><strong>Cliquez sur « Copier le message de plainte »</strong> ci-dessus — tout le contenu (texte + tableau) est copié.</li>
-        <li>Ouvrez votre messagerie (Gmail, Outlook, Mail…) et créez un nouvel email.</li>
-        <li>Adressez-le à <strong>l'autorité compétente</strong> (médiateur Brussels Airport, votre commune…).</li>
-        <li><strong>Collez</strong> le contenu dans le corps du message (Ctrl+V ou Cmd+V).</li>
-        <li>Téléchargez et joignez l'image en pièce jointe pour preuve visuelle.</li>
-      </ol>
+      <div class="pmw-plainte-step-row">
+        <span class="pmw-plainte-step-n">1</span>
+        <div><b>Copiez le contenu de la plainte</b> — toutes les données (météo, configuration, analyse) sont copiées en un clic.</div>
+      </div>
+      <div class="pmw-plainte-step-row">
+        <span class="pmw-plainte-step-n">2</span>
+        <div><b>Ouvrez un nouvel email</b> vers le médiateur (bouton ci-dessous, l'adresse est pré-remplie).</div>
+      </div>
+      <div class="pmw-plainte-step-row">
+        <span class="pmw-plainte-step-n">3</span>
+        <div><b>Collez</b> le contenu dans le corps du message (Ctrl+V / Cmd+V) et envoyez.</div>
+      </div>
     </div>
+
+    <!-- Boutons principaux -->
+    <div class="pmw-plainte-actions">
+      <button class="pmw-plainte-btn pmw-plainte-btn-copy" onclick="pmwCopyComplaint()">📋 Copier le contenu de la plainte</button>
+      <button class="pmw-plainte-btn pmw-plainte-btn-mail" onclick="pmwOpenMail()">✉ Ouvrir un email vers le médiateur</button>
+    </div>
+
+    <!-- Capture image : option discrète -->
+    <div class="pmw-plainte-capture-zone">
+      <div id="pmw-plainte-loading" class="pmw-plainte-loading-mini">⏳ Capture en cours…</div>
+      <img id="pmw-plainte-img" class="pmw-plainte-capture-mini" style="display:none" alt="Capture conditions EBBR">
+      <a href="#" class="pmw-plainte-capture-link" onclick="pmwDownloadCapture(); return false;">⬇ Télécharger l'image (preuve visuelle facultative à joindre)</a>
+    </div>
+
+    <button class="pmw-plainte-btn pmw-plainte-btn-close" onclick="pmwClosePlainte()">Fermer</button>
   </div>
 </div>
 
@@ -496,22 +509,28 @@
 .pmw-plainte-modal{background:#fff;border-radius:14px;padding:24px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 .pmw-plainte-title{font-size:1rem;font-weight:800;color:#0e3d6b;margin-bottom:4px}
 .pmw-plainte-sub{font-size:.75rem;color:#888;margin-bottom:16px}
-.pmw-plainte-capture{width:100%;border-radius:8px;border:1px solid #e0e0e0;margin-bottom:12px;display:block}
 .pmw-plainte-loading{text-align:center;padding:20px;color:#888;font-size:.85rem}
-.pmw-plainte-mail{background:#f7fafd;border-radius:8px;padding:12px;font-size:.75rem;font-family:monospace;white-space:pre-wrap;line-height:1.5;color:#333;max-height:200px;overflow-y:auto;margin-bottom:12px;border:1px solid #dde8f0}
-.pmw-plainte-actions{display:flex;gap:8px;flex-wrap:wrap}
-.pmw-plainte-btn{flex:1;padding:10px;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-width:120px}
-.pmw-plainte-btn-dl{background:#e8f0fa;color:#1673B2}
-.pmw-plainte-btn-dl:hover{background:#d0e3f7}
-.pmw-plainte-btn-copy{background:#F5A623;color:#fff;flex:2 1 100%;font-size:.9rem;padding:13px}
+/* Étapes mode d'emploi */
+.pmw-plainte-steps{margin-bottom:16px;display:flex;flex-direction:column;gap:10px}
+.pmw-plainte-step-row{display:flex;align-items:flex-start;gap:10px;font-size:.82rem;color:#444;line-height:1.45}
+.pmw-plainte-step-n{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#1673B2;color:#fff;font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.pmw-plainte-step-row b{color:#0e3d6b}
+/* Boutons principaux */
+.pmw-plainte-actions{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.pmw-plainte-btn{padding:13px;border:none;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
+.pmw-plainte-btn-copy{background:#F5A623;color:#fff}
 .pmw-plainte-btn-copy:hover{background:#e0950f}
 .pmw-plainte-btn-copy.pmw-copied{background:#1a7a4a}
-.pmw-plainte-btn-close{background:#f0f0f0;color:#555}
-.pmw-plainte-btn-close:hover{background:#e0e0e0}
-.pmw-plainte-steps{margin-top:14px;background:#f7fafd;border-radius:8px;padding:12px 14px;border-left:3px solid #1673B2}
-.pmw-plainte-steps-title{font-size:.78rem;font-weight:700;color:#0e3d6b;margin-bottom:6px}
-.pmw-plainte-steps ol{margin:0;padding-left:18px;font-size:.74rem;color:#555;line-height:1.6}
-.pmw-plainte-steps li{margin-bottom:3px}
+.pmw-plainte-btn-mail{background:#0e3d6b;color:#fff}
+.pmw-plainte-btn-mail:hover{background:#1673B2}
+.pmw-plainte-btn-close{background:none;color:#999;font-weight:600;font-size:.8rem;padding:8px;width:auto;margin:0 auto;display:block}
+.pmw-plainte-btn-close:hover{color:#555;text-decoration:underline}
+/* Capture image — option discrète */
+.pmw-plainte-capture-zone{border-top:1px solid #eef2f6;padding-top:12px;margin-bottom:12px;text-align:center}
+.pmw-plainte-loading-mini{font-size:.7rem;color:#bbb}
+.pmw-plainte-capture-mini{width:100%;max-width:220px;border-radius:6px;border:1px solid #e8e8e8;margin:0 auto 6px;display:block;opacity:.9}
+.pmw-plainte-capture-link{font-size:.72rem;color:#999;text-decoration:none}
+.pmw-plainte-capture-link:hover{color:#1673B2;text-decoration:underline}
 
 /* ── Bouton aide "?" ── */
 .pmw-help-btn{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.12);color:#fff;font-weight:700;font-size:.8rem;cursor:pointer;flex-shrink:0;line-height:1;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:background .15s}
@@ -1363,7 +1382,8 @@ window.pmwOpenPlainte = function() {
     'Veuillez agréer mes salutations distinguées.\n\n' +
     '— Via Ça suffit ! ASBL — casuffit.be';
 
-  document.getElementById('pmw-plainte-mail').textContent = pmwMailBody;
+  var mailEl = document.getElementById('pmw-plainte-mail');
+  if(mailEl) mailEl.textContent = pmwMailBody;
 
   // ── Capture html2canvas ──
   var script = document.querySelector('script[src*="html2canvas"]');
@@ -1408,6 +1428,20 @@ window.pmwOpenPlainte = function() {
 
 window.pmwClosePlainte = function() {
   document.getElementById('pmw-plainte-overlay').classList.remove('open');
+};
+
+// Ouvre un nouvel email vers le médiateur, sujet pré-rempli (le corps se colle ensuite)
+window.pmwOpenMail = function() {
+  var now = new Date();
+  var dateStr = now.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  var timeStr = now.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'});
+  var cfg = window._currentBatcRwy || '';
+  var sujet = 'Plainte nuisance aérienne EBBR — ' + (cfg ? cfg + ' — ' : '') + dateStr + ' ' + timeStr;
+  var corps = 'Bonjour,\n\n(Collez ici le contenu copié depuis l\'outil — Ctrl+V / Cmd+V)\n';
+  var mailto = 'mailto:airportmediation@mobilit.fgov.be'
+             + '?subject=' + encodeURIComponent(sujet)
+             + '&body=' + encodeURIComponent(corps);
+  window.location.href = mailto;
 };
 
 window.pmwDownloadCapture = function() {
@@ -1520,8 +1554,8 @@ window.pmwCopyComplaint = function() {
 
   // Copie HTML riche via Clipboard API moderne (garde la mise en forme)
   function copyOk() {
-    if(btn){ btn.textContent = '✓ Message copié ! Collez-le dans votre email'; btn.classList.add('pmw-copied');
-      setTimeout(function(){ btn.textContent = '📋 Copier le message de plainte'; btn.classList.remove('pmw-copied'); }, 4000); }
+    if(btn){ btn.textContent = '✓ Copié ! Collez-le dans votre email'; btn.classList.add('pmw-copied');
+      setTimeout(function(){ btn.textContent = '📋 Copier le contenu de la plainte'; btn.classList.remove('pmw-copied'); }, 4000); }
   }
   function copyFallback() {
     navigator.clipboard.writeText(pmwMailBody).then(copyOk).catch(function(){
