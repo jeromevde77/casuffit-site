@@ -3,7 +3,7 @@
   <div class="sidebar-brand">
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div>
-        <h2>Ça suffit ! <span>ASBL</span></h2>
+        <h2>Ça suffit !</h2>
         <p>Administration</p>
       </div>
       <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Fermer">✕</button>
