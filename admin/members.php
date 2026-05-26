@@ -308,9 +308,9 @@ function sort_th($label, $col, $extra_style=''){
 new TomSelect('#sel-membre-don',{placeholder:'— rechercher un membre —',create:false,maxOptions:500});
 
 function selectIncomplets(){
-  // Coche toutes les cases visibles (elles sont déjà uniquement sur les incomplets)
   document.querySelectorAll('.mbr-cb').forEach(c=>c.checked=true);
 }
+function envoyerRappelAdresse(){
   var ids=Array.from(document.querySelectorAll('.mbr-cb:checked')).map(c=>c.value);
   if(!ids.length){alert('Sélectionnez au moins un membre.');return;}
   if(!confirm('Envoyer le rappel adresse à '+ids.length+' membre(s) ?'))return;
