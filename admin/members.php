@@ -31,6 +31,19 @@ $filt_statut    = in_array($_GET['statut'] ?? 'actif',['actif','inactif','tous']
 $filt_incomplet = !empty($_GET['incomplet']);
 $per_page = 25;
 
+$sort_map = [
+    'nom'        => 'm.nom, m.prenom',
+    'email'      => 'm.email',
+    'statut'     => 'm.statut',
+    'commune'    => 'm.commune',
+    'lang'       => 'm.lang',
+    'total_dons' => 'total_dons',
+    'nb_dons'    => 'nb_dons',
+    'date'       => 'm.date_inscription',
+];
+$sort = array_key_exists($_GET['sort'] ?? '', $sort_map) ? $_GET['sort'] : 'date';
+$dir  = ($_GET['dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+
 $where=[]; $params=[];
 if ($q !== '') {
     $like='%'.$q.'%';
@@ -51,7 +64,7 @@ $offset=($page-1)*$per_page;
 $stmt=$db->prepare("SELECT m.*,COUNT(d.id) as nb_dons,
     COALESCE(SUM(CASE WHEN d.statut='confirme' THEN d.montant ELSE 0 END),0) as total_dons
     FROM members m LEFT JOIN member_dons d ON d.member_id=m.id
-    $sql_where GROUP BY m.id ORDER BY m.date_inscription DESC LIMIT $per_page OFFSET $offset");
+    $sql_where GROUP BY m.id ORDER BY {$sort_map[$sort]} {$dir} LIMIT $per_page OFFSET $offset");
 $stmt->execute($params); $membres=$stmt->fetchAll();
 
 $membres_all=$db->query("SELECT id,prenom,nom,code_membre FROM members WHERE statut='actif' ORDER BY nom,prenom")->fetchAll();
@@ -62,12 +75,24 @@ $msg=$_GET['msg']??'';
 $nb_incomplets=(int)$db->query("SELECT COUNT(*) FROM members WHERE statut='actif' AND (TRIM(COALESCE(adresse,''))='' OR TRIM(COALESCE(code_postal,''))='')")->fetchColumn();
 
 function su($ov=[]){
-    global $q,$filt_statut,$filt_incomplet;
-    $p=['q'=>$q,'statut'=>$filt_statut];
+    global $q,$filt_statut,$filt_incomplet,$sort,$dir;
+    $p=['q'=>$q,'statut'=>$filt_statut,'sort'=>$sort,'dir'=>$dir];
     if($filt_incomplet)$p['incomplet']='1';
     foreach($ov as $k=>$v)$p[$k]=$v;
     $out=[];foreach($p as $k=>$v){if($v!==''&&$v!==null&&$v!==false)$out[$k]=$v;}
+    // Nettoyer les valeurs par défaut pour des URLs propres
+    if(($out['sort']??'')==='date'&&($out['dir']??'')==='desc'){unset($out['sort']);unset($out['dir']);}
     return 'members.php?'.http_build_query($out);
+}
+
+function sort_th($label, $col, $extra_style=''){
+    global $sort,$dir;
+    $active = ($sort===$col);
+    $next   = ($active && $dir==='asc') ? 'desc' : 'asc';
+    $url    = su(['sort'=>$col,'dir'=>$next,'page'=>1]);
+    $icon   = $active ? ($dir==='asc'?'▲':'▼') : '<span style="opacity:.2">↕</span>';
+    $style  = 'color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;'.($active?'color:#1673B2;font-weight:700;':'');
+    return "<th $extra_style><a href=\"$url\" style=\"$style\">".htmlspecialchars($label)." $icon</a></th>";
 }
 ?>
 <!DOCTYPE html>
@@ -179,8 +204,14 @@ function su($ov=[]){
     <table>
       <tr>
         <th style="width:28px"></th>
-        <th>Membre</th><th>Email</th><th>Statut</th>
-        <th>Commune</th><th>Langue</th><th>Dons / Total</th><th>Inscrit</th><th></th>
+        <?= sort_th('Membre',    'nom') ?>
+        <?= sort_th('Email',     'email') ?>
+        <?= sort_th('Statut',    'statut') ?>
+        <?= sort_th('Commune',   'commune') ?>
+        <?= sort_th('Langue',    'lang') ?>
+        <?= sort_th('Dons / Total','total_dons') ?>
+        <?= sort_th('Inscrit',   'date') ?>
+        <th></th>
       </tr>
       <?php foreach ($membres as $m):
         $incomplet=(trim($m['adresse']??'')===''||trim($m['code_postal']??'')==='');
