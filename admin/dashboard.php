@@ -8,10 +8,14 @@ $nb_news     = $db->query("SELECT COUNT(*) FROM news WHERE statut='publie'")->fe
 $nb_news_brf = $db->query("SELECT COUNT(*) FROM news WHERE statut='brouillon'")->fetchColumn();
 $nb_sub      = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'")->fetchColumn();
 $nb_membres  = $db->query("SELECT COUNT(*) FROM members WHERE statut='actif'")->fetchColumn();
-$total_dons  = $db->query("SELECT COALESCE(SUM(montant),0) FROM member_dons WHERE statut='confirme'")->fetchColumn();
-$recolte     = floatval(cfg('montant_recolte', 0));
-$objectif    = floatval(cfg('montant_objectif', 15000));
-$pct         = $objectif > 0 ? min(100, round($recolte/$objectif*100)) : 0;
+$total_dons     = $db->query("SELECT COALESCE(SUM(montant),0) FROM member_dons WHERE statut='confirme'")->fetchColumn();
+$montant_initial = floatval(cfg('montant_initial', 0));
+$date_lancement  = cfg('date_lancement', '2026-05-25');
+$stmt_dash = $db->prepare("SELECT COALESCE(SUM(montant),0) FROM member_dons WHERE statut='confirme' AND date_don >= ?");
+$stmt_dash->execute([$date_lancement]);
+$recolte        = $montant_initial + floatval($stmt_dash->fetchColumn());
+$objectif       = floatval(cfg('montant_objectif', 15000));
+$pct            = $objectif > 0 ? min(100, round($recolte/$objectif*100)) : 0;
 
 $news_recentes  = $db->query("SELECT titre, statut, date_creation FROM news ORDER BY date_creation DESC LIMIT 6")->fetchAll();
 // Config maintenance
@@ -236,6 +240,7 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
       <span><strong><?= $pct ?>%</strong> atteint</span>
       <span><strong><?= number_format($objectif - $recolte, 0, ',', ' ') ?> €</strong> restants</span>
       <span><strong><?= $nb_membres ?></strong> membres actifs</span>
+      <span style="opacity:.6;font-size:.85em">depuis le <?= date('d/m/Y', strtotime($date_lancement)) ?></span>
     </div>
   </div>
 
