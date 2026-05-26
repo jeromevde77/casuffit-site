@@ -66,6 +66,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changer_email'])) {
     header('Location: dashboard.php?tab=profil&msg=email_confirm_envoye'); exit;
 }
 
+// Supprimer un don non payé (statut en_attente uniquement, et appartenant au membre)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['supprimer_don'])) {
+    $don_id_suppr = (int)($_POST['don_id'] ?? 0);
+    if ($don_id_suppr > 0) {
+        $db->prepare("DELETE FROM member_dons WHERE id=? AND member_id=? AND statut='en_attente'")
+           ->execute([$don_id_suppr, $membre['id']]);
+    }
+    header('Location: dashboard.php?tab=dons&msg=don_supprime'); exit;
+}
+
 // Nouveau don
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['creer_don'])) {
     $montant = floatval(str_replace(',', '.', $_POST['montant'] ?? 0));
@@ -182,6 +192,7 @@ if (!empty($membre['donnees_verifiees_at'])) {
 }
 if ($rgpd_manquant || $besoin_maj) $tab_actif = 'profil';
 if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','email_pris'])) $tab_actif = 'profil';
+if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
 ?>
 <!DOCTYPE html>
 <html lang="<?= $LANG ?>">
@@ -246,6 +257,9 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
     .don-date{color:#aaa;font-size:.7rem;white-space:nowrap}
     .badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:.62rem;font-weight:700}
     .b-ok{background:#e8f8f0;color:#27ae60}.b-wait{background:#fff3e0;color:#FF9900}
+    .don-suppr-form{margin:0;display:inline}
+    .don-suppr-btn{background:none;border:none;color:#ccc;cursor:pointer;font-size:.9rem;padding:2px 6px;border-radius:4px;line-height:1;transition:all .15s}
+    .don-suppr-btn:hover{background:#fdecea;color:#e53e3e}
     .don-row.active-don{background:#e6f1fb;border-left:3px solid #1673B2}
     .stat-val{font-size:1.7rem;font-weight:800;color:#1673B2}
     .stat-lab{font-size:.7rem;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
@@ -303,6 +317,8 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
     <div class="flash flash-ok"><?= tm('msg_profil_maj') ?></div>
   <?php elseif ($msg_flash === 'don_cree'): ?>
     <div class="flash flash-ok"><?= tm('msg_qr_genere') ?></div>
+  <?php elseif ($msg_flash === 'don_supprime'): ?>
+    <div class="flash flash-info"><?= tm('msg_don_supprime') ?></div>
   <?php elseif ($msg_flash === 'desabonne'): ?>
     <div class="flash flash-info"><?= tm('msg_desabonne') ?></div>
   <?php elseif ($msg_flash === 'reabonne'): ?>
@@ -397,6 +413,12 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
             <div class="don-ogm"><?= htmlspecialchars($d['ogm_don']?:'—') ?></div>
             <div class="don-date"><?= date('d/m/Y',strtotime($d['date_don'])) ?></div>
             <span class="badge <?= $d['statut']==='confirme'?'b-ok':'b-wait' ?>"><?= $d['statut']==='confirme'?'✓':'⏳' ?></span>
+            <?php if ($d['statut']==='en_attente'): ?>
+            <form method="POST" class="don-suppr-form" onsubmit="return confirmSupprDon(event)">
+              <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
+              <button type="submit" name="supprimer_don" class="don-suppr-btn" title="<?= tm('suppr_don_titre') ?>" onclick="event.stopPropagation()">✕</button>
+            </form>
+            <?php endif; ?>
           </div>
           <?php endforeach; ?>
           <div style="font-size:.68rem;color:#aaa;text-align:center;padding:8px;font-style:italic"><?= tm('clic_qr') ?></div>
@@ -577,6 +599,10 @@ function afficherDon(ogm, montant, id) {
   genererQR(ogm,montant);
 }
 window.addEventListener('load', function(){ if(ogm_actif) genererQR(ogm_actif,montant_actif); });
+function confirmSupprDon(e){
+  e.stopPropagation();
+  return confirm("<?= addslashes(tm('suppr_don_confirm')) ?>");
+}
 </script>
 </body>
 </html>
