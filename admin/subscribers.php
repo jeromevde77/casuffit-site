@@ -217,7 +217,26 @@ $msg = $_GET['msg'] ?? '';
     .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .modal-foot{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
     .chk-label{display:flex;align-items:center;gap:6px;font-size:.82rem;cursor:pointer;margin-top:8px}
-    @media(max-width:768px){.main{margin-left:0!important;padding:16px!important;padding-top:68px!important}table{font-size:.75rem}table th,table td{padding:6px 8px!important}}
+    @media(max-width:768px){.main{margin-left:0!important;padding:14px!important;padding-top:68px!important}table{font-size:.75rem}table th,table td{padding:6px 8px!important}}
+    /* Mobile subscriber cards */
+    .sub-mobile{display:none}
+    .sub-card{background:#fff;border:1.5px solid #e8eef5;border-radius:10px;padding:14px;margin-bottom:10px}
+    .sub-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+    .sub-email{font-size:.88rem;font-weight:700;color:#0e3d6b;word-break:break-all}
+    .sub-name{font-size:.78rem;color:#555;margin-top:1px}
+    .sub-meta{font-size:.75rem;color:#888;margin:6px 0 10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+    .sub-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .sub-actions .btn{flex:1;justify-content:center;min-width:0;padding:10px 8px;font-size:.8rem}
+    .sub-actions .act-btn{width:44px;height:44px;border-radius:8px}
+    .desktop-sub{display:block}
+    @media(max-width:768px){
+      .main{margin-left:0!important;padding:14px!important;padding-top:68px!important}
+      .desktop-sub{display:none!important}
+      .sub-mobile{display:block}
+      .toolbar{gap:6px}
+      .toolbar input[type=text],.toolbar select{height:40px;font-size:.85rem}
+      .bulk-bar{font-size:.78rem}
+    }
   </style>
 </head>
 <body>
@@ -301,7 +320,47 @@ $msg = $_GET['msg'] ?? '';
       <button type="button" class="btn btn-g" onclick="clearSel()">Désélectionner</button>
     </div>
 
-    <div class="card">
+    <!-- Cartes mobiles abonnés -->
+    <div class="sub-mobile">
+    <?php foreach ($subscribers as $s):
+      $is_mb = !empty($s['is_membre']);
+      $inv_sent = !empty($s['invite_membre_sent_at']??null);
+      $inv_acc  = !empty($s['invite_membre_accepted']??null);
+    ?>
+    <div class="sub-card">
+      <div class="sub-card-top">
+        <div>
+          <div class="sub-email"><?=htmlspecialchars($s['email'])?></div>
+          <div class="sub-name"><?=htmlspecialchars(trim($s['prenom'].' '.$s['nom']))?:''?>
+            <?php if($s['commune']):?> · <?=htmlspecialchars($s['commune'])?><?php endif;?></div>
+        </div>
+        <div>
+          <?php if($s['statut']==='actif'):?><span class="badge badge-green">Actif</span>
+          <?php elseif($s['statut']==='en_attente'):?><span class="badge badge-orange">Attente</span>
+          <?php else:?><span class="badge badge-red">Désabo.</span><?php endif;?>
+        </div>
+      </div>
+      <div class="sub-meta">
+        <?php if($is_mb):?><span class="badge badge-green">✅ Membre</span>
+        <?php elseif($inv_acc):?><span class="badge badge-green">✓ A rejoint</span>
+        <?php elseif($inv_sent):?><span class="badge" style="background:#faf5ff;color:#7c3aed;border:1px solid #c4b5fd">⏳ Invité</span>
+        <?php else:?><span class="badge badge-grey">Non membre</span><?php endif;?>
+        <?php if($s['benevole']):?><span class="badge badge-orange">Bénévole</span><?php endif;?>
+      </div>
+      <div class="sub-actions">
+        <button type="button" class="btn btn-g btn-sm act-btn edit" onclick="openEdit(<?=htmlspecialchars(json_encode($s))?>)" title="Modifier">✏️</button>
+        <?php if(!$is_mb && !$inv_sent && !$inv_acc):?>
+          <button type="button" class="btn" style="background:#faf5ff;color:#7c3aed;border:1.5px solid #e9d5ff;flex:1" onclick="inviterMembre(<?=$s['id']?>)">✉ Inviter → membre</button>
+        <?php elseif($s['statut']!=='actif'):?>
+          <button type="button" class="btn btn-g" style="flex:1" onclick="quickAct(<?=$s['id']?>,'activer')">✓ Activer</button>
+        <?php else:?><div style="flex:1"></div><?php endif;?>
+        <button type="button" class="btn btn-g btn-sm act-btn del" onclick="quickAct(<?=$s['id']?>,'supprimer')" title="Supprimer">🗑</button>
+      </div>
+    </div>
+    <?php endforeach; ?>
+    </div><!-- /sub-mobile -->
+
+    <div class="card desktop-sub">
       <table>
         <thead>
           <tr>

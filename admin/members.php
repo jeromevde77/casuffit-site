@@ -137,7 +137,29 @@ function sort_th($label, $col, $extra_style=''){
     /* Action buttons */
     .act{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;border:1.5px solid;cursor:pointer;text-decoration:none;font-size:.82rem;transition:all .15s;flex-shrink:0;background:none}
     .act.view{color:#38a169;border-color:#c6f6d5;background:#f0fff4}.act.view:hover{background:#dcfce7;text-decoration:none}
-    @media(max-width:768px){.main{margin-left:0!important;padding:16px!important;padding-top:68px!important}}
+    /* Mobile cards */
+    .mobile-cards{display:none}
+    .mb-card{background:#fff;border:1.5px solid #e8eef5;border-radius:10px;padding:14px;margin-bottom:10px;position:relative}
+    .mb-card.mb-incomplete{background:#fff9f0;border-color:#ffd080}
+    .mb-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+    .mb-code{font-family:monospace;font-size:.7rem;font-weight:700;color:#1673B2;display:block}
+    .mb-name{font-size:.95rem;font-weight:700;color:#0e3d6b;margin-top:1px}
+    .mb-email{font-size:.75rem;color:#888;margin-bottom:6px;word-break:break-all}
+    .mb-meta{font-size:.75rem;color:#555;display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+    .mb-cta{display:block;width:100%;text-align:center;padding:10px;background:#1673B2;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:.85rem}
+    .mb-cta:hover{background:#125a90;text-decoration:none;color:#fff}
+    .mb-chk{position:absolute;top:14px;right:14px}
+    @media(max-width:768px){
+      .main{margin-left:0!important;padding:14px!important;padding-top:68px!important}
+      .desktop-table{display:none}
+      .mobile-cards{display:block}
+      .search-bar{gap:6px}
+      .search-bar input[type=search]{font-size:.9rem;padding:10px 12px}
+      .search-bar select{font-size:.85rem;padding:8px 10px}
+      .search-bar .btn{padding:10px 14px}
+      .pagination{gap:3px}
+      .page-btn{padding:8px 10px;font-size:.82rem}
+    }
     /* Tom Select dans form */
     .ts-wrapper.single .ts-control{border:1.5px solid #dde4ed;border-radius:6px;font-size:.8rem;font-family:inherit;padding:6px 10px;min-height:unset;background:#fff;box-shadow:none}
     .ts-wrapper.single.focus .ts-control{border-color:#1673B2;box-shadow:none}
@@ -202,6 +224,7 @@ function sort_th($label, $col, $extra_style=''){
     </div>
     <?php endif; ?>
 
+    <div class="desktop-table">
     <table>
       <tr>
         <th style="width:28px"></th>
@@ -250,6 +273,43 @@ function sort_th($label, $col, $extra_style=''){
       </tr>
       <?php endforeach; ?>
     </table>
+    </div><!-- /desktop-table -->
+
+    <!-- Cartes mobiles -->
+    <div class="mobile-cards">
+    <?php foreach ($membres as $m):
+      $incomplet=(trim($m['adresse']??'')===''||trim($m['code_postal']??'')==='');
+      $lang=strtoupper($m['lang']??'fr');
+    ?>
+    <div class="mb-card<?= $incomplet?' mb-incomplete':''?>">
+      <?php if($incomplet):?>
+        <input type="checkbox" class="mbr-cb mb-chk" value="<?=$m['id']?>" <?=$filt_incomplet?'checked':''?>>
+      <?php endif;?>
+      <div class="mb-card-top">
+        <div>
+          <span class="mb-code"><?=htmlspecialchars($m['code_membre'])?></span>
+          <span class="mb-name"><?=htmlspecialchars($m['prenom'].' '.$m['nom'])?></span>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
+          <span class="badge <?=$m['statut']==='actif'?'b-ok':'b-off'?>"><?=htmlspecialchars($m['statut'])?></span>
+          <?php if($incomplet):?><span class="badge b-wait">⚠️ Adresse</span><?php endif;?>
+        </div>
+      </div>
+      <div class="mb-email"><?=htmlspecialchars($m['email'])?></div>
+      <div class="mb-meta">
+        <span><?=htmlspecialchars($m['commune']??'—')?></span>
+        <span class="badge" style="background:<?=$lang==='NL'?'#e6f1fb':'#e8f0fb'?>;color:#1673B2;padding:1px 7px"><?=$lang?></span>
+        <?php if($m['nb_dons']>0):?>
+          <strong><?=number_format($m['total_dons'],0,',',' ')?> €</strong><span style="color:#aaa">(<?=$m['nb_dons']?>)</span>
+        <?php endif;?>
+        <?php if($m['newsletter']):?><span title="Newsletter">📧</span><?php endif;?>
+        <span style="color:#ccc">·</span>
+        <span style="font-size:.7rem;color:#bbb"><?=date('d/m/Y',strtotime($m['date_inscription']))?></span>
+      </div>
+      <a href="member_detail.php?id=<?=$m['id']?>&back=<?=urlencode(su(['page'=>$page]))?>" class="mb-cta">Voir la fiche →</a>
+    </div>
+    <?php endforeach; ?>
+    </div><!-- /mobile-cards -->
 
     <!-- Pagination -->
     <?php if ($total_pages > 1): ?>
