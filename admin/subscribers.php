@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ids']) && isset($_PO
                 $msg = count($ids) . ' abonné(s) supprimé(s) (RGPD).'; break;
         }
     }
-    $qs = http_build_query(array_filter(array_intersect_key($_POST, array_flip(['commune','benevole','statut','q']))));
+    $qs = http_build_query(array_filter(array_intersect_key($_POST, array_flip(['commune','benevole','statut','q','source']))));
     header('Location: subscribers.php' . ($qs ? '?'.$qs.'&' : '?') . 'msg='.urlencode($msg ?? '')); exit;
 }
 
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_id']) && is_nume
            in_array($_POST['statut'] ?? '', ['actif','en_attente','desabonne']) ? $_POST['statut'] : 'en_attente',
            isset($_POST['benevole']) ? 1 : 0, intval($_POST['edit_id']),
        ]);
-    $qs = http_build_query(array_filter(array_intersect_key($_POST, array_flip(['commune','benevole','statut','q']))));
+    $qs = http_build_query(array_filter(array_intersect_key($_POST, array_flip(['commune','benevole','statut','q','source']))));
     header('Location: subscribers.php' . ($qs ? '?'.$qs.'&' : '?') . 'msg='.urlencode('Abonné modifié.')); exit;
 }
 
@@ -69,6 +69,10 @@ $where = ['1=1']; $params = [];
 if (!empty($_GET['commune'])) { $where[] = 'commune LIKE ?'; $params[] = '%'.$_GET['commune'].'%'; }
 if (isset($_GET['benevole']) && $_GET['benevole'] !== '') { $where[] = 'benevole = ?'; $params[] = (int)$_GET['benevole']; }
 if (!empty($_GET['statut']))  { $where[] = 'statut = ?'; $params[] = $_GET['statut']; }
+if (!empty($_GET['source']))  {
+    if ($_GET['source'] === 'wix')    { $where[] = "source_import = 'wix'"; }
+    elseif ($_GET['source'] === 'site') { $where[] = "(source_import IS NULL OR source_import = '')"; }
+}
 if (!empty($_GET['q']))       { $where[] = '(email LIKE ? OR prenom LIKE ? OR nom LIKE ? OR commune LIKE ?)';
                                 $q = '%'.$_GET['q'].'%'; array_push($params, $q,$q,$q,$q); }
 $where_sql = implode(' AND ', $where);
@@ -189,6 +193,11 @@ $msg = $_GET['msg'] ?? '';
       <option value="actif"      <?= ($_GET['statut']??'')==='actif'     ?'selected':'' ?>>Actifs</option>
       <option value="en_attente" <?= ($_GET['statut']??'')==='en_attente'?'selected':'' ?>>En attente</option>
       <option value="desabonne"  <?= ($_GET['statut']??'')==='desabonne' ?'selected':'' ?>>Désabonnés</option>
+    </select>
+    <select name="source">
+      <option value="">Toutes les sources</option>
+      <option value="wix"  <?= ($_GET['source']??'')==='wix'  ?'selected':'' ?>>Importés de Wix</option>
+      <option value="site" <?= ($_GET['source']??'')==='site' ?'selected':'' ?>>Inscrits sur le site</option>
     </select>
     <button type="submit" class="btn btn-g">Filtrer</button>
     <a href="subscribers.php" class="btn btn-g">Réinitialiser</a>
