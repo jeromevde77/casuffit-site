@@ -58,6 +58,9 @@ $membres_all=$db->query("SELECT id,prenom,nom,code_membre FROM members WHERE sta
 $dons_recents=$db->query("SELECT d.*,m.prenom,m.nom,m.code_membre,m.ogm FROM member_dons d JOIN members m ON m.id=d.member_id ORDER BY d.date_don DESC LIMIT 20")->fetchAll();
 $msg=$_GET['msg']??'';
 
+// Compte global des adresses incomplètes (indépendant des filtres/pagination)
+$nb_incomplets=(int)$db->query("SELECT COUNT(*) FROM members WHERE statut='actif' AND (TRIM(COALESCE(adresse,''))='' OR TRIM(COALESCE(code_postal,''))='')")->fetchColumn();
+
 function su($ov=[]){
     global $q,$filt_statut,$filt_incomplet;
     $p=['q'=>$q,'statut'=>$filt_statut];
@@ -152,23 +155,30 @@ function su($ov=[]){
           Membres inscrits — <?= $count_total ?> au total — page <?= $page ?>/<?= $total_pages ?>
         <?php endif; ?>
       </span>
-      <?php if ($filt_incomplet): ?>
-      <div style="display:flex;gap:8px">
-        <button type="button" class="btn btn-g btn-sm" onclick="document.querySelectorAll('.mbr-cb').forEach(c=>c.checked=true)">Sélectionner tous</button>
-        <button type="button" class="btn btn-sm" style="background:#FF9900;color:#fff;border-color:#FF9900" onclick="envoyerRappelAdresse()">✉ Envoyer rappel adresse</button>
-      </div>
-      <?php endif; ?>
     </h3>
 
+    <?php if ($nb_incomplets > 0): ?>
+    <div style="background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div style="font-size:.82rem;color:#7a4400">
+        📍 <strong><?= $nb_incomplets ?> membre(s)</strong> avec adresse incomplète —
+        <a href="<?= su(['incomplet'=>'1','page'=>1]) ?>" style="color:#1673B2;font-weight:600">voir uniquement les incomplets</a>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="btn btn-g btn-sm" onclick="selectIncomplets()">Sélectionner les incomplets (page courante)</button>
+        <button type="button" class="btn btn-sm" style="background:#FF9900;color:#fff;border-color:#FF9900" onclick="envoyerRappelAdresse()">✉ Envoyer rappel adresse</button>
+      </div>
+    </div>
+    <?php endif; ?>
+
     <?php if ($filt_incomplet): ?>
-    <div style="background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:.8rem;color:#555">
-      Affichage filtré : membres avec adresse incomplète uniquement.
+    <div style="background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:.8rem;color:#555">
+      Filtre actif : adresses incomplètes uniquement.
     </div>
     <?php endif; ?>
 
     <table>
       <tr>
-        <?php if ($filt_incomplet): ?><th style="width:28px"></th><?php endif; ?>
+        <th style="width:28px"></th>
         <th>Membre</th><th>Email</th><th>Statut</th>
         <th>Commune</th><th>Langue</th><th>Dons / Total</th><th>Inscrit</th><th></th>
       </tr>
@@ -176,8 +186,7 @@ function su($ov=[]){
         $incomplet=(trim($m['adresse']??'')===''||trim($m['code_postal']??'')==='');
       ?>
       <tr<?= $incomplet?' style="background:#fff8ee"':''?>>
-        <?php if ($filt_incomplet): ?><td><?php if($incomplet):?><input type="checkbox" class="mbr-cb" value="<?=$m['id']?>"></td><?php else:?></td><?php endif;
-        else: ?><?php endif; ?>
+        <td style="width:28px"><?php if($incomplet):?><input type="checkbox" class="mbr-cb" value="<?=$m['id']?>" title="Adresse incomplète"><?php endif;?></td>
         <td>
           <span style="font-family:monospace;font-size:.7rem;font-weight:700;color:#1673B2;display:block"><?=htmlspecialchars($m['code_membre'])?></span>
           <span style="font-weight:600"><?=htmlspecialchars($m['prenom'].' '.$m['nom'])?></span>
@@ -267,7 +276,10 @@ function su($ov=[]){
 <script>
 new TomSelect('#sel-membre-don',{placeholder:'— rechercher un membre —',create:false,maxOptions:500});
 
-function envoyerRappelAdresse(){
+function selectIncomplets(){
+  // Coche toutes les cases visibles (elles sont déjà uniquement sur les incomplets)
+  document.querySelectorAll('.mbr-cb').forEach(c=>c.checked=true);
+}
   var ids=Array.from(document.querySelectorAll('.mbr-cb:checked')).map(c=>c.value);
   if(!ids.length){alert('Sélectionnez au moins un membre.');return;}
   if(!confirm('Envoyer le rappel adresse à '+ids.length+' membre(s) ?'))return;
