@@ -162,6 +162,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success = true;
                 $msg = tm('msg_bienvenue', $code_membre, $email);
 
+                // ── Alerte email à l'administrateur (nouvelle adhésion) ──
+                try {
+                    $admin_to = trim(cfg('alerte_membre_email', '')) ?: trim(cfg('site_email', ''));
+                    if ($admin_to) {
+                        $dt = date('d/m/Y à H:i');
+                        $sujet_a = 'Nouveau membre : ' . $prenom . ' ' . $nom;
+                        $html_a = '<div style="font-family:Arial,sans-serif;font-size:14px;color:#222">'
+                            . '<h2 style="color:#1673B2">Nouvelle adhésion sur casuffit.be</h2>'
+                            . '<p>Un nouveau membre vient de s\'inscrire :</p>'
+                            . '<table cellpadding="6" style="border-collapse:collapse">'
+                            . '<tr><td><b>Nom</b></td><td>' . htmlspecialchars($prenom . ' ' . $nom) . '</td></tr>'
+                            . '<tr><td><b>Email</b></td><td>' . htmlspecialchars($email) . '</td></tr>'
+                            . '<tr><td><b>Commune</b></td><td>' . htmlspecialchars($commune ?: '—') . '</td></tr>'
+                            . '<tr><td><b>Téléphone</b></td><td>' . htmlspecialchars($tel ?: '—') . '</td></tr>'
+                            . '<tr><td><b>Code membre</b></td><td>' . htmlspecialchars($code_membre) . '</td></tr>'
+                            . '<tr><td><b>Date</b></td><td>' . $dt . '</td></tr>'
+                            . '</table>'
+                            . '<p style="margin-top:16px"><a href="https://www.casuffit.be/admin/members.php" style="background:#1673B2;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">Voir dans l\'admin</a></p>'
+                            . '</div>';
+                        $text_a = "Nouvelle adhésion casuffit.be\n\n"
+                            . "Nom : $prenom $nom\nEmail : $email\nCommune : " . ($commune ?: '—')
+                            . "\nTéléphone : " . ($tel ?: '—') . "\nCode membre : $code_membre\nDate : $dt\n";
+                        if (!empty(BREVO_API_KEY)) {
+                            envoyerViaBrevo($admin_to, 'Admin Ça suffit', $sujet_a, $html_a, $text_a);
+                        } else {
+                            envoyerViaSMTP($admin_to, 'Admin Ça suffit', $sujet_a, $html_a, $text_a);
+                        }
+                    }
+                } catch (Exception $e) { error_log('Alerte membre admin: ' . $e->getMessage()); }
+
             } catch (Exception $e) {
                 error_log('Inscription membre: ' . $e->getMessage());
                 $error = tm('err_creation') . ': ' . $e->getMessage();

@@ -45,6 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'ga_id',
         // Plainte
         'plainte_destinataires',
+        // Alertes
+        'alerte_membre_email',
     );
     foreach ($fields as $cle) {
         $val = isset($_POST[$cle]) ? trim($_POST[$cle]) : '';
@@ -252,6 +254,19 @@ try {
       <p style="font-size:.72rem;color:#999;margin-top:6px">
         Une adresse par ligne (ou séparées par des virgules). Toutes ces adresses seront pré-remplies
         dans l'email de plainte généré par l'outil « Conditions de vent ». Vous pouvez en ajouter ou en retirer à tout moment.
+      </p>
+    </div>
+
+    <!-- Alerte nouvelle adhésion -->
+    <div class="card">
+      <h3>🔔 Alerte nouvelle adhésion</h3>
+      <label>Email qui reçoit une alerte à chaque nouveau membre</label>
+      <input type="email" name="alerte_membre_email"
+             value="<?= htmlspecialchars($c['alerte_membre_email'] ?? '') ?>"
+             placeholder="vous@exemple.be">
+      <p style="font-size:.72rem;color:#999;margin-top:6px">
+        Dès qu'une personne s'inscrit comme membre, un email récapitulatif est envoyé à cette adresse.
+        Laissez vide pour utiliser l'email du site (<?= htmlspecialchars($c['site_email'] ?? 'non défini') ?>), ou pour désactiver si aucun n'est défini.
       </p>
     </div>
 
