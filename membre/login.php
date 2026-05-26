@@ -1,5 +1,5 @@
 <?php
-// v3 — + lien "mot de passe oublié" vers le lien magique
+// v4 — logo + retrait "ASBL" sur la page de connexion
 // error_reporting(E_ALL); ini_set('display_errors', 1); // désactivé en production
 // membre/login.php — Demande de lien magique
 require_once __DIR__ . '/../config.php';
@@ -87,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .brand h1{font-size:1.3rem;font-weight:800;color:#1673B2}
     .brand h1 span{color:#FF9900;font-style:italic}
     .brand p{font-size:0.78rem;color:#888;margin-top:4px}
+    .brand-logo{width:64px;height:64px;border-radius:50%;display:block;margin:0 auto 10px;background:#fff;object-fit:cover}
     .magic-icon{font-size:2.5rem;text-align:center;margin-bottom:12px}
     .explain{background:#f0f7ff;border-radius:8px;padding:12px 14px;font-size:0.8rem;color:#2c5282;line-height:1.6;margin-bottom:20px;border:1px solid #bee3f8}
     label{display:block;font-size:0.78rem;font-weight:600;color:#555;margin-bottom:6px}
@@ -108,7 +109,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="card">
   <div class="brand">
-    <h1>Ça suffit ! <span>ASBL</span></h1>
+    <img src="../assets/img/logo.png" alt="Ça suffit !" class="brand-logo">
+    <h1>Ça suffit !</h1>
     <p><?= tm('login_titre') ?></p>
   </div>
 
