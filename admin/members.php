@@ -225,7 +225,7 @@ function sort_th($label, $col, $extra_style=''){
         <td style="font-size:.75rem"><?=htmlspecialchars($m['email'])?></td>
         <td>
           <span class="badge <?=$m['statut']==='actif'?'b-ok':'b-off'?>"><?=htmlspecialchars($m['statut'])?></span>
-          <?php if($incomplet):?><span class="badge b-wait" style="margin-left:3px" title="Adresse incomplète">📍</span><?php endif;?>
+          <?php if($incomplet):?><span class="badge b-wait" style="margin-left:3px" title="Adresse incomplète">⚠️</span><?php endif;?>
           <?php if($m['newsletter']):?><span style="font-size:.75rem;margin-left:3px" title="Newsletter">📧</span><?php endif;?>
         </td>
         <td><?=htmlspecialchars($m['commune']??'—')?></td>
