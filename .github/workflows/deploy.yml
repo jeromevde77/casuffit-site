@@ -31,6 +31,7 @@ jobs:
             set net:max-retries 3;
             open ftp://$FTP_USER:$FTP_PASSWORD@$FTP_HOST;
             mirror --reverse --delete --verbose \
+              --ignore-time \
               --exclude \.git \
               --exclude \.github \
               --exclude config\.php \
