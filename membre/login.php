@@ -1,5 +1,5 @@
 <?php
-// v2 — connexion par mot de passe (formulaire email+mdp / lien magique)
+// v3 — + lien "mot de passe oublié" vers le lien magique
 // error_reporting(E_ALL); ini_set('display_errors', 1); // désactivé en production
 // membre/login.php — Demande de lien magique
 require_once __DIR__ . '/../config.php';
@@ -140,6 +140,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <input type="password" id="password" name="password" required autocomplete="current-password">
       <button type="submit" class="btn"><?= tm('btn_connexion_pass') ?></button>
     </form>
+    <div class="links" style="margin-top:14px">
+      <a href="javascript:void(0)" onclick="showAuth('lien')"><?= tm('mdp_oublie') ?></a>
+    </div>
   </div>
 
   <!-- Lien magique -->

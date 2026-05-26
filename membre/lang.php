@@ -1,5 +1,5 @@
 <?php
-// v2 — clés de traduction mot de passe (FR/NL)
+// v3 — + clé mdp_oublie
 // membre/lang.php — Traductions pour l'espace membre
 // Inclure après session_start()
 
@@ -169,6 +169,7 @@ $T = $LANG === 'nl' ? [
   'login_pass_explain'  => 'Meld u aan met uw e-mail en wachtwoord. Nog geen wachtwoord? Gebruik het tabblad "Link per e-mail".',
   'label_password'      => 'Wachtwoord',
   'btn_connexion_pass'  => 'Aanmelden',
+  'mdp_oublie'          => 'Wachtwoord vergeten? Ontvang een aanmeldingslink per e-mail',
   'err_login_pass'      => 'Onjuist e-mailadres of wachtwoord.',
   'section_motdepasse'  => '🔑 Wachtwoord',
   'pass_defini'         => 'Een wachtwoord is ingesteld. U kunt zich aanmelden met e-mail + wachtwoord, of nog steeds via een magische link.',
@@ -351,6 +352,7 @@ $T = $LANG === 'nl' ? [
   'login_pass_explain'  => 'Connectez-vous avec votre email et votre mot de passe. Pas encore de mot de passe ? Utilisez l\'onglet « Lien par email ».',
   'label_password'      => 'Mot de passe',
   'btn_connexion_pass'  => 'Se connecter',
+  'mdp_oublie'          => 'Mot de passe oublié ? Recevez un lien de connexion par email',
   'err_login_pass'      => 'Email ou mot de passe incorrect.',
   'section_motdepasse'  => '🔑 Mot de passe',
   'pass_defini'         => 'Un mot de passe est défini. Vous pouvez vous connecter avec email + mot de passe, ou toujours par lien magique.',
