@@ -49,3 +49,31 @@ function sendMail(string $to, string $to_name, string $subject, string $html, st
     if (!empty(BREVO_API_KEY)) return sendViaBrevo($to, $to_name, $html, $subject, $text);
     return sendViaSMTP($to, $to_name, $subject, $html, $text);
 }
+
+/**
+ * Envoi avec tracking d'ouverture par campagne.
+ * Crée une entrée dans email_opens, insère un pixel invisible dans le HTML,
+ * puis envoie. Si le tracking échoue, l'email part quand même (sans pixel).
+ *
+ * @param string $campagne  slug de campagne (ex: 'invite_wix', 'rappel_adresse')
+ */
+function sendMailTracked(string $to, string $to_name, string $subject, string $html, string $text, string $campagne): bool {
+    $site_url = defined('SITE_URL') ? SITE_URL : 'https://www.casuffit.be';
+    try {
+        $db = getDB();
+        $token = bin2hex(random_bytes(16)); // 32 chars hex
+        $db->prepare("INSERT INTO email_opens (campagne, email, token) VALUES (?,?,?)")
+           ->execute([$campagne, $to, $token]);
+        // Insérer le pixel juste avant </body> (ou à la fin si absent)
+        $pixel = '<img src="' . $site_url . '/api/open.php?t=' . $token . '" width="1" height="1" alt="" style="display:none;border:0;width:1px;height:1px" />';
+        if (stripos($html, '</body>') !== false) {
+            $html = preg_replace('#</body>#i', $pixel . '</body>', $html, 1);
+        } else {
+            $html .= $pixel;
+        }
+    } catch (Throwable $e) {
+        error_log('sendMailTracked (tracking ignoré): ' . $e->getMessage());
+        // On continue : l'email part sans pixel
+    }
+    return sendMail($to, $to_name, $subject, $html, $text);
+}

@@ -82,7 +82,8 @@ foreach ($abonnes as $ab) {
         $text = $tpl['text'] ?: buildInviteText($prenom, $url, $ab['email']);
     }
 
-    $ok = sendMail($ab['email'], $nom ?: $ab['email'], $subj, $html, $text);
+    $campagne = ($type === 'wix') ? 'invite_wix' : 'invite_membre';
+    $ok = sendMailTracked($ab['email'], $nom ?: $ab['email'], $subj, $html, $text, $campagne);
 
     if ($ok) {
         $sent++;

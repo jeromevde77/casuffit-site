@@ -78,7 +78,7 @@ foreach ($membres as $m) {
         $text = "Bonjour $prenom,\n\nMerci de faire partie du mouvement Ça Suffit. Il manque actuellement votre adresse dans nos données — elle nous permet de savoir quelles communes sont survolées, un argument essentiel dans nos démarches.\n\nCompléter votre adresse (quelques secondes) :\n$url\n\nMerci pour votre engagement.\nL'équipe Ça suffit !";
     }
 
-    $ok = sendMail($m['email'], $nom ?: $m['email'], $subj, $html, $text);
+    $ok = sendMailTracked($m['email'], $nom ?: $m['email'], $subj, $html, $text, 'rappel_adresse');
     if ($ok) {
         $sent++;
     } else {

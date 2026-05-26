@@ -36,6 +36,7 @@
     <a href="subscribers.php" <?= basename($_SERVER['PHP_SELF'])==='subscribers.php' ?'class="active"':'' ?>>Abonnés</a>
     <a href="compose.php"     <?= basename($_SERVER['PHP_SELF'])==='compose.php'     ?'class="active"':'' ?>>Rédaction</a>
     <a href="newsletters.php" <?= basename($_SERVER['PHP_SELF'])==='newsletters.php' ?'class="active"':'' ?>>Envoyer / Historique</a>
+    <a href="email_stats.php" <?= basename($_SERVER['PHP_SELF'])==='email_stats.php' ?'class="active"':'' ?>>Ouvertures emails</a>
   </nav>
   <div class="sidebar-footer">
     <a href="<?= SITE_URL ?>" target="_blank">Voir le site</a>
