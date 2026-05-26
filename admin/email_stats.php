@@ -38,6 +38,7 @@ function pct($o, $e) { return $e > 0 ? round($o * 100 / $e) : 0; }
 <title>Ouvertures emails — Admin Ça suffit !</title>
 <style>
 <?php include __DIR__ . '/../includes/admin_sidebar_css.php'; ?>
+body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333;font-size:14px;margin:0}
 .admin-content { margin-left: 240px; min-height: 100vh; }
 @media (max-width: 768px) { .admin-content { margin-left: 0; padding-top: 52px; } }
 .es-wrap { padding: 24px; max-width: 1100px; }
