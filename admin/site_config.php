@@ -221,6 +221,7 @@ try {
       <label style="color:#1673B2">🇳🇱 Texte de l'annonce (néerlandais)</label>
       <textarea name="annonce_texte_nl" rows="2" placeholder="Tekst NL..."><?= htmlspecialchars($c_nl['annonce_texte'] ?? '') ?></textarea>
       <div class="hint">Si vide, le texte FR est utilisé sur la version /nl.</div>
+    </div>
 
     <!-- Réseaux sociaux -->
     <div class="card">
