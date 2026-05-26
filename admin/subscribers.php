@@ -240,6 +240,9 @@ $msg = $_GET['msg'] ?? '';
       <button type="button" class="btn btn-m" onclick="inviterSelection()" style="background:#8b5cf6;color:#fff">
         ✉ Inviter → Membre
       </button>
+      <button type="button" class="btn btn-m" onclick="inviterSelectionWix()" style="background:#FF9900;color:#fff">
+        ✊ Inviter anciens membres (relance Ça Suffit)
+      </button>
       <div class="bulk-sep"></div>
       <button type="button" class="btn btn-g" onclick="clearSel()">Désélectionner</button>
     </div>
@@ -515,23 +518,32 @@ function copyEmails() {
 
 function inviterMembre(id) {
   if (!confirm('Envoyer une invitation "Créer un espace membre" à cet abonné ?')) return;
-  _envoyerInvitations([id]);
+  _envoyerInvitations([id], 'newsletter');
 }
 
 function inviterSelection() {
   var ids = Array.from(document.querySelectorAll('.row-cb:checked')).map(cb => cb.value);
   if (!ids.length) return;
   if (!confirm('Envoyer une invitation "Créer un espace membre" à ' + ids.length + ' abonné(s) sélectionné(s) ?')) return;
-  _envoyerInvitations(ids);
+  _envoyerInvitations(ids, 'newsletter');
 }
 
-function _envoyerInvitations(ids) {
+function inviterSelectionWix() {
+  var ids = Array.from(document.querySelectorAll('.row-cb:checked')).map(cb => cb.value);
+  if (!ids.length) { alert('Sélectionnez d\'abord des contacts (filtrez sur « Importés de Wix »).'); return; }
+  if (!confirm('Envoyer l\'invitation de RELANCE du mouvement « Ça Suffit » à ' + ids.length + ' ancien(s) membre(s) ?\n\nCe message annonce le nouveau site et invite à redevenir membre.')) return;
+  _envoyerInvitations(ids, 'wix');
+}
+
+function _envoyerInvitations(ids, type) {
   var btn = event?.currentTarget;
+  var originalText = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Envoi…'; }
 
   var fd = new FormData();
   fd.append('_csrf', '<?= htmlspecialchars(csrf_token()) ?>');
   fd.append('mode', 'selected');
+  fd.append('type', type || 'newsletter');
   ids.forEach(id => fd.append('ids[]', id));
 
   fetch('invite_membre.php', { method: 'POST', body: fd })
@@ -541,7 +553,7 @@ function _envoyerInvitations(ids) {
       if (d.ok) location.reload();
     })
     .catch(e => alert('Erreur réseau : ' + e.message))
-    .finally(() => { if (btn) { btn.disabled = false; btn.textContent = '✉ Inviter → Membre'; } });
+    .finally(() => { if (btn) { btn.disabled = false; btn.textContent = originalText; } });
 }
 </script>
 </body>

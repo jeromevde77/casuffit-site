@@ -32,6 +32,9 @@ try {
 $ids  = array_filter(array_map('intval', (array)($_POST['ids'] ?? [])));
 if (empty($ids)) { echo json_encode(['ok'=>false,'error'=>'Aucun abonné sélectionné']); exit; }
 
+// Type d'invitation : 'wix' (relance anciens membres) ou 'newsletter' (abonné → membre)
+$type = ($_POST['type'] ?? 'newsletter') === 'wix' ? 'wix' : 'newsletter';
+
 $in      = implode(',', $ids);
 $abonnes = $db->query("SELECT s.id, s.email, s.prenom, s.nom,
     (SELECT COUNT(*) FROM members m WHERE m.email=s.email LIMIT 1) AS is_membre
@@ -66,11 +69,18 @@ foreach ($abonnes as $ab) {
     $nom    = trim($ab['prenom'].' '.$ab['nom']);
     $vars   = ['{{prenom}}'=>$prenom, '{{url}}'=>$url, '{{email}}'=>$ab['email']];
 
-    // Charger depuis BDD, fallback sur template par défaut
-    $tpl  = renderEmailTemplate($db, 'invite_membre', $vars, 'fr');
-    $subj = $tpl['sujet'] ?: 'Votre espace membre vous attend — Ça suffit ! ASBL';
-    $html = $tpl['html'] ?: buildInviteHtml($prenom, $url, $ab['email'], $site_url);
-    $text = $tpl['text'] ?: buildInviteText($prenom, $url, $ab['email']);
+    // Charger depuis BDD, fallback sur template par défaut selon le type
+    if ($type === 'wix') {
+        $tpl  = renderEmailTemplate($db, 'invite_wix', $vars, 'fr');
+        $subj = $tpl['sujet'] ?: 'Le mouvement Ça Suffit reprend vie — rejoignez-nous';
+        $html = $tpl['html'] ?: buildWixInviteHtml($prenom, $url, $ab['email'], $site_url);
+        $text = $tpl['text'] ?: buildWixInviteText($prenom, $url, $ab['email']);
+    } else {
+        $tpl  = renderEmailTemplate($db, 'invite_membre', $vars, 'fr');
+        $subj = $tpl['sujet'] ?: 'Votre espace membre vous attend — Ça suffit ! ASBL';
+        $html = $tpl['html'] ?: buildInviteHtml($prenom, $url, $ab['email'], $site_url);
+        $text = $tpl['text'] ?: buildInviteText($prenom, $url, $ab['email']);
+    }
 
     $ok = sendMail($ab['email'], $nom ?: $ab['email'], $subj, $html, $text);
 
@@ -132,4 +142,52 @@ HTML;
 function buildInviteText(string $prenom, string $url, string $email): string {
     $salut = $prenom ? "Bonjour $prenom," : "Bonjour,";
     return "$salut\n\nNous vous invitons à créer votre espace membre gratuit sur casuffit.be.\n\nAvantages :\n- QR code de paiement personnel\n- Historique de vos dons\n- Accès sans mot de passe\n\nCréer mon espace membre (30 jours) :\n$url\n\nVous pouvez ignorer cet email et rester abonné à la newsletter.\n\nL'équipe Ça suffit ! ASBL";
+}
+
+// ── Templates "relance Wix" (anciens membres Piste 01 — Ça Suffit) ──────────────
+function buildWixInviteHtml(string $prenom, string $url, string $email, string $site_url): string {
+    $salut = $prenom ? "Bonjour $prenom," : "Bonjour,";
+    return <<<HTML
+<!DOCTYPE html><html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Helvetica Neue',Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 0">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;overflow:hidden;max-width:560px">
+  <tr><td style="background:#1673B2;padding:28px 32px;text-align:center">
+    <div style="font-size:24px;font-weight:800;color:#FF9900">Ça suffit !</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px">Le mouvement contre les nuisances aériennes de Brussels Airport reprend vie</div>
+  </td></tr>
+  <tr><td style="background:#FF9900;height:3px"></td></tr>
+  <tr><td style="padding:32px">
+    <p style="font-size:16px;font-weight:700;color:#0e3d6b;margin:0 0 16px">$salut</p>
+    <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 16px">Vous aviez rejoint le mouvement <strong>Piste 01 — Ça Suffit</strong> il y a quelques années pour défendre votre quartier contre le survol injuste. Nous ne vous avons pas oublié(e).</p>
+    <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 16px">Aujourd'hui, <strong>le mouvement « Ça Suffit » reprend vie</strong>. UBCNA et Piste 01 unissent à nouveau leurs forces, et nous lançons un tout nouveau site pour relancer la mobilisation de tous les survolés injustement.</p>
+    <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 20px">Cette fois, nous mettons à votre disposition de vrais outils pour comprendre <strong style="color:#1673B2">pourquoi vous êtes survolé(e)</strong> — et savoir si c'est justifié ou non selon la météo :</p>
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:24px">
+      <tr><td style="padding:5px 0;font-size:13px;color:#333"><span style="color:#FF9900;font-weight:700">✓</span>&nbsp; <strong>Conditions de vent en direct</strong> et suivi des atterrissages</td></tr>
+      <tr><td style="padding:5px 0;font-size:13px;color:#333"><span style="color:#FF9900;font-weight:700">✓</span>&nbsp; <strong>Un assistant pour porter plainte</strong> en quelques clics</td></tr>
+      <tr><td style="padding:5px 0;font-size:13px;color:#333"><span style="color:#FF9900;font-weight:700">✓</span>&nbsp; <strong>Espace membre</strong> : dons, suivi des paiements, newsletter</td></tr>
+    </table>
+    <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 20px">Nous avons besoin de vous. Redevenez membre du mouvement en quelques secondes :</p>
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr><td align="center" style="padding:8px 0 20px">
+        <a href="$url" style="display:inline-block;background:#FF9900;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:700;font-size:15px">Je rejoins le mouvement</a>
+      </td></tr>
+    </table>
+    <p style="font-size:11px;color:#bbb;text-align:center;margin:0 0 6px">Lien valable 30 jours · Notre combat reste juste : nous voulons faire respecter les règles pour tous, sans déplacer le problème d'une ville à l'autre.</p>
+  </td></tr>
+  <tr><td style="background:#f5f7fa;padding:16px 32px;text-align:center;border-top:1px solid #e0e8f0">
+    <p style="font-size:11px;color:#aaa;margin:0">Ça suffit ! · <a href="$site_url" style="color:#1673B2">casuffit.be</a><br>Vous recevez cet email car vous étiez inscrit(e) au mouvement avec <strong>$email</strong></p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>
+HTML;
+}
+
+function buildWixInviteText(string $prenom, string $url, string $email): string {
+    $salut = $prenom ? "Bonjour $prenom," : "Bonjour,";
+    return "$salut\n\nVous aviez rejoint le mouvement Piste 01 — Ça Suffit il y a quelques années. Aujourd'hui, le mouvement « Ça Suffit » reprend vie : UBCNA et Piste 01 unissent à nouveau leurs forces et lancent un nouveau site pour relancer la mobilisation de tous les survolés injustement.\n\nVous y trouverez de vrais outils :\n- Conditions de vent en direct et suivi des atterrissages\n- Un assistant pour porter plainte en quelques clics\n- Un espace membre : dons, suivi des paiements, newsletter\n\nNous avons besoin de vous. Redevenez membre du mouvement (lien valable 30 jours) :\n$url\n\nNotre combat reste juste : faire respecter les règles pour tous, sans déplacer le problème d'une ville à l'autre.\n\nL'équipe Ça suffit !";
 }
