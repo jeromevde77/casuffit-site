@@ -243,6 +243,9 @@ iframe#email-preview{flex:1;border:none;background:#f0f4f8}
             <button type="button" class="wt-btn" onclick="fmt('removeFormat','nl')">Tx</button>
             <div class="wt-sep"></div>
             <button type="button" class="wt-btn" onclick="toggleSource('nl')" id="src-btn-nl">&lt;/&gt; Source</button>
+            <div class="wt-sep"></div>
+            <button type="button" class="wt-btn" onclick="traduireAuto(this)" id="btn-traduire"
+                    style="background:#1673B2;color:#fff;font-weight:700">🌐 Traduire depuis le FR</button>
           </div>
           <div id="wysiwyg-nl" class="wysiwyg-editor" contenteditable="true"
                oninput="syncWysiwyg('nl')"></div>
@@ -443,6 +446,36 @@ function saveTemplate() {
   // S'assurer que les textareas sont à jour avant submit
   ['fr','nl'].forEach(lang => { if (modes[lang]==='wysiwyg') syncWysiwyg(lang); });
   document.getElementById('tpl-form').submit();
+}
+// ── Traduction automatique FR → NL via Claude ────────────────────────────
+function traduireAuto(btn) {
+  // S'assurer que le contenu FR est à jour
+  if (modes['fr']==='wysiwyg') syncWysiwyg('fr');
+  var slug = document.querySelector('input[name="slug"]')?.value || '';
+  if (!slug) { alert('Template introuvable.'); return; }
+  if (!confirm('Traduire automatiquement le sujet et le contenu FR vers le néerlandais ?\n\nLa traduction remplacera le contenu NL actuel.')) return;
+
+  var orig = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Traduction…';
+
+  var fd = new FormData();
+  fd.append('_csrf', '<?= htmlspecialchars(csrf_token()) ?>');
+  fd.append('slug', slug);
+
+  fetch('translate_template.php', { method:'POST', body:fd })
+    .then(r => r.json())
+    .then(d => {
+      if (!d.ok) { alert('Erreur : ' + (d.error || 'inconnue') + (d.raw ? '\n\n' + d.raw : '')); return; }
+      // Remplir les champs NL
+      if (d.sujet_nl) document.getElementById('sujet-nl').value = d.sujet_nl;
+      document.getElementById('contenu-nl').value = d.contenu_nl;
+      // Mettre à jour l'éditeur WYSIWYG NL s'il est visible
+      var wy = document.getElementById('wysiwyg-nl');
+      if (wy) wy.innerHTML = d.contenu_nl;
+      alert('✅ Traduction terminée et enregistrée. Vérifiez le résultat dans l\'onglet Nederlands.');
+    })
+    .catch(e => alert('Erreur réseau : ' + e.message))
+    .finally(() => { btn.disabled = false; btn.textContent = orig; });
 }
 </script>
 <?php endif; ?>
