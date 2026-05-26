@@ -143,6 +143,37 @@ function getDefaultEmailTemplates(): array {
 . $footer(),
         ],
 
+        'invite_wix' => [
+            'label'     => 'Relance anciens membres (Ça Suffit)',
+            'sujet_fr'  => 'Le mouvement Ça Suffit reprend vie — rejoignez-nous',
+            'sujet_nl'  => 'De beweging Ça Suffit komt weer tot leven — doe mee',
+            'variables' => ['{{prenom}}','{{url}}','{{email}}'],
+            'contenu_fr' => $header('Le mouvement Ça Suffit reprend vie', 'Stop aux nuisances aériennes de Brussels Airport')
+. '<p style="font-size:15px;font-weight:700;color:#0e3d6b;margin:0 0 16px">Bonjour {{prenom}},</p>
+<p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 16px">
+  Vous aviez rejoint le mouvement <strong>Piste 01 — Ça Suffit</strong> il y a quelques années pour défendre votre quartier contre le survol injuste. Nous ne vous avons pas oublié(e).
+</p>
+<p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 16px">
+  Aujourd\'hui, <strong>le mouvement « Ça Suffit » reprend vie</strong>. UBCNA et Piste 01 unissent à nouveau leurs forces, et nous lançons un tout nouveau site pour relancer la mobilisation de tous les survolés injustement.
+</p>
+<p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 20px">
+  Cette fois, nous mettons à votre disposition de vrais outils pour comprendre <strong style="color:#1673B2">pourquoi vous êtes survolé(e)</strong> — et savoir si c\'est justifié ou non selon la météo :
+</p>
+<table cellpadding="0" cellspacing="0" style="margin-bottom:20px">
+  <tr><td style="padding:5px 0;font-size:13px;color:#333"><span style="color:#FF9900;font-weight:700">✓</span>&nbsp; <strong>Conditions de vent en direct</strong> et suivi des atterrissages</td></tr>
+  <tr><td style="padding:5px 0;font-size:13px;color:#333"><span style="color:#FF9900;font-weight:700">✓</span>&nbsp; <strong>Un assistant pour porter plainte</strong> en quelques clics</td></tr>
+  <tr><td style="padding:5px 0;font-size:13px;color:#333"><span style="color:#FF9900;font-weight:700">✓</span>&nbsp; <strong>Espace membre</strong> : dons, suivi des paiements, newsletter</td></tr>
+</table>
+<p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 20px">Nous avons besoin de vous. Redevenez membre du mouvement en quelques secondes :</p>
+<table cellpadding="0" cellspacing="0" width="100%">
+  <tr><td align="center" style="padding:8px 0 20px">
+    <a href="{{url}}" style="background:#FF9900;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:700;font-size:15px;display:inline-block">Je rejoins le mouvement</a>
+  </td></tr>
+</table>
+<p style="font-size:11px;color:#bbb;text-align:center">Lien valable 30 jours · Notre combat reste juste : faire respecter les règles pour tous, sans déplacer le problème d\'une ville à l\'autre.</p>'
+. $footer(),
+        ],
+
         'confirm_newsletter' => [
             'label'     => 'Confirmation d\'abonnement newsletter',
             'sujet_fr'  => 'Confirmez votre abonnement — Ça suffit ! ASBL',

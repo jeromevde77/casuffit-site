@@ -8,10 +8,12 @@ $db = getDB();
 
 $msg = ''; $error = '';
 
-// ── Init templates si table vide ────────────────────────────────────────
+// ── Init templates : insère les manquants (INSERT IGNORE préserve les existants) ──
 try {
-    $count = $db->query("SELECT COUNT(*) FROM email_templates")->fetchColumn();
-    if ($count == 0) initEmailTemplates($db);
+    $db->query("SELECT COUNT(*) FROM email_templates")->fetchColumn();
+    // Toujours appelé : INSERT IGNORE n'ajoute que les slugs absents,
+    // ne modifie jamais un template déjà personnalisé.
+    initEmailTemplates($db);
 } catch (Exception $e) {
     $error = 'Table email_templates manquante — exécutez migrate_email_templates.sql';
 }
