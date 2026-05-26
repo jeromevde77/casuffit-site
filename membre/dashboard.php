@@ -1,5 +1,5 @@
 <?php
-// v4 — connexion par mot de passe (set/change) — + v3 encart récurrent/suppression QR
+// v5 — QR tappable : modal paiement mobile + copie IBAN/OGM
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 require_once __DIR__ . '/../config.php';
@@ -407,7 +407,10 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
         <?php if ($don_actif): ?>
         <div class="qr-section">
           <div class="montant-display"><?= number_format($don_actif['montant'],2,',',' ') ?> €</div>
-          <img id="qrcode-img" src="" width="160" height="160" alt="QR">
+          <img id="qrcode-img" src="" width="160" height="160" alt="QR"
+               onclick="openPayModalMember('<?= htmlspecialchars(cfg('iban','BE41 0689 0149 6910')) ?>', document.querySelector('.ogm-display')?.textContent||ogm_actif)"
+               style="cursor:pointer;border-radius:6px">
+          <div style="font-size:.68rem;color:#aaa;margin-top:4px">📷 Scannez · 📱 <span style="color:#1673B2;font-weight:600">Appuyez pour copier</span></div>
           <div class="ogm-display"><?= htmlspecialchars($don_actif['ogm_don']?:$membre['ogm']) ?></div>
           <div class="iban-mini"><strong><?= htmlspecialchars($iban) ?></strong><br>BIC : <?= htmlspecialchars($bic) ?><br><?= htmlspecialchars(cfg('beneficiaire','Ça suffit ! ASBL')) ?></div>
           <div style="font-size:.7rem;color:#aaa;margin-top:4px">Réf. don #<?= $don_actif['id'] ?></div>
@@ -641,6 +644,51 @@ function confirmSupprDon(e){
   e.stopPropagation();
   return confirm("<?= addslashes(tm('suppr_don_confirm')) ?>");
 }
+function openPayModalMember(iban, comm) {
+  document.getElementById('pay-modal-content').innerHTML =
+    _payRow('IBAN', iban, iban.replace(/\s/g,''), 'pm-iban-btn', '#1673B2') +
+    _payRow('Communication structurée (+++)', comm, comm, 'pm-comm-btn', '#b85c00');
+  document.getElementById('pay-modal').style.display = 'flex';
+}
+function _payRow(lbl, display, copyVal, btnId, color) {
+  return '<div style="margin-bottom:14px">' +
+    '<div style="font-size:.6rem;color:#999;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">' + lbl + '</div>' +
+    '<div style="display:flex;align-items:center;gap:8px">' +
+    '<code style="flex:1;font-size:.95rem;font-weight:700;color:' + color + ';word-break:break-all">' + display + '</code>' +
+    '<button id="' + btnId + '" onclick="copyPayField(\'' + copyVal.replace(/'/g,"\\'") + '\',\'' + btnId + '\')" ' +
+    'style="padding:7px 13px;background:' + color + ';color:#fff;border:none;border-radius:7px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">📋 Copier</button>' +
+    '</div></div>';
+}
+function copyPayField(val, btnId) {
+  navigator.clipboard.writeText(val).then(function() {
+    var b = document.getElementById(btnId);
+    if (b) { var t=b.textContent; b.textContent='✓ Copié !'; b.style.background='#27ae60';
+      setTimeout(function(){b.textContent=t;b.style.background='';},2200); }
+  }).catch(function(){ prompt('Copiez manuellement :', val); });
+}
+function closePayModal() { document.getElementById('pay-modal').style.display='none'; }
 </script>
+<style>@keyframes pmSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}</style>
+<div id="pay-modal" onclick="if(event.target===this)closePayModal()"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;
+            align-items:flex-end;justify-content:center;padding:0">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:26px 22px 38px;
+              width:100%;max-width:520px;animation:pmSlideUp .22s ease">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <strong style="font-size:1rem;color:#0e3d6b">💳 Coordonnées de paiement</strong>
+      <button onclick="closePayModal()"
+              style="border:none;background:none;font-size:1.5rem;cursor:pointer;color:#bbb;line-height:1;padding:0 4px">&times;</button>
+    </div>
+    <div id="pay-modal-content"></div>
+    <div style="background:#f0f7ff;border-radius:8px;padding:12px 14px;
+                font-size:.72rem;color:#2c5282;line-height:1.8;margin-top:4px">
+      <strong>Comment payer :</strong><br>
+      1. Copiez l'IBAN &rarr; ouvrez votre app bancaire<br>
+      2. Nouveau virement &rarr; collez l'IBAN<br>
+      3. Entrez le montant + collez la communication structurée<br>
+      4. Validez avec votre app
+    </div>
+  </div>
+</div>
 </body>
 </html>

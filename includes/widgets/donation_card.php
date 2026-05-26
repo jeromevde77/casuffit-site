@@ -54,9 +54,9 @@
                  style="width:100%;padding:7px 10px;border:1.5px solid var(--bleu-ciel);border-radius:6px;font-size:.85rem;font-family:inherit;outline:none"
                  oninput="updateMontantLibre(this.value)">
         </div>
-        <div class="qr-section" id="qr-anonyme">
+        <div class="qr-section" id="qr-anonyme" onclick="openPayModal()" style="cursor:pointer">
           <div id="qrcode-anonyme" style="display:inline-block;border:3px solid var(--bleu-hex);border-radius:6px;background:#fff;line-height:0"></div>
-          <div style="margin-top:8px;font-size:.75rem;color:#888">Scannez avec votre app bancaire</div>
+          <div style="margin-top:8px;font-size:.75rem;color:#888">📷 Scannez · 📱 <span style="color:#1673B2;font-weight:700">Appuyez pour les coordonnées</span></div>
         </div>
         <div class="iban-box">
           <div class="iban-val"><?= htmlspecialchars(cfg('iban','BE41 0689 0149 6910')) ?></div>
