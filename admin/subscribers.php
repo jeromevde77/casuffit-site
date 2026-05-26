@@ -75,7 +75,34 @@ if (!empty($_GET['source']))  {
 }
 if (!empty($_GET['q']))       { $where[] = '(email LIKE ? OR prenom LIKE ? OR nom LIKE ? OR commune LIKE ?)';
                                 $q = '%'.$_GET['q'].'%'; array_push($params, $q,$q,$q,$q); }
+if (!empty($_GET['membre'])) {
+    if ($_GET['membre'] === 'non')  $where[] = "NOT EXISTS (SELECT 1 FROM members m WHERE m.email=s.email)";
+    elseif ($_GET['membre'] === 'oui') $where[] = "EXISTS (SELECT 1 FROM members m WHERE m.email=s.email)";
+}
 $where_sql = implode(' AND ', $where);
+
+// ── Tri serveur ──────────────────────────────────────────────────────────
+$sub_sort_map = [
+    'email'    => 's.email',
+    'nom'      => 's.nom, s.prenom',
+    'commune'  => 's.commune',
+    'benevole' => 's.benevole',
+    'statut'   => 's.statut',
+    'date'     => 's.date_inscription',
+    'membre'   => 'is_membre',
+];
+$sub_sort = array_key_exists($_GET['sort'] ?? '', $sub_sort_map) ? $_GET['sort'] : 'date';
+$sub_dir  = ($_GET['dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+
+// ── Pagination ───────────────────────────────────────────────────────────
+$sub_per   = 50;
+$sub_page  = max(1,(int)($_GET['page'] ?? 1));
+$stmt_cnt2 = $db->prepare("SELECT COUNT(*) FROM subscribers s WHERE $where_sql");
+$stmt_cnt2->execute($params);
+$sub_total  = (int)$stmt_cnt2->fetchColumn();
+$sub_pages  = max(1,(int)ceil($sub_total/$sub_per));
+$sub_page   = min($sub_page,$sub_pages);
+$sub_offset = ($sub_page-1)*$sub_per;
 
 // ── Export CSV ────────────────────────────────────────────────────────────
 if (isset($_GET['export'])) {
@@ -97,10 +124,29 @@ if (isset($_GET['emails_only'])) {
 }
 
 // ── Liste ─────────────────────────────────────────────────────────────────
-$stmt = $db->prepare("SELECT s.*, (SELECT COUNT(*) FROM members m WHERE m.email=s.email LIMIT 1) AS is_membre FROM subscribers s WHERE $where_sql ORDER BY s.date_inscription DESC");
+$stmt = $db->prepare("SELECT s.*, (SELECT COUNT(*) FROM members m WHERE m.email=s.email LIMIT 1) AS is_membre FROM subscribers s WHERE $where_sql ORDER BY {$sub_sort_map[$sub_sort]} {$sub_dir} LIMIT $sub_per OFFSET $sub_offset");
 $stmt->execute($params);
 $subscribers  = $stmt->fetchAll();
 $total_actifs = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'")->fetchColumn();
+
+function su_sub($ov=[]){
+    global $sub_sort,$sub_dir;
+    $keep=['q','commune','benevole','statut','source','membre','sort','dir','page'];
+    $p=[];foreach($keep as $k){if(isset($_GET[$k])&&$_GET[$k]!=='')$p[$k]=$_GET[$k];}
+    $p['sort']=$sub_sort;$p['dir']=$sub_dir;
+    foreach($ov as $k=>$v)$p[$k]=$v;
+    foreach($p as $k=>$v){if($v===''||$v===null||$v===false)unset($p[$k]);}
+    return 'subscribers.php?'.http_build_query($p);
+}
+function sub_th($label,$col){
+    global $sub_sort,$sub_dir;
+    $active=($sub_sort===$col);
+    $next=($active&&$sub_dir==='asc')?'desc':'asc';
+    $url=su_sub(['sort'=>$col,'dir'=>$next,'page'=>1]);
+    $icon=$active?($sub_dir==='asc'?'▲':'▼'):'<span style="opacity:.2">↕</span>';
+    $style='color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;'.($active?'color:#1673B2;font-weight:700;':'');
+    return "<th><a href=\"$url\" style=\"$style\">".htmlspecialchars($label)." $icon</a></th>";
+}
 $msg = $_GET['msg'] ?? '';
 ?>
 <!DOCTYPE html>
@@ -131,6 +177,9 @@ $msg = $_GET['msg'] ?? '';
     .btn-r{background:#fff5f5;color:#e53e3e;border-color:#fed7d7}.btn-r:hover{background:#fee2e2}
     .btn-o{background:#fff8ee;color:#c97200;border-color:#ffd080}.btn-o:hover{background:#fff3d0}
     .btn-v{background:#f0fff4;color:#27ae60;border-color:#c6f6d5}.btn-v:hover{background:#dcfce7}
+    .page-btn{padding:5px 11px;border-radius:6px;font-size:.78rem;font-weight:600;text-decoration:none;background:#f0f4f8;color:#555;border:1.5px solid #dde4ed;line-height:1}
+    .page-btn:hover{background:#e0e8f0;text-decoration:none;color:#333}
+    .page-btn-active{background:#1673B2!important;color:#fff!important;border-color:#1673B2!important}
     /* Act-btn inline */
     .act-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;border:1.5px solid;cursor:pointer;text-decoration:none;transition:all .15s;background:none;font-family:inherit;flex-shrink:0}
     .act-btn.edit{color:#4a5568;border-color:#e2e8f0;background:#f7f8fa}.act-btn.edit:hover{background:#edf2f7;border-color:#cbd5e0}
@@ -175,7 +224,7 @@ $msg = $_GET['msg'] ?? '';
 <?php include __DIR__ . '/../includes/admin_sidebar.php'; ?>
 <div class="main">
   <div class="page-title">Abonnés newsletter</div>
-  <div class="subtitle"><?= $total_actifs ?> abonné(s) actif(s) au total · <?= count($subscribers) ?> affiché(s)</div>
+  <div class="subtitle"><?= $total_actifs ?> abonné(s) actif(s) · <?= $sub_total ?> affiché(s) — page <?= $sub_page ?>/<?= $sub_pages ?></div>
 
   <?php if ($msg): ?><div class="msg-ok"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
 
@@ -198,6 +247,11 @@ $msg = $_GET['msg'] ?? '';
       <option value="">Toutes les sources</option>
       <option value="wix"  <?= ($_GET['source']??'')==='wix'  ?'selected':'' ?>>Importés de Wix</option>
       <option value="site" <?= ($_GET['source']??'')==='site' ?'selected':'' ?>>Inscrits sur le site</option>
+    </select>
+    <select name="membre">
+      <option value="">Tous (membre ou non)</option>
+      <option value="non" <?= ($_GET['membre']??'')==='non'?'selected':'' ?>>🔴 Pas encore membres</option>
+      <option value="oui" <?= ($_GET['membre']??'')==='oui'?'selected':'' ?>>✅ Déjà membres</option>
     </select>
     <button type="submit" class="btn btn-g">Filtrer</button>
     <a href="subscribers.php" class="btn btn-g">Réinitialiser</a>
@@ -252,13 +306,14 @@ $msg = $_GET['msg'] ?? '';
         <thead>
           <tr>
             <th class="cb-col"><input type="checkbox" id="check-all" title="Tout sélectionner"></th>
-            <th class="sortable" data-col="0">Email</th>
-            <th class="sortable" data-col="1">Prénom / Nom</th>
-            <th class="sortable" data-col="2">Commune</th>
-            <th class="sortable" data-col="3">Téléphone</th>
-            <th class="sortable" data-col="4">Bénévole</th>
-            <th class="sortable" data-col="5">Statut</th>
-            <th class="sortable" data-col="6">Inscrit le</th>
+            <?= sub_th('Email',    'email') ?>
+            <?= sub_th('Prénom / Nom','nom') ?>
+            <?= sub_th('Commune',  'commune') ?>
+            <th>Téléphone</th>
+            <?= sub_th('Bénévole', 'benevole') ?>
+            <?= sub_th('Statut',   'statut') ?>
+            <?= sub_th('Membre',   'membre') ?>
+            <?= sub_th('Inscrit',  'date') ?>
             <th>Actions</th>
           </tr>
         </thead>
@@ -277,6 +332,11 @@ $msg = $_GET['msg'] ?? '';
             <?php else:?><span class="badge badge-red">Désabonné</span><?php endif;?>
           </td>
           <td><?=date('d/m/Y',strtotime($s['date_inscription']))?></td>
+          <td><?php if(!empty($s['is_membre'])):?>
+            <span class="badge badge-green" title="Déjà membre">✅ Membre</span>
+          <?php else:?>
+            <span class="badge badge-grey">—</span>
+          <?php endif;?></td>
           <td>
             <div style="display:flex;gap:5px">
               <button type="button" class="act-btn edit" title="Modifier" onclick="openEdit(<?=htmlspecialchars(json_encode($s))?>)">
@@ -309,6 +369,17 @@ $msg = $_GET['msg'] ?? '';
         <?php endforeach;?>
         </tbody>
       </table>
+      <?php if ($sub_pages > 1): ?>
+      <div style="display:flex;gap:4px;align-items:center;padding:14px 16px;border-top:1px solid #f0f4f8;flex-wrap:wrap">
+        <?php if($sub_page>1):?><a href="<?=su_sub(['page'=>1])?>" class="page-btn">«</a><a href="<?=su_sub(['page'=>$sub_page-1])?>" class="page-btn">‹</a><?php endif;?>
+        <?php $ps=max(1,$sub_page-3);$pe=min($sub_pages,$sub_page+3);
+          if($ps>1)echo '<span style="color:#aaa;font-size:.8rem">…</span>';
+          for($i=$ps;$i<=$pe;$i++):?><a href="<?=su_sub(['page'=>$i])?>" class="page-btn <?=$i===$sub_page?'page-btn-active':''?>"><?=$i?></a><?php endfor;
+          if($pe<$sub_pages)echo '<span style="color:#aaa;font-size:.8rem">…</span>';?>
+        <?php if($sub_page<$sub_pages):?><a href="<?=su_sub(['page'=>$sub_page+1])?>" class="page-btn">›</a><a href="<?=su_sub(['page'=>$sub_pages])?>" class="page-btn">»</a><?php endif;?>
+        <span style="font-size:.75rem;color:#888;margin-left:8px"><?=$sub_total?> abonné(s) — <?=$sub_per?>/page</span>
+      </div>
+      <?php endif; ?>
     </div>
   </form>
 </div>
