@@ -114,18 +114,31 @@ $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
   <!-- Liste membres -->
   <div class="card">
     <h3>Membres inscrits (<?= count($membres) ?>)</h3>
+    <div style="background:#fff8ee;border:1.5px solid #FF9900;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div style="font-size:.82rem;color:#555">
+        Les membres dont l'<strong>adresse est incomplète</strong> (surlignés) peuvent être relancés par email pour la compléter.
+      </div>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="btn btn-g" onclick="selectIncomplets()" style="font-size:.78rem">Sélectionner les incomplets</button>
+        <button type="button" class="btn btn-primary" onclick="envoyerRappelAdresse()" style="font-size:.78rem;background:#FF9900">✉ Envoyer le rappel adresse</button>
+      </div>
+    </div>
     <table>
       <tr>
+        <th style="width:28px"><input type="checkbox" onclick="toggleAll(this)" title="Tout cocher"></th>
         <th>Code</th><th>Prénom Nom</th><th>Email</th><th>OGM</th>
         <th>Adresse</th><th>Commune</th><th>NL</th><th>Dons</th><th>Total</th><th>Inscrit le</th>
       </tr>
-      <?php foreach ($membres as $m): ?>
-      <tr>
+      <?php foreach ($membres as $m):
+        $adresse_incomplete = (trim($m['adresse'] ?? '') === '' || trim($m['code_postal'] ?? '') === '');
+      ?>
+      <tr<?= $adresse_incomplete ? ' style="background:#fff8ee"' : '' ?>>
+        <td><?php if ($adresse_incomplete): ?><input type="checkbox" class="mbr-cb" value="<?= $m['id'] ?>"><?php endif; ?></td>
         <td><span style="font-family:monospace;font-size:.72rem;font-weight:700;color:#1673B2"><?= htmlspecialchars($m['code_membre']) ?></span></td>
         <td><?= htmlspecialchars($m['prenom'].' '.$m['nom']) ?></td>
         <td style="font-size:.75rem"><?= htmlspecialchars($m['email']) ?></td>
         <td><span class="ogm"><?= htmlspecialchars($m['ogm']) ?></span></td>
-        <td style="font-size:.75rem"><?= htmlspecialchars($m['adresse'] ?? '—') ?></td>
+        <td style="font-size:.75rem"><?= $adresse_incomplete ? '<span style="color:#c0392b;font-weight:700">⚠ incomplète</span>' : htmlspecialchars($m['adresse']) ?></td>
         <td><?= htmlspecialchars($m['commune'] ?: '—') ?></td>
         <td><?= $m['newsletter'] ? '<span class="badge b-ok">✓</span>' : '<span class="badge b-off">✗</span>' ?></td>
         <td><?= $m['nb_dons'] ?></td>
@@ -203,5 +216,33 @@ $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
     </table>
   </div>
 </div>
+<script>
+function toggleAll(master){
+  document.querySelectorAll('.mbr-cb').forEach(cb => cb.checked = master.checked);
+}
+function selectIncomplets(){
+  // Toutes les cases présentes correspondent déjà aux membres incomplets
+  document.querySelectorAll('.mbr-cb').forEach(cb => cb.checked = true);
+}
+function envoyerRappelAdresse(){
+  var ids = Array.from(document.querySelectorAll('.mbr-cb:checked')).map(cb => cb.value);
+  if (!ids.length) { alert('Sélectionnez au moins un membre à relancer (cases dans la colonne de gauche).'); return; }
+  if (!confirm('Envoyer le rappel « compléter votre adresse » à ' + ids.length + ' membre(s) ?')) return;
+  var btn = event.currentTarget;
+  var orig = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Envoi…';
+  var fd = new FormData();
+  fd.append('_csrf', '<?= htmlspecialchars(csrf_token()) ?>');
+  ids.forEach(id => fd.append('ids[]', id));
+  fetch('rappel_adresse.php', { method:'POST', body:fd })
+    .then(r => r.json())
+    .then(d => {
+      alert(d.msg || (d.ok ? 'Rappels envoyés !' : 'Erreur : ' + d.error));
+      if (d.ok) location.reload();
+    })
+    .catch(e => alert('Erreur réseau : ' + e.message))
+    .finally(() => { btn.disabled = false; btn.textContent = orig; });
+}
+</script>
 </body>
 </html>

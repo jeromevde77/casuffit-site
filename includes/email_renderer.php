@@ -182,6 +182,29 @@ function getDefaultEmailTemplates(): array {
 . $footer(),
         ],
 
+        'rappel_adresse' => [
+            'label'     => 'Rappel — compléter l\'adresse',
+            'sujet_fr'  => 'Complétez votre profil membre — Ça suffit !',
+            'sujet_nl'  => 'Vul uw ledenprofiel aan — Ça suffit !',
+            'variables' => ['{{prenom}}','{{url}}','{{email}}'],
+            'contenu_fr' => $header('Complétez votre profil', 'Stop aux nuisances aériennes de Brussels Airport')
+. '<p style="font-size:15px;font-weight:700;color:#0e3d6b;margin:0 0 16px">Bonjour {{prenom}},</p>
+<p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 16px">
+  Merci de faire partie du mouvement <strong>Ça Suffit</strong>. Pour renforcer notre action contre les nuisances aériennes de Brussels Airport, nous avons besoin que votre profil de membre soit complet.
+</p>
+<p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 20px">
+  Il manque actuellement <strong style="color:#1673B2">votre adresse</strong> dans nos données. Cette information est importante : elle nous permet de savoir précisément quelles communes et quels quartiers sont survolés — un argument essentiel dans nos démarches auprès des autorités.
+</p>
+<table cellpadding="0" cellspacing="0" width="100%">
+  <tr><td align="center" style="padding:8px 0 20px">
+    <a href="{{url}}" style="background:#FF9900;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:700;font-size:15px;display:inline-block">Compléter mon adresse</a>
+  </td></tr>
+</table>
+<p style="font-size:13px;color:#777;line-height:1.6;margin:0 0 8px">Cela ne prend que quelques secondes. Merci pour votre engagement à nos côtés.</p>
+<p style="font-size:11px;color:#bbb;text-align:center">Lien valable 30 jours.</p>'
+. $footer(),
+        ],
+
         'confirm_newsletter' => [
             'label'     => 'Confirmation d\'abonnement newsletter',
             'sujet_fr'  => 'Confirmez votre abonnement — Ça suffit ! ASBL',
