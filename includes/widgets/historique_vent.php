@@ -131,12 +131,45 @@ $pmh_dest_list = array_filter(array_map('trim', preg_split('/[\r\n,;]+/', $pmh_d
 
 <!-- Modale widget piste météo -->
 <div class="pmh-wmodal-bg" id="pmh-wmodal-bg" onclick="if(event.target===this)pmhCloseWidget()">
-  <div class="pmh-wmodal">
+  <div class="pmh-wmodal" id="pmh-wmodal">
     <div class="pmh-wmodal-head">
       <h3 id="pmh-wmodal-title">🌬 Conditions de vent</h3>
       <button class="pmh-wmodal-close" onclick="pmhCloseWidget()">✕</button>
     </div>
     <div class="pmh-wmodal-body" id="pmh-wmodal-body">Chargement…</div>
+  </div>
+</div>
+
+<!-- Modale plainte — créneau historique vent -->
+<div class="pmw-plainte-overlay" id="pmh-plainte-overlay" style="z-index:10000"
+     onclick="if(event.target===this)pmhClosePlainte()">
+  <div class="pmw-plainte-modal">
+    <div class="pmw-plainte-title">✉ Envoyer une plainte — Créneau historique</div>
+    <div class="pmw-plainte-sub">Aux autorités compétentes (médiateur, communes, associations…)</div>
+    <div class="pmw-plainte-steps">
+      <div class="pmw-plainte-step-row">
+        <span class="pmw-plainte-step-n">1</span>
+        <div><b>Copiez le contenu de la plainte</b> — créneau, données de vent, analyse AIP 2013 copiés en un clic.</div>
+      </div>
+      <div class="pmw-plainte-step-row">
+        <span class="pmw-plainte-step-n">2</span>
+        <div><b>Ouvrez un nouvel email</b> (bouton ci-dessous, adresses pré-remplies).</div>
+      </div>
+      <div class="pmw-plainte-step-row">
+        <span class="pmw-plainte-step-n">3</span>
+        <div><b>Collez</b> le contenu dans le corps du message (Ctrl+V / Cmd+V) et envoyez.</div>
+      </div>
+    </div>
+    <div class="pmw-plainte-actions">
+      <button class="pmw-plainte-btn pmw-plainte-btn-copy" onclick="pmhCopyComplaint()">📋 Copier le contenu de la plainte</button>
+      <button class="pmw-plainte-btn pmw-plainte-btn-mail" onclick="pmhOpenMail()">✉ Ouvrir un email pré-adressé</button>
+    </div>
+    <div class="pmw-plainte-capture-zone">
+      <div id="pmh-plainte-loading" style="font-size:.78rem;color:#888;padding:6px 0;text-align:center">⏳ Capture en cours…</div>
+      <img id="pmh-plainte-img" class="pmw-plainte-capture-mini" style="display:none" alt="Capture créneau historique">
+      <a href="#" class="pmw-plainte-capture-link" onclick="pmhDownloadCapture();return false;">⬇ Télécharger l'image (preuve visuelle facultative à joindre)</a>
+    </div>
+    <button class="pmw-plainte-btn pmw-plainte-btn-close" onclick="pmhClosePlainte()">Fermer</button>
   </div>
 </div>
 
@@ -1013,7 +1046,6 @@ window.pmhOpenPlainteFromModal = function() {
   var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
   var dirTxt = (d.wdir!==null && d.wdir!==undefined) ? dirs[Math.round(d.wdir/22.5)%16] : 'Variable';
 
-  // Détail des composantes piste 01 (la piste litigieuse)
   var c01 = d.components ? d.components['01'] : null;
   var detail01 = '';
   if (c01) {
@@ -1024,7 +1056,9 @@ window.pmhOpenPlainteFromModal = function() {
 
   var illegal = (d.prs_active===false) && (d.aip2013 && d.aip2013.prs_active===true);
 
-  var body =
+  window._pmhMailSubject = 'Plainte nuisances aériennes EBBR — ' + dateStr + ' ' + timeStr;
+  window._pmhMailDest    = dest;
+  window._pmhMailBody    =
     'Madame, Monsieur,\n\n' +
     'Je vous contacte concernant des nuisances aériennes constatées au-dessus de ma commune, sur la base des données météorologiques historiques de Brussels Airport (EBBR).\n\n' +
     '=== CRÉNEAU CONCERNÉ ===\n' +
@@ -1045,17 +1079,64 @@ window.pmhOpenPlainteFromModal = function() {
     'Veuillez agréer, Madame, Monsieur, mes salutations distinguées.\n\n' +
     '— Via Ça suffit ! — casuffit.be';
 
-  // Ouvrir le client mail pré-adressé
-  var subject = 'Plainte nuisances aériennes EBBR — ' + dateStr + ' ' + timeStr;
-  var mailto = 'mailto:' + encodeURIComponent(dest)
-    + '?subject=' + encodeURIComponent(subject)
-    + '&body=' + encodeURIComponent(body);
+  // Ouvrir la modale de revue
+  var overlay = document.getElementById('pmh-plainte-overlay');
+  var loadEl  = document.getElementById('pmh-plainte-loading');
+  var imgEl   = document.getElementById('pmh-plainte-img');
+  overlay.classList.add('open');
+  if (loadEl) { loadEl.style.display='block'; loadEl.textContent='⏳ Capture en cours…'; }
+  if (imgEl)  imgEl.style.display='none';
 
-  // Copier aussi dans le presse-papier pour faciliter
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(body).catch(function(){});
+  // Capture html2canvas du modal replay
+  function doCapture() {
+    var el = document.getElementById('pmh-wmodal');
+    if (!el || typeof html2canvas === 'undefined') {
+      if (loadEl) loadEl.textContent='⚠ Capture non disponible — joignez une capture d\'écran manuellement.';
+      return;
+    }
+    html2canvas(el, {scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false})
+      .then(function(canvas) {
+        if (canvas.width < 10) { if(loadEl){loadEl.style.display='block';loadEl.textContent='⚠ Capture impossible.';} return; }
+        window._pmhCaptureDataUrl = canvas.toDataURL('image/png');
+        if (imgEl) { imgEl.src=window._pmhCaptureDataUrl; imgEl.style.display='block'; }
+        if (loadEl) loadEl.style.display='none';
+      })
+      .catch(function(err) {
+        if (loadEl) { loadEl.style.display='block'; loadEl.textContent='⚠ Capture non disponible ('+(err.message||'erreur')+').'; }
+      });
   }
-  window.location.href = mailto;
+
+  if (typeof html2canvas !== 'undefined') {
+    doCapture();
+  } else {
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload = doCapture;
+    s.onerror = function(){ if(loadEl) loadEl.textContent='⚠ Impossible de charger la librairie de capture.'; };
+    document.head.appendChild(s);
+  }
+};
+
+window.pmhClosePlainte = function() {
+  document.getElementById('pmh-plainte-overlay').classList.remove('open');
+};
+window.pmhCopyComplaint = function() {
+  if (!window._pmhMailBody) return;
+  navigator.clipboard.writeText(window._pmhMailBody).then(function() {
+    var btn = document.querySelector('#pmh-plainte-overlay .pmw-plainte-btn-copy');
+    if (btn) { var txt=btn.textContent; btn.textContent='✓ Copié !'; setTimeout(function(){btn.textContent=txt;},2500); }
+  }).catch(function(){ prompt('Copiez manuellement :', window._pmhMailBody); });
+};
+window.pmhOpenMail = function() {
+  if (!window._pmhMailBody) return;
+  window.location.href = 'mailto:'+encodeURIComponent(window._pmhMailDest||'airportmediation@mobilit.fgov.be')
+    +'?subject='+encodeURIComponent(window._pmhMailSubject||'Plainte nuisances EBBR')
+    +'&body='+encodeURIComponent(window._pmhMailBody);
+};
+window.pmhDownloadCapture = function() {
+  if (!window._pmhCaptureDataUrl) { alert('Capture non disponible.'); return; }
+  var a=document.createElement('a'); a.href=window._pmhCaptureDataUrl;
+  a.download='capture-vent-ebbr-'+(new Date()).toISOString().slice(0,10)+'.png'; a.click();
 };
 
 
