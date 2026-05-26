@@ -392,6 +392,15 @@ function member_options($membres, $selected) {
     .desc-prev{color:#aaa;font-size:0.68rem;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
     .action-bar{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.3.1/css/tom-select.default.min.css">
+  <style>
+    /* Tom Select — intégration dans le thème admin */
+    .ts-wrapper.single .ts-control{border:1.5px solid #dde4ed;border-radius:6px;font-size:.78rem;font-family:inherit;padding:5px 8px;min-height:unset;background:#fff;box-shadow:none}
+    .ts-wrapper.single.focus .ts-control{border-color:#1673B2;box-shadow:none}
+    .ts-dropdown{font-size:.78rem;font-family:inherit;border:1.5px solid #dde4ed;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+    .ts-dropdown .option.selected,.ts-dropdown .option:hover{background:#e6f1fb;color:#0e3d6b}
+    .ts-wrapper{max-width:200px}
+  </style>
 </head>
 <body>
 <?php include __DIR__ . '/../includes/admin_sidebar.php'; ?>
@@ -552,13 +561,11 @@ function member_options($membres, $selected) {
                 <div style="font-size:.62rem;color:#ccc;margin-top:2px"><?= htmlspecialchars(mb_substr($l['nom_fichier']??'',0,22)) ?></div>
               </td>
               <td>
-                <form method="POST" style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap">
-                  <?= csrf_field() ?>
-                  <input type="hidden" name="action" value="reconcilier">
-                  <input type="hidden" name="ligne_id" value="<?= $l['id'] ?>">
-                  <select class="msel" name="member_id" style="max-width:170px"><?= member_options($membres_all, (int)$l['suggested_member_id']) ?></select>
-                  <button class="btn btn-p" style="padding:6px 12px;font-size:.78rem" type="submit">✓</button>
-                </form>
+                <div style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap">
+                  <select class="msel" id="mbr-<?= $l['id'] ?>" style="max-width:170px"><?= member_options($membres_all, (int)$l['suggested_member_id']) ?></select>
+                  <button class="btn btn-p" style="padding:6px 12px;font-size:.78rem" type="button"
+                          onclick="reconcilier(<?= $l['id'] ?>, this)">✓</button>
+                </div>
               </td>
             </tr>
             <?php endforeach; ?>
@@ -573,6 +580,14 @@ function member_options($membres, $selected) {
         </form>
       <?php endif; ?>
     </div>
+
+    <!-- Formulaire caché pour la réconciliation individuelle (pas de forms imbriqués) -->
+    <form method="POST" id="reconcile-form" style="display:none">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="reconcilier">
+      <input type="hidden" name="ligne_id" id="rec-ligne-id">
+      <input type="hidden" name="member_id" id="rec-member-id">
+    </form>
 
   <?php else: ?>
     <!-- ÉTAPE 1 : upload -->
@@ -617,6 +632,32 @@ function member_options($membres, $selected) {
     zone.addEventListener('drop', function(ev){ if (ev.dataTransfer.files.length){ input.files = ev.dataTransfer.files; input.dispatchEvent(new Event('change')); } });
   }
 })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.3.1/js/tom-select.complete.min.js"></script>
+<script>
+// Recherche dans les selects de membre (Tom Select)
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('select.msel').forEach(function(el) {
+    new TomSelect(el, {
+      placeholder: '— rechercher un membre —',
+      create: false,
+      maxOptions: 500,
+      render: {
+        no_results: function() { return '<div class="no-results">Aucun résultat</div>'; }
+      }
+    });
+  });
+});
+
+// Réconciliation individuelle via formulaire caché
+function reconcilier(ligneId, btn) {
+  var sel = document.getElementById('mbr-' + ligneId);
+  var mid = sel ? sel.value : '';
+  if (!mid) { alert('Sélectionne un membre avant de valider.'); return; }
+  document.getElementById('rec-ligne-id').value = ligneId;
+  document.getElementById('rec-member-id').value = mid;
+  document.getElementById('reconcile-form').submit();
+}
 </script>
 </body>
 </html>
