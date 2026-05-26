@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Plainte
         'plainte_destinataires',
         // Alertes
-        'alerte_membre_email',
+        'alerte_membre_email', 'alerte_don_email',
     );
     foreach ($fields as $cle) {
         $val = isset($_POST[$cle]) ? trim($_POST[$cle]) : '';
@@ -267,6 +267,14 @@ try {
       <p style="font-size:.72rem;color:#999;margin-top:6px">
         Dès qu'une personne s'inscrit comme membre, un email récapitulatif est envoyé à cette adresse.
         Laissez vide pour utiliser l'email du site (<?= htmlspecialchars($c['site_email'] ?? 'non défini') ?>), ou pour désactiver si aucun n'est défini.
+      </p>
+      <label style="margin-top:14px">Email qui reçoit une alerte à chaque don déclaré</label>
+      <input type="email" name="alerte_don_email"
+             value="<?= htmlspecialchars($c['alerte_don_email'] ?? '') ?>"
+             placeholder="vous@exemple.be">
+      <p style="font-size:.72rem;color:#999;margin-top:6px">
+        Quand un membre déclare un don depuis son espace, un email récapitulatif est envoyé ici.
+        Laissez vide pour utiliser l'adresse d'alerte des membres ci-dessus (ou l'email du site).
       </p>
     </div>
 

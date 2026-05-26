@@ -76,6 +76,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['creer_don'])) {
         $ogm_don = genererOGMDon($membre['id'], $don_id);
         $db->prepare("UPDATE member_dons SET ogm_don=?, communication=? WHERE id=?")
            ->execute([$ogm_don, $ogm_don, $don_id]);
+
+        // ── Alerte email à l'administrateur (don déclaré par un membre) ──
+        try {
+            $admin_to = trim(cfg('alerte_don_email', '')) ?: (trim(cfg('alerte_membre_email', '')) ?: trim(cfg('site_email', '')));
+            if ($admin_to) {
+                $dt = date('d/m/Y à H:i');
+                $mt = number_format($montant, 2, ',', ' ');
+                $nom_m = trim(($membre['prenom'] ?? '') . ' ' . ($membre['nom'] ?? ''));
+                $sujet_a = 'Nouveau don déclaré : ' . $mt . ' € — ' . $nom_m;
+                $html_a = '<div style="font-family:Arial,sans-serif;font-size:14px;color:#222">'
+                    . '<h2 style="color:#1673B2">Nouveau don déclaré sur casuffit.be</h2>'
+                    . '<p>Un membre vient de déclarer un don depuis son espace :</p>'
+                    . '<table cellpadding="6" style="border-collapse:collapse">'
+                    . '<tr><td><b>Membre</b></td><td>' . htmlspecialchars($nom_m) . '</td></tr>'
+                    . '<tr><td><b>Email</b></td><td>' . htmlspecialchars($membre['email'] ?? '') . '</td></tr>'
+                    . '<tr><td><b>Montant</b></td><td><b>' . $mt . ' €</b></td></tr>'
+                    . '<tr><td><b>Communication</b></td><td>' . htmlspecialchars($ogm_don) . '</td></tr>'
+                    . '<tr><td><b>Statut</b></td><td>En attente (à confirmer en banque)</td></tr>'
+                    . '<tr><td><b>Date</b></td><td>' . $dt . '</td></tr>'
+                    . '</table>'
+                    . '<p style="margin-top:16px"><a href="https://www.casuffit.be/admin/dons_all.php" style="background:#1673B2;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">Voir les dons dans l\'admin</a></p>'
+                    . '</div>';
+                $text_a = "Nouveau don déclaré sur casuffit.be\n\n"
+                    . "Membre : $nom_m\nEmail : " . ($membre['email'] ?? '') . "\nMontant : $mt €"
+                    . "\nCommunication : $ogm_don\nStatut : En attente\nDate : $dt\n";
+                if (!empty(BREVO_API_KEY)) {
+                    envoyerViaBrevo($admin_to, 'Admin Ça suffit', $sujet_a, $html_a, $text_a);
+                } else {
+                    envoyerViaSMTP($admin_to, 'Admin Ça suffit', $sujet_a, $html_a, $text_a);
+                }
+            }
+        } catch (Exception $e) { error_log('Alerte don admin: ' . $e->getMessage()); }
+
         header('Location: dashboard.php?don_id='.$don_id.'&msg=don_cree'); exit;
     }
 }
