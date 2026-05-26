@@ -71,7 +71,8 @@ function getDefaultEmailTemplates(): array {
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 0;font-family:\'Helvetica Neue\',Arial,sans-serif">
 <tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;overflow:hidden;max-width:560px">
-<tr><td style="background:#1673B2;padding:28px 32px;text-align:center">
+<tr><td style="background:#1673B2;padding:24px 32px;text-align:center">
+  <img src="https://www.casuffit.be/assets/img/logo.png" alt="Ça suffit !" width="68" height="68" style="display:block;margin:0 auto 10px;border-radius:50%;background:#fff">
   <div style="font-size:22px;font-weight:800;color:#FF9900">Ça suffit !</div>
   <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px">' . $sous . '</div>
 </td></tr>
@@ -80,9 +81,16 @@ function getDefaultEmailTemplates(): array {
 
     $footer = fn($email = '{{email}}') => '
 </td></tr>
-<tr><td style="background:#f5f7fa;padding:16px 32px;text-align:center;border-top:1px solid #e0e8f0">
+<tr><td style="background:#f5f7fa;padding:20px 32px;text-align:center;border-top:1px solid #e0e8f0">
+  <table cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 12px">
+    <tr><td align="center">
+      <a href="https://www.facebook.com/casuffit" style="display:inline-block;background:#1877F2;color:#fff;text-decoration:none;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700">
+        <span style="font-size:15px;vertical-align:middle">f</span>&nbsp; Suivez-nous sur Facebook
+      </a>
+    </td></tr>
+  </table>
   <p style="font-size:11px;color:#aaa;margin:0">
-    Ça suffit ! ASBL · <a href="https://www.casuffit.be" style="color:#1673B2">casuffit.be</a><br>
+    Ça suffit ! · <a href="https://www.casuffit.be" style="color:#1673B2">casuffit.be</a><br>
     Email envoyé à <strong>' . $email . '</strong>
   </p>
 </td></tr>
