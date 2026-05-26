@@ -30,6 +30,10 @@ $looker_url = cfg('looker_url', '');
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333;font-size:14px}
 
+/* Conteneur principal : laisse la place à la sidebar fixe (240px) */
+.admin-content { margin-left: 240px; min-height: 100vh; }
+@media (max-width: 768px) { .admin-content { margin-left: 0; padding-top: 52px; } }
+
 .stats-wrap { padding: 24px; max-width: 1400px; }
 .stats-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
 .stats-header h1 { font-size:1.3rem; font-weight:700; color:#0e3d6b; margin:0; }
