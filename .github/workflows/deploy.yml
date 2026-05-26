@@ -34,7 +34,7 @@ jobs:
               --ignore-time \
               --exclude \.git \
               --exclude \.github \
-              --exclude config\.php \
+              --exclude ^config\.php$ \
               --exclude install\.sql \
               --exclude inject_content\.sql \
               --exclude migrate_.*\.sql \
