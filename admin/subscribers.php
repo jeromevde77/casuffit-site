@@ -332,34 +332,35 @@ $msg = $_GET['msg'] ?? '';
             <?php else:?><span class="badge badge-red">Désabonné</span><?php endif;?>
           </td>
           <td><?=date('d/m/Y',strtotime($s['date_inscription']))?></td>
-          <td><?php if(!empty($s['is_membre'])):?>
-            <span class="badge badge-green" title="Déjà membre">✅ Membre</span>
-          <?php else:?>
-            <span class="badge badge-grey">—</span>
-          <?php endif;?></td>
+          <td>
+            <?php if (!empty($s['is_membre'])): ?>
+              <span class="badge badge-green">✅ Membre</span>
+            <?php elseif (!empty($s['invite_membre_accepted'] ?? null)): ?>
+              <span class="badge badge-green">✓ A rejoint</span>
+            <?php elseif (!empty($s['invite_membre_sent_at'] ?? null)): ?>
+              <span class="badge" style="background:#faf5ff;color:#7c3aed;border:1px solid #c4b5fd"
+                    title="Envoyée le <?= date('d/m/Y', strtotime($s['invite_membre_sent_at'])) ?>">
+                ⏳ Invitation envoyée
+              </span>
+            <?php else: ?>
+              <span class="badge badge-grey">Non membre</span>
+            <?php endif; ?>
+          </td>
           <td>
             <div style="display:flex;gap:5px">
               <button type="button" class="act-btn edit" title="Modifier" onclick="openEdit(<?=htmlspecialchars(json_encode($s))?>)">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
-              <?php if($s['statut']!=='actif'):?>
+              <?php if ($s['statut'] !== 'actif'): ?>
               <button type="button" class="act-btn view" title="Activer" onclick="quickAct(<?=$s['id']?>,'activer')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
-              <?php endif;?>
-              <?php if(!empty($s['is_membre'])):?>
-              <span title="Déjà membre" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;font-size:13px">👤</span>
-              <?php elseif(empty($s['invite_membre_accepted'] ?? null) && empty($s['invite_membre_sent_at'] ?? null)):?>
+              <?php endif; ?>
+              <?php if (empty($s['is_membre']) && empty($s['invite_membre_sent_at'] ?? null) && empty($s['invite_membre_accepted'] ?? null)): ?>
               <button type="button" class="act-btn" title="Inviter à devenir membre"
                       onclick="inviterMembre(<?=$s['id']?>)"
                       style="color:#8b5cf6;border-color:#e9d5ff;background:#faf5ff;font-size:13px">✉</button>
-              <?php elseif(!empty($s['invite_membre_sent_at'] ?? null) && empty($s['invite_membre_accepted'] ?? null)):?>
-              <span title="Invitation envoyée le <?=date('d/m/Y',strtotime($s['invite_membre_sent_at']))?>"
-                    style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:#faf5ff;border:1.5px solid #c4b5fd;color:#8b5cf6;font-size:11px">⏳</span>
-              <?php elseif(!empty($s['invite_membre_accepted'] ?? null)):?>
-              <span title="Est devenu membre ✓"
-                    style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;font-size:13px">✓</span>
-              <?php endif;?>
+              <?php endif; ?>
               <button type="button" class="act-btn del" title="Supprimer (RGPD)" onclick="quickAct(<?=$s['id']?>,'supprimer')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
               </button>
