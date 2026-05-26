@@ -169,8 +169,8 @@ function su($ov=[]){
     <table>
       <tr>
         <?php if ($filt_incomplet): ?><th style="width:28px"></th><?php endif; ?>
-        <th>Code</th><th>Prénom Nom</th><th>Email</th><th>Statut</th>
-        <th>Adresse</th><th>Commune</th><th>NL</th><th>Dons</th><th>Total</th><th>Inscrit le</th><th></th>
+        <th>Membre</th><th>Email</th><th>Statut</th>
+        <th>Commune</th><th>Langue</th><th>Dons / Total</th><th>Inscrit</th><th></th>
       </tr>
       <?php foreach ($membres as $m):
         $incomplet=(trim($m['adresse']??'')===''||trim($m['code_postal']??'')==='');
@@ -178,17 +178,25 @@ function su($ov=[]){
       <tr<?= $incomplet?' style="background:#fff8ee"':''?>>
         <?php if ($filt_incomplet): ?><td><?php if($incomplet):?><input type="checkbox" class="mbr-cb" value="<?=$m['id']?>"></td><?php else:?></td><?php endif;
         else: ?><?php endif; ?>
-        <td><span style="font-family:monospace;font-size:.72rem;font-weight:700;color:#1673B2"><?=htmlspecialchars($m['code_membre'])?></span></td>
-        <td style="font-weight:600"><?=htmlspecialchars($m['prenom'].' '.$m['nom'])?></td>
+        <td>
+          <span style="font-family:monospace;font-size:.7rem;font-weight:700;color:#1673B2;display:block"><?=htmlspecialchars($m['code_membre'])?></span>
+          <span style="font-weight:600"><?=htmlspecialchars($m['prenom'].' '.$m['nom'])?></span>
+        </td>
         <td style="font-size:.75rem"><?=htmlspecialchars($m['email'])?></td>
-        <td><span class="badge <?=$m['statut']==='actif'?'b-ok':'b-off'?>"><?=htmlspecialchars($m['statut'])?></span>
-          <?php if($incomplet):?><span class="badge b-wait" style="margin-left:2px" title="Adresse incomplète">📍</span><?php endif;?></td>
-        <td style="font-size:.75rem"><?=$incomplet?'<span style="color:#c0392b;font-size:.7rem">⚠ incomplète</span>':htmlspecialchars($m['adresse']??'')?></td>
+        <td>
+          <span class="badge <?=$m['statut']==='actif'?'b-ok':'b-off'?>"><?=htmlspecialchars($m['statut'])?></span>
+          <?php if($incomplet):?><span class="badge b-wait" style="margin-left:3px" title="Adresse incomplète">📍</span><?php endif;?>
+          <?php if($m['newsletter']):?><span style="font-size:.75rem;margin-left:3px" title="Newsletter">📧</span><?php endif;?>
+        </td>
         <td><?=htmlspecialchars($m['commune']??'—')?></td>
-        <td><?=$m['newsletter']?'<span class="badge b-ok">✓</span>':'<span class="badge b-off">✗</span>'?></td>
-        <td><?=$m['nb_dons']?></td>
-        <td><strong><?=number_format($m['total_dons'],0,',',' ')?> €</strong></td>
-        <td style="font-size:.72rem;color:#aaa"><?=date('d/m/Y',strtotime($m['date_inscription']))?></td>
+        <td><?php $lang=strtoupper($m['lang']??'fr');?>
+          <span class="badge" style="background:<?=$lang==='NL'?'#e6f1fb':'#e8f0fb'?>;color:#1673B2"><?=$lang?></span>
+        </td>
+        <td><?php if($m['nb_dons']>0):?>
+          <strong><?=number_format($m['total_dons'],0,',',' ')?> €</strong>
+          <span style="font-size:.7rem;color:#aaa;margin-left:3px">(<?=$m['nb_dons']?>)</span>
+        <?php else:?><span style="color:#ccc">—</span><?php endif;?></td>
+        <td style="font-size:.72rem;color:#aaa;white-space:nowrap"><?=date('d/m/Y',strtotime($m['date_inscription']))?></td>
         <td><a href="member_detail.php?id=<?=$m['id']?>&back=<?=urlencode(su(['page'=>$page]))?>" class="act view" title="Voir la fiche">👁</a></td>
       </tr>
       <?php endforeach; ?>
