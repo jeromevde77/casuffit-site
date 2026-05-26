@@ -217,7 +217,7 @@ function sort_th($label, $col, $extra_style=''){
         $incomplet=(trim($m['adresse']??'')===''||trim($m['code_postal']??'')==='');
       ?>
       <tr<?= $incomplet?' style="background:#fff8ee"':''?>>
-        <td style="width:28px"><?php if($incomplet):?><input type="checkbox" class="mbr-cb" value="<?=$m['id']?>" title="Adresse incomplète"><?php endif;?></td>
+        <td style="width:28px"><?php if($incomplet):?><input type="checkbox" class="mbr-cb" value="<?=$m['id']?>" title="Adresse incomplète" <?= $filt_incomplet ? 'checked' : '' ?>><?php endif;?></td>
         <td>
           <span style="font-family:monospace;font-size:.7rem;font-weight:700;color:#1673B2;display:block"><?=htmlspecialchars($m['code_membre'])?></span>
           <span style="font-weight:600"><?=htmlspecialchars($m['prenom'].' '.$m['nom'])?></span>
