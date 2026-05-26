@@ -1,5 +1,10 @@
-<?php // includes/widgets/historique_vent.php — v2 avec saisie par ligne + export Excel ?>
-<div class="pmh" id="pmh">
+<?php
+// includes/widgets/historique_vent.php — v2 avec saisie par ligne + export Excel
+// Destinataires de la plainte — configurable dans Admin → Paramètres (clé plainte_destinataires)
+$pmh_dest_raw = function_exists('cfg') ? cfg('plainte_destinataires', 'airportmediation@mobilit.fgov.be') : 'airportmediation@mobilit.fgov.be';
+$pmh_dest_list = array_filter(array_map('trim', preg_split('/[\r\n,;]+/', $pmh_dest_raw)));
+?>
+<div class="pmh" id="pmh" data-plainte-dest="<?= htmlspecialchars(implode(',', $pmh_dest_list)) ?>">
 
   <div class="pmh-header">
     <div class="pmh-title">
@@ -983,8 +988,75 @@ function pmhRenderWidgetModal(wrap, d) {
     + (d.temp !== null && d.temp !== undefined
       ? '<div style="font-size:.75rem;color:#888">🌡 Température: '+d.temp+'°C'
         + (d.qnh ? ' · QNH: '+d.qnh+' hPa' : '') + '</div>'
-      : '');
+      : '')
+
+    + '<div style="margin-top:16px;text-align:center">'
+      + '<button type="button" onclick="pmhOpenPlainteFromModal()" '
+      + 'style="background:'+(illegal?'#FF9900':'#1673B2')+';color:#fff;border:none;padding:11px 24px;border-radius:8px;font-weight:700;font-size:.88rem;cursor:pointer;font-family:inherit">'
+      + '✉ Générer une plainte pour ce créneau</button>'
+      + (illegal ? '' : '<div style="font-size:.7rem;color:#aaa;margin-top:6px">Aucune violation évidente détectée sur ce créneau, mais vous pouvez tout de même documenter une plainte.</div>')
+    + '</div>';
+
+  // Mémoriser les données du créneau courant pour la plainte
+  window._pmhPlainteData = d;
 }
+
+// ── Génération de la plainte pour un créneau historique ──
+window.pmhOpenPlainteFromModal = function() {
+  var d = window._pmhPlainteData;
+  if (!d) return;
+  var dest = (document.getElementById('pmh')?.getAttribute('data-plainte-dest')) || 'airportmediation@mobilit.fgov.be';
+
+  var t = new Date(d.obs_time);
+  var dateStr = isNaN(t) ? d.obs_time : t.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'});
+  var timeStr = isNaN(t) ? '' : t.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC';
+  var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+  var dirTxt = (d.wdir!==null && d.wdir!==undefined) ? dirs[Math.round(d.wdir/22.5)%16] : 'Variable';
+
+  // Détail des composantes piste 01 (la piste litigieuse)
+  var c01 = d.components ? d.components['01'] : null;
+  var detail01 = '';
+  if (c01) {
+    detail01 = 'Piste 01 — vent arrière : '+(c01.tw_moy>0?c01.tw_moy.toFixed(1)+' kt':'(de face)')
+      + (c01.tw_gst!==null&&c01.tw_gst!==undefined?' (rafale '+c01.tw_gst.toFixed(1)+' kt)':'')
+      + ' / traversier : '+c01.xw_moy.toFixed(1)+' kt';
+  }
+
+  var illegal = (d.prs_active===false) && (d.aip2013 && d.aip2013.prs_active===true);
+
+  var body =
+    'Madame, Monsieur,\n\n' +
+    'Je vous contacte concernant des nuisances aériennes constatées au-dessus de ma commune, sur la base des données météorologiques historiques de Brussels Airport (EBBR).\n\n' +
+    '=== CRÉNEAU CONCERNÉ ===\n' +
+    'Date / Heure     : '+dateStr+' à '+timeStr+'\n' +
+    'Source           : '+(d.metar||'IRM / synop')+'\n\n' +
+    '=== CONDITIONS DE VENT ===\n' +
+    'Direction        : '+((d.wdir!==null&&d.wdir!==undefined)?d.wdir+'° ('+dirTxt+')':'Variable')+'\n' +
+    'Vitesse moyenne  : '+(d.wspd||'—')+' kt\n' +
+    'Rafales          : '+(d.wgst?d.wgst+' kt':'—')+'\n' +
+    (detail01?detail01+'\n':'') + '\n' +
+    '=== ANALYSE RÉGLEMENTAIRE ===\n' +
+    (illegal
+      ? 'Selon les normes de vent légales (instruction ministérielle du 17/07/2013, AIP EBBR AD 2.21),\n'
+        + 'la piste 25 aurait dû être utilisée dans ces conditions. L\'utilisation de la piste 01\n'
+        + 'apparaît donc NON CONFORME pour ce créneau.\n'
+      : 'Les conditions de ce créneau sont documentées ci-dessus à toutes fins utiles.\n') + '\n' +
+    'Je vous demande de bien vouloir examiner ce cas et de me tenir informé(e) des suites données.\n\n' +
+    'Veuillez agréer, Madame, Monsieur, mes salutations distinguées.\n\n' +
+    '— Via Ça suffit ! — casuffit.be';
+
+  // Ouvrir le client mail pré-adressé
+  var subject = 'Plainte nuisances aériennes EBBR — ' + dateStr + ' ' + timeStr;
+  var mailto = 'mailto:' + encodeURIComponent(dest)
+    + '?subject=' + encodeURIComponent(subject)
+    + '&body=' + encodeURIComponent(body);
+
+  // Copier aussi dans le presse-papier pour faciliter
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(body).catch(function(){});
+  }
+  window.location.href = mailto;
+};
 
 
 </script>
