@@ -75,7 +75,12 @@ try {
 $montant_initial = floatval(cfg('montant_initial', 0));
 $dons_confirmes  = 0;
 try {
-    $dons_confirmes = floatval($db->query("SELECT COALESCE(SUM(montant),0) FROM member_dons WHERE statut='confirme'")->fetchColumn());
+    // v2 — seuls les dons versés depuis le lancement du site font progresser la barre
+    // Date configurable via site_config.cle = 'date_lancement' (format YYYY-MM-DD)
+    $date_lancement = cfg('date_lancement', '2026-05-25');
+    $stmt_dons = $db->prepare("SELECT COALESCE(SUM(montant),0) FROM member_dons WHERE statut='confirme' AND date_don >= ?");
+    $stmt_dons->execute([$date_lancement]);
+    $dons_confirmes = floatval($stmt_dons->fetchColumn());
 } catch (Exception $e) {}
 $recolte = $montant_initial + $dons_confirmes;
 // Mettre à jour site_config pour afficher le total dans l'admin
