@@ -391,6 +391,39 @@ function member_options($membres, $selected) {
     .help strong{color:#0e3d6b}
     .desc-prev{color:#aaa;font-size:0.68rem;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
     .action-bar{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
+    @media(max-width:768px){
+      .main{margin-left:0!important;padding:14px!important;padding-top:68px!important}
+      .page-title{font-size:1.1rem;margin-bottom:16px}
+      .card{padding:14px}
+      /* Stats grid : 7 cols → 3 cols */
+      .result-stats{grid-template-columns:repeat(3,1fr)!important;gap:8px}
+      .stat-box{padding:10px 8px}
+      .stat-box .val{font-size:1.2rem}
+      /* Tables : scroll horizontal */
+      table{font-size:.72rem;white-space:nowrap}
+      th,td{padding:6px 8px!important}
+      /* Tabs de navigation : scroll horizontal */
+      .csv-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;padding-bottom:2px}
+      .csv-tab{white-space:nowrap;padding:8px 12px;font-size:.78rem}
+      /* Zone upload : plus de padding pour le toucher */
+      .upload-zone{padding:28px 16px}
+      .upload-zone .icon{font-size:2rem}
+      /* Boutons pleine largeur */
+      .action-bar{flex-direction:column;align-items:stretch}
+      .action-bar .btn{width:100%;justify-content:center;padding:12px 18px}
+      /* Selects pleine largeur */
+      select.msel{max-width:100%!important;width:100%!important;font-size:.82rem;padding:8px 10px}
+      /* Tom Select pleine largeur */
+      .ts-wrapper{max-width:100%!important}
+      /* Cellules avec select : stack vertical */
+      td > div[style*="inline-flex"]{flex-direction:column;align-items:stretch!important}
+      /* Help box */
+      .help{font-size:.78rem;padding:12px}
+      /* Titre des étapes */
+      .card h3{font-size:.82rem}
+      /* Wrappers overflow existants */
+      div[style*="overflow-x:auto"]{-webkit-overflow-scrolling:touch}
+    }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.3.1/css/tom-select.default.min.css">
   <style>
@@ -609,7 +642,7 @@ function member_options($membres, $selected) {
           <div class="icon">📄</div>
           <p><strong>Clique ou dépose</strong> ton fichier CSV Belfius ici</p>
           <small>Format CSV (séparateur « ; »), max 5 Mo</small>
-          <input type="file" name="csv_file" id="csv_file" accept=".csv,text/csv" required>
+          <input type="file" name="csv_file" id="csv_file" accept=".csv,text/csv,text/plain,application/vnd.ms-excel" required>
         </label>
         <div class="action-bar">
           <button type="submit" class="btn btn-p">Analyser le fichier</button>
