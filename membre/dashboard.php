@@ -229,6 +229,13 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
     .qr-section{text-align:center}
     .qr-section img{border-radius:8px;border:4px solid #1673B2;display:block;margin:0 auto 10px}
     .ogm-display{font-family:monospace;font-size:.95rem;font-weight:700;color:#1673B2;background:#e6f1fb;padding:8px 12px;border-radius:6px;text-align:center;margin-bottom:8px;word-break:break-all}
+    .info-recurrent{display:flex;gap:14px;align-items:flex-start;background:#fff8ee;border:1.5px solid #FF9900;border-radius:12px;padding:16px 18px;margin-bottom:16px}
+    .info-recurrent-ico{font-size:1.6rem;flex-shrink:0;line-height:1}
+    .info-recurrent-title{font-weight:800;color:#0e3d6b;font-size:.95rem;margin-bottom:5px}
+    .info-recurrent p{font-size:.82rem;color:#555;line-height:1.5;margin:0 0 10px}
+    .info-recurrent-comm{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px dashed #FF9900;border-radius:8px;padding:8px 12px}
+    .info-recurrent-comm span{font-size:.75rem;color:#888}
+    .info-recurrent-comm strong{font-family:monospace;font-size:1rem;color:#1673B2;font-weight:700;word-break:break-all}
     .montant-display{font-size:1.4rem;font-weight:800;color:#FF9900;margin-bottom:4px}
     .iban-mini{font-size:.72rem;color:#888;line-height:1.7;text-align:center}
     /* Historique */
@@ -328,6 +335,17 @@ if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','e
 
   <!-- ══════════ ONGLET DONS ══════════ -->
   <div class="tab-panel <?= $tab_actif==='dons'?'active':'' ?>" id="tab-dons">
+    <div class="info-recurrent">
+      <div class="info-recurrent-ico">🔁</div>
+      <div>
+        <div class="info-recurrent-title"><?= tm('recurrent_title') ?></div>
+        <p><?= tm('recurrent_text') ?></p>
+        <div class="info-recurrent-comm">
+          <span><?= tm('recurrent_comm_label') ?></span>
+          <strong><?= htmlspecialchars($membre['ogm']) ?></strong>
+        </div>
+      </div>
+    </div>
     <div class="grid2">
       <div class="card">
         <h2><?= tm('generer_qr') ?></h2>
