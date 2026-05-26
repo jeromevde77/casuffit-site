@@ -54,14 +54,19 @@
     <p><strong>Base légale :</strong> intérêt légitime (gestion associative) et consentement (newsletter).</p>
     <p><strong>Durée de conservation :</strong> tant que votre compte est actif. Sur demande de suppression, vos données sont effacées dans les 30 jours.</p>
 
-    <h3>2.2 Cookies de session</h3>
+    <h3>2.2 Suivi de nos campagnes par email</h3>
+    <p>Afin d'améliorer notre communication, nous mesurons de manière statistique l'ouverture de certains emails de campagne que nous vous envoyons (par exemple nos invitations ou appels à la mobilisation), via un indicateur d'ouverture intégré au message. Nous enregistrons la date et le nombre d'ouvertures.</p>
+    <p>Ce suivi ne concerne <strong>pas</strong> les emails techniques (lien de connexion, confirmations). Ces données servent uniquement à des fins d'analyse interne, ne sont jamais transmises à des tiers, et vous pouvez vous y opposer en désactivant l'affichage des images dans votre logiciel de messagerie.</p>
+    <p><strong>Base légale :</strong> intérêt légitime (mesure et amélioration de notre communication associative).</p>
+
+    <h3>2.3 Cookies de session</h3>
     <p>Un cookie de session PHP (<code>PHPSESSID</code>) est déposé lors de votre connexion. Ce cookie est <strong>strictement nécessaire</strong> au fonctionnement de l'espace membre et ne peut pas être refusé. Il expire à la fermeture du navigateur.</p>
 
-    <h3>2.3 Google Analytics (si accepté)</h3>
+    <h3>2.4 Google Analytics (si accepté)</h3>
     <p>Avec votre consentement, Google Analytics 4 mesure le trafic sur ce site (pages visitées, durée, pays d'origine). Les adresses IP sont anonymisées. Aucune donnée personnelle identifiable n'est transmise.</p>
     <p><strong>Responsable tiers :</strong> Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, États-Unis.</p>
 
-    <h3>2.4 Widget Facebook (si accepté)</h3>
+    <h3>2.5 Widget Facebook (si accepté)</h3>
     <p>Avec votre consentement, un widget de la page Facebook de l'ASBL est affiché. Meta Platforms Ireland Ltd peut déposer des cookies tiers pour mesurer les interactions.</p>
     <p><strong>Responsable tiers :</strong> Meta Platforms Ireland Ltd, 4 Grand Canal Square, Dublin 2, Irlande.</p>
   </div>
