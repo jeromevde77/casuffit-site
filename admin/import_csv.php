@@ -352,7 +352,7 @@ function member_options($membres, $selected) {
     .page-title{font-size:1.4rem;font-weight:800;color:#0e3d6b;margin-bottom:24px}
     .card{background:#fff;border-radius:12px;padding:22px;box-shadow:0 2px 10px rgba(0,0,0,0.06);margin-bottom:20px}
     .card h3{font-size:0.9rem;font-weight:700;color:#0e3d6b;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #eee}
-    .upload-zone{border:2px dashed #bee3f8;border-radius:10px;padding:32px;text-align:center;background:#f0f7ff;cursor:pointer;transition:border .2s}
+    .upload-zone{display:block;border:2px dashed #bee3f8;border-radius:10px;padding:32px;text-align:center;background:#f0f7ff;cursor:pointer;transition:border .2s}
     .upload-zone:hover,.upload-zone.drag{border-color:#1673B2;background:#e6f1fb}
     .upload-zone input{display:none}
     .upload-zone .icon{font-size:2.5rem;margin-bottom:10px}
