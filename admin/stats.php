@@ -9,10 +9,10 @@ $msg = '';
 // Sauvegarde de l'URL Looker Studio
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['looker_url'])) {
     $url = trim($_POST['looker_url']);
-    $db->prepare("INSERT INTO site_config (cle, valeur, label, groupe)
-                  VALUES ('looker_url', :v, 'URL Looker Studio', 'stats')
-                  ON DUPLICATE KEY UPDATE valeur = :v")
-       ->execute([':v' => $url]);
+    $db->prepare("INSERT INTO site_config (cle, valeur)
+                  VALUES ('looker_url', :v)
+                  ON DUPLICATE KEY UPDATE valeur = :v2")
+       ->execute([':v' => $url, ':v2' => $url]);
     $msg = 'URL sauvegardée.';
 }
 
