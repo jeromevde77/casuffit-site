@@ -22,9 +22,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_header_widgets']
     // Sauvegarder les widgets de la zone header
     $db->prepare("DELETE FROM page_widgets WHERE page_slug='__header__'")->execute();
     $header_w = isset($_POST['header_widgets']) ? $_POST['header_widgets'] : array();
-    foreach ($header_w as $ordre => $wslug) {
+    $ordre = 0;
+    foreach ($header_w as $wslug) {
+        if (trim($wslug) === '') continue;
         $db->prepare("INSERT INTO page_widgets (page_slug, widget_slug, ordre) VALUES ('__header__',?,?)")
            ->execute(array($wslug, $ordre));
+        $ordre++;
     }
     header('Location: site_config.php?msg='.urlencode('Zone header mise à jour.')); exit;
 }
@@ -336,7 +339,7 @@ try {
       <?php foreach ($all_widgets_sc as $w): ?>
       <label style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1.5px solid <?= isset($header_widgets_sc[$w['slug']]) ? '#1673B2' : '#e0e8f0' ?>;border-radius:7px;margin-bottom:6px;cursor:pointer;background:<?= isset($header_widgets_sc[$w['slug']]) ? '#e6f1fb' : '#fff' ?>">
         <input type="checkbox"
-               name="header_widgets[<?= isset($header_widgets_sc[$w['slug']]) ? $header_widgets_sc[$w['slug']] : 99 ?>]"
+               name="header_widgets[]"
                value="<?= $w['slug'] ?>"
                <?= isset($header_widgets_sc[$w['slug']]) ? 'checked' : '' ?>
                style="accent-color:#1673B2">
