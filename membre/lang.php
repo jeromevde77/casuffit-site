@@ -1,4 +1,5 @@
 <?php
+// v2 — clés de traduction mot de passe (FR/NL)
 // membre/lang.php — Traductions pour l'espace membre
 // Inclure après session_start()
 
@@ -162,6 +163,23 @@ $T = $LANG === 'nl' ? [
   'derniere_verif'      => 'Laatste controle: %s',
   'btn_enregistrer_donnees' => '💾 Mijn gegevens opslaan',
   'modifier_email'      => '📧 Mijn e-mailadres wijzigen',
+  // Wachtwoord
+  'login_tab_pass'      => 'Wachtwoord',
+  'login_tab_lien'      => 'Link per e-mail',
+  'login_pass_explain'  => 'Meld u aan met uw e-mail en wachtwoord. Nog geen wachtwoord? Gebruik het tabblad "Link per e-mail".',
+  'label_password'      => 'Wachtwoord',
+  'btn_connexion_pass'  => 'Aanmelden',
+  'err_login_pass'      => 'Onjuist e-mailadres of wachtwoord.',
+  'section_motdepasse'  => '🔑 Wachtwoord',
+  'pass_defini'         => 'Een wachtwoord is ingesteld. U kunt zich aanmelden met e-mail + wachtwoord, of nog steeds via een magische link.',
+  'pass_aucun'          => 'Geen wachtwoord ingesteld — u meldt zich aan via een magische link. U kunt hieronder een wachtwoord aanmaken.',
+  'label_new_pass'      => 'Nieuw wachtwoord',
+  'label_confirm_pass'  => 'Bevestig wachtwoord',
+  'pass_hint'           => 'Minstens 8 tekens.',
+  'btn_definir_pass'    => '🔑 Mijn wachtwoord instellen / wijzigen',
+  'msg_password_ok'     => '✓ Uw wachtwoord is opgeslagen.',
+  'err_pass_court'      => 'Het wachtwoord moet minstens 8 tekens bevatten.',
+  'err_pass_mismatch'   => 'De twee wachtwoorden komen niet overeen.',
   'email_actuel'        => 'Huidig e-mailadres:',
   'email_en_attente'    => 'Wacht op validatie:',
   'email_nouveau_ph'    => 'Nieuw e-mailadres',
@@ -327,6 +345,23 @@ $T = $LANG === 'nl' ? [
   'derniere_verif'      => 'Dernière vérification : %s',
   'btn_enregistrer_donnees' => '💾 Enregistrer mes données',
   'modifier_email'      => '📧 Modifier mon adresse email',
+  // Mot de passe
+  'login_tab_pass'      => 'Mot de passe',
+  'login_tab_lien'      => 'Lien par email',
+  'login_pass_explain'  => 'Connectez-vous avec votre email et votre mot de passe. Pas encore de mot de passe ? Utilisez l\'onglet « Lien par email ».',
+  'label_password'      => 'Mot de passe',
+  'btn_connexion_pass'  => 'Se connecter',
+  'err_login_pass'      => 'Email ou mot de passe incorrect.',
+  'section_motdepasse'  => '🔑 Mot de passe',
+  'pass_defini'         => 'Un mot de passe est défini. Vous pouvez vous connecter avec email + mot de passe, ou toujours par lien magique.',
+  'pass_aucun'          => 'Aucun mot de passe défini — vous vous connectez par lien magique. Vous pouvez en créer un ci-dessous.',
+  'label_new_pass'      => 'Nouveau mot de passe',
+  'label_confirm_pass'  => 'Confirmer le mot de passe',
+  'pass_hint'           => '8 caractères minimum.',
+  'btn_definir_pass'    => '🔑 Définir / changer mon mot de passe',
+  'msg_password_ok'     => '✓ Votre mot de passe a été enregistré.',
+  'err_pass_court'      => 'Le mot de passe doit contenir au moins 8 caractères.',
+  'err_pass_mismatch'   => 'Les deux mots de passe ne correspondent pas.',
   'email_actuel'        => 'Email actuel :',
   'email_en_attente'    => 'En attente de validation :',
   'email_nouveau_ph'    => 'Nouvel email',

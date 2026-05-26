@@ -1,5 +1,5 @@
 <?php
-// v3 — encart virement récurrent + suppression QR non payé
+// v4 — connexion par mot de passe (set/change) — + v3 encart récurrent/suppression QR
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 require_once __DIR__ . '/../config.php';
@@ -75,6 +75,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['supprimer_don'])) {
            ->execute([$don_id_suppr, $membre['id']]);
     }
     header('Location: dashboard.php?tab=dons&msg=don_supprime'); exit;
+}
+
+// Définir / changer le mot de passe
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['definir_password'])) {
+    $pwd  = (string)($_POST['password'] ?? '');
+    $pwd2 = (string)($_POST['password_confirm'] ?? '');
+    if (strlen($pwd) < 8) {
+        header('Location: dashboard.php?tab=profil&msg=pass_court'); exit;
+    }
+    if ($pwd !== $pwd2) {
+        header('Location: dashboard.php?tab=profil&msg=pass_mismatch'); exit;
+    }
+    $hash = password_hash($pwd, PASSWORD_DEFAULT);
+    $db->prepare("UPDATE members SET password_hash=? WHERE id=?")
+       ->execute([$hash, $membre['id']]);
+    header('Location: dashboard.php?tab=profil&msg=password_ok'); exit;
 }
 
 // Nouveau don
@@ -192,7 +208,7 @@ if (!empty($membre['donnees_verifiees_at'])) {
     $besoin_maj = (new DateTime())->diff(new DateTime($membre['donnees_verifiees_at']))->days > 365;
 }
 if ($rgpd_manquant || $besoin_maj) $tab_actif = 'profil';
-if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','email_pris'])) $tab_actif = 'profil';
+if (in_array($msg_flash, ['profil_ok','email_confirm_envoye','email_invalide','email_pris','password_ok','pass_court','pass_mismatch'])) $tab_actif = 'profil';
 if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
 ?>
 <!DOCTYPE html>
@@ -330,6 +346,12 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
     <div class="flash flash-err"><?= tm('err_email_inv') ?></div>
   <?php elseif ($msg_flash === 'email_pris'): ?>
     <div class="flash flash-err"><?= tm('err_email_pris2') ?></div>
+  <?php elseif ($msg_flash === 'password_ok'): ?>
+    <div class="flash flash-ok"><?= tm('msg_password_ok') ?></div>
+  <?php elseif ($msg_flash === 'pass_court'): ?>
+    <div class="flash flash-err"><?= tm('err_pass_court') ?></div>
+  <?php elseif ($msg_flash === 'pass_mismatch'): ?>
+    <div class="flash flash-err"><?= tm('err_pass_mismatch') ?></div>
   <?php endif; ?>
 
   <?php if ($rgpd_manquant): ?>
@@ -525,6 +547,21 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
           <button type="submit" name="changer_email" class="btn-blue" style="width:100%"><?= tm('btn_envoyer_confirm') ?></button>
         </form>
         <div style="font-size:.7rem;color:#aaa;margin-top:6px"><?= tm('email_confirm_hint') ?></div>
+      </div>
+
+      <!-- Mot de passe -->
+      <div class="email-change-box" style="margin-top:14px">
+        <div class="ec-title"><?= tm('section_motdepasse') ?></div>
+        <p style="font-size:.75rem;color:#555;margin-bottom:10px">
+          <?= !empty($membre['password_hash']) ? tm('pass_defini') : tm('pass_aucun') ?>
+        </p>
+        <form method="POST" autocomplete="off">
+          <input type="hidden" name="definir_password" value="1">
+          <input type="password" name="password" placeholder="<?= tm('label_new_pass') ?>" required minlength="8" autocomplete="new-password">
+          <input type="password" name="password_confirm" placeholder="<?= tm('label_confirm_pass') ?>" required minlength="8" autocomplete="new-password">
+          <button type="submit" class="btn-blue" style="width:100%"><?= tm('btn_definir_pass') ?></button>
+        </form>
+        <div style="font-size:.7rem;color:#aaa;margin-top:6px"><?= tm('pass_hint') ?></div>
       </div>
     </div>
 
