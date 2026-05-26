@@ -564,49 +564,104 @@ function member_options($membres, $selected) {
             <button class="btn btn-g" type="submit">🔄 Relancer la détection automatique</button>
           </form>
         </div>
+      <style>
+      /* ── Cartes paiements en attente ─────────────────────── */
+      .pend-search{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+      .pend-search input{flex:1;min-width:180px;padding:9px 12px;border:1.5px solid #dde4ed;border-radius:8px;font-size:.85rem;font-family:inherit;outline:none}
+      .pend-search input:focus{border-color:#1673B2}
+      .pend-search .count-lbl{font-size:.75rem;color:#aaa;white-space:nowrap}
+      .pend-cards{display:flex;flex-direction:column;gap:12px}
+      .pend-card{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:14px 16px;transition:border .15s}
+      .pend-card:hover{border-color:#b5d4f4}
+      .pend-card.tier-ogm{border-left:4px solid #27ae60}
+      .pend-card.tier-iban{border-left:4px solid #1673B2}
+      .pend-card.tier-nom{border-left:4px solid #FF9900}
+      .pend-card.tier-aucun{border-left:4px solid #ddd}
+      .pend-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+      .pend-amount{font-size:1.4rem;font-weight:800;color:#0e3d6b;line-height:1}
+      .pend-date{font-size:.72rem;color:#aaa;margin-top:3px}
+      .pend-badge-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
+      .pend-card-info{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:.78rem;margin-bottom:12px}
+      .pend-lbl{color:#aaa;font-weight:600;text-transform:uppercase;font-size:.65rem;letter-spacing:.04em;padding-top:1px}
+      .pend-val{color:#333;word-break:break-word}
+      .pend-val .ogm{font-family:monospace;font-weight:700;color:#1673B2}
+      .pend-suggest{font-size:.72rem;color:#888;margin-top:2px}
+      .pend-card-actions{display:flex;gap:8px;align-items:center;padding-top:10px;border-top:1px solid #eee;flex-wrap:wrap}
+      .pend-card-actions .ts-wrapper{flex:1;min-width:160px}
+      .pend-card-actions .btn-reconcile{padding:10px 16px;font-size:.82rem;white-space:nowrap;flex-shrink:0}
+      .pend-card-actions .btn-ignore{padding:8px 12px;font-size:.75rem;color:#c53030;background:#fff5f5;border:1.5px solid #fed7d7;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0}
+      .pend-card-actions .btn-ignore:hover{background:#fee2e2}
+      .pend-chk-wrap{display:flex;align-items:center;gap:6px;font-size:.72rem;color:#aaa}
+      .no-results-msg{text-align:center;padding:28px;color:#aaa;font-size:.85rem;display:none}
+      @media(max-width:600px){
+        .pend-card-top{flex-direction:column;gap:6px}
+        .pend-card-actions{flex-direction:column;align-items:stretch}
+        .pend-card-actions .ts-wrapper,.pend-card-actions .btn-reconcile,.pend-card-actions .btn-ignore{width:100%}
+        .pend-card-actions .btn-reconcile{justify-content:center}
+      }
+      </style>
+
+      <div class="pend-search">
+        <input type="search" id="pend-q" placeholder="Rechercher nom, IBAN, OGM, montant…" oninput="filterPending()">
+        <label class="pend-chk-wrap"><input type="checkbox" id="chk-all" onchange="document.querySelectorAll('.ligne-chk').forEach(c=>c.checked=this.checked)"> Tout cocher</label>
+        <span class="count-lbl" id="pend-count"><?= count($pending) ?> paiement(s)</span>
+      </div>
+      <div class="no-results-msg" id="pend-noresult">Aucun résultat pour cette recherche.</div>
+
         <form method="POST" id="bulk-form">
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="ignorer">
-          <div style="overflow-x:auto">
-          <table>
-            <tr>
-              <th><input type="checkbox" id="chk-all" onchange="document.querySelectorAll('.ligne-chk').forEach(c=>c.checked=this.checked)" title="Tout sélectionner"></th>
-              <th>Date</th><th>Montant</th><th>Contrepartie</th><th>Communication</th><th>Détection</th><th>Réconcilier avec…</th>
-            </tr>
-            <?php foreach ($pending as $l):
-              $bt = ['ogm'=>['b-ok','OGM'],'iban'=>['b-info','IBAN'],'nom'=>['b-warn','Nom'],'aucun'=>['b-grey','?']][$l['tier']] ?? ['b-grey','?'];
-            ?>
-            <tr>
-              <td><input type="checkbox" class="ligne-chk" name="ligne_ids[]" value="<?= $l['id'] ?>"></td>
-              <td style="white-space:nowrap"><?= $l['date_virement'] ? date('d/m/Y', strtotime($l['date_virement'])) : '—' ?></td>
-              <td class="mt"><?= number_format((float)$l['montant'],2,',','.') ?> €</td>
-              <td><?= htmlspecialchars($l['contrepartie_nom']?:'—') ?>
-                  <span class="desc-prev"><?= htmlspecialchars(mb_substr($l['description']??'',0,55)) ?></span>
-                  <?php if ($l['contrepartie_iban']): ?><span style="font-size:.65rem;color:#bbb;display:block"><?= htmlspecialchars($l['contrepartie_iban']) ?></span><?php endif; ?>
-              </td>
-              <td><?php $ogm_l=extract_ogm(($l['communication']??'').' ');
-                if ($ogm_l): ?><span class="ogm"><?= htmlspecialchars($ogm_l) ?></span>
-                <?php else: ?><span style="color:#aaa"><?= htmlspecialchars(mb_substr($l['communication']??'',0,30))?:'—' ?></span>
-                <?php endif; ?></td>
-              <td>
+          <div class="pend-cards" id="pend-cards">
+          <?php foreach ($pending as $l):
+            $bt = ['ogm'=>['b-ok','OGM','tier-ogm'],'iban'=>['b-info','IBAN','tier-iban'],'nom'=>['b-warn','Nom approchant','tier-nom'],'aucun'=>['b-grey','Non identifié','tier-aucun']][$l['tier']] ?? ['b-grey','?','tier-aucun'];
+            $ogm_l = extract_ogm(($l['communication']??'').' ');
+            $search_data = strtolower(implode(' ', [
+              $l['contrepartie_nom']??'', $l['contrepartie_iban']??'',
+              $l['communication']??'', $ogm_l??'',
+              number_format((float)$l['montant'],2,',','.'),
+              $l['prenom']??'', $l['membre_nom']??''
+            ]));
+          ?>
+          <div class="pend-card <?= $bt[2] ?>" data-search="<?= htmlspecialchars($search_data) ?>">
+            <div class="pend-card-top">
+              <div>
+                <div class="pend-amount">💶 <?= number_format((float)$l['montant'],2,',','.') ?> €</div>
+                <div class="pend-date"><?= $l['date_virement'] ? date('d/m/Y', strtotime($l['date_virement'])) : '—' ?> · <?= htmlspecialchars(mb_substr($l['nom_fichier']??'',0,22)) ?></div>
+              </div>
+              <div class="pend-badge-wrap">
                 <span class="badge <?= $bt[0] ?>"><?= $bt[1] ?></span>
-                <?php if ($l['membre_nom']): ?><div style="font-size:.7rem;color:#888;margin-top:3px">→ <?= htmlspecialchars(trim($l['prenom'].' '.$l['membre_nom'])) ?></div><?php endif; ?>
-                <div style="font-size:.62rem;color:#ccc;margin-top:2px"><?= htmlspecialchars(mb_substr($l['nom_fichier']??'',0,22)) ?></div>
-              </td>
-              <td>
-                <div style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap">
-                  <select class="msel" id="mbr-<?= $l['id'] ?>" style="max-width:170px"><?= member_options($membres_all, (int)$l['suggested_member_id']) ?></select>
-                  <button class="btn btn-p" style="padding:6px 12px;font-size:.78rem" type="button"
-                          onclick="reconcilier(<?= $l['id'] ?>, this)">✓</button>
-                </div>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-          </table>
+                <input type="checkbox" class="ligne-chk" name="ligne_ids[]" value="<?= $l['id'] ?>" title="Sélectionner pour ignorer">
+              </div>
+            </div>
+            <div class="pend-card-info">
+              <span class="pend-lbl">De</span>
+              <span class="pend-val">
+                <?= htmlspecialchars($l['contrepartie_nom']?:'—') ?>
+                <?php if ($l['contrepartie_iban']): ?><br><span style="font-size:.68rem;color:#aaa"><?= htmlspecialchars($l['contrepartie_iban']) ?></span><?php endif; ?>
+                <?php if ($l['description']): ?><br><span style="font-size:.68rem;color:#bbb"><?= htmlspecialchars(mb_substr($l['description'],0,60)) ?></span><?php endif; ?>
+              </span>
+              <span class="pend-lbl">Comm.</span>
+              <span class="pend-val">
+                <?php if ($ogm_l): ?><span class="ogm"><?= htmlspecialchars($ogm_l) ?></span>
+                <?php else: ?><?= htmlspecialchars(mb_substr($l['communication']??'',0,50))?:'—' ?><?php endif; ?>
+              </span>
+              <?php if ($l['membre_nom']): ?>
+              <span class="pend-lbl">Suggestion</span>
+              <span class="pend-val pend-suggest">→ <?= htmlspecialchars(trim($l['prenom'].' '.$l['membre_nom'])) ?></span>
+              <?php endif; ?>
+            </div>
+            <div class="pend-card-actions">
+              <select class="msel" id="mbr-<?= $l['id'] ?>" style="flex:1"><?= member_options($membres_all, (int)$l['suggested_member_id']) ?></select>
+              <button class="btn btn-p btn-reconcile" type="button" onclick="reconcilier(<?= $l['id'] ?>, this)">✓ Réconcilier</button>
+              <button class="btn-ignore" type="button" onclick="ignorer1(<?= $l['id'] ?>)">✗</button>
+            </div>
           </div>
-          <div class="action-bar">
+          <?php endforeach; ?>
+          </div>
+
+          <div class="action-bar" style="margin-top:16px">
             <button class="btn btn-g" type="submit"
-              onclick="return document.querySelectorAll('.ligne-chk:checked').length?confirm('Ignorer définitivement les lignes sélectionnées ?'):(alert('Aucune ligne sélectionnée.'),false)">
+              onclick="return document.querySelectorAll('.ligne-chk:checked').length?confirm('Ignorer définitivement les lignes sélectionnées ?'):(alert('Aucune case cochée.'),false)">
               🚫 Ignorer la sélection
             </button>
           </div>
@@ -690,6 +745,33 @@ function reconcilier(ligneId, btn) {
   document.getElementById('rec-ligne-id').value = ligneId;
   document.getElementById('rec-member-id').value = mid;
   document.getElementById('reconcile-form').submit();
+}
+
+function filterPending() {
+  var q = document.getElementById('pend-q').value.toLowerCase().trim();
+  var cards = document.querySelectorAll('.pend-card');
+  var visible = 0;
+  cards.forEach(function(c) {
+    var match = !q || c.dataset.search.includes(q);
+    c.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  var lbl = document.getElementById('pend-count');
+  if (lbl) lbl.textContent = visible + ' paiement(s)' + (q ? ' trouvé(s)' : '');
+  var noRes = document.getElementById('pend-noresult');
+  if (noRes) noRes.style.display = (visible === 0 && q) ? 'block' : 'none';
+}
+
+function ignorer1(ligneId) {
+  if (!confirm('Ignorer définitivement ce paiement ?')) return;
+  var fd = new FormData();
+  fd.append('_csrf', document.querySelector('input[name=_csrf]').value);
+  fd.append('action', 'ignorer');
+  fd.append('ligne_ids[]', ligneId);
+  fetch('import_csv.php?tab=attente', { method:'POST', body:fd })
+    .then(function(r){ return r.text(); })
+    .then(function(){ location.reload(); })
+    .catch(function(e){ alert('Erreur: '+e.message); });
 }
 </script>
 </body>
