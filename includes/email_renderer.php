@@ -84,7 +84,7 @@ function getDefaultEmailTemplates(): array {
 <tr><td style="background:#f5f7fa;padding:20px 32px;text-align:center;border-top:1px solid #e0e8f0">
   <table cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 12px">
     <tr><td align="center">
-      <a href="https://www.facebook.com/casuffit" style="display:inline-block;background:#1877F2;color:#fff;text-decoration:none;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700">
+      <a href="https://www.facebook.com/piste01casuffit" style="display:inline-block;background:#1877F2;color:#fff;text-decoration:none;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700">
         <span style="font-size:15px;vertical-align:middle">f</span>&nbsp; Suivez-nous sur Facebook
       </a>
     </td></tr>
