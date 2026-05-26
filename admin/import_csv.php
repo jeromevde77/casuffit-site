@@ -10,6 +10,86 @@ $db = getDB();
 $error = '';
 $results  = null;   // étape 1 : résultat de l'analyse
 $imported = null;   // étape 2 : résultat de l'import
+$flash_msg = '';
+
+// Onglet actif et compteur paiements en attente
+$current_tab  = $_GET['tab'] ?? 'import';
+$pending_count = 0;
+try { $pending_count = (int)$db->query("SELECT COUNT(*) FROM import_csv_lignes WHERE statut='en_attente'")->fetchColumn(); } catch (Exception $e) {}
+
+// ── Handlers onglet "En attente" ──────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
+    csrf_verify();
+    $action = $_POST['action'];
+
+    if ($action === 'reconcilier') {
+        $lid = (int)($_POST['ligne_id'] ?? 0);
+        $mid = (int)($_POST['member_id'] ?? 0);
+        if ($lid > 0 && $mid > 0) {
+            try {
+                $l = $db->prepare("SELECT * FROM import_csv_lignes WHERE id=? AND statut='en_attente'");
+                $l->execute([$lid]); $l = $l->fetch();
+                if ($l) {
+                    $chk = $db->prepare("SELECT id FROM member_dons WHERE ref_import=?");
+                    $chk->execute([$l['ref_import']]);
+                    if (!$chk->fetch()) {
+                        $comm = extract_ogm(($l['communication']??'').' ') ?: ($l['communication'] ?: null);
+                        $note = 'Réconciliation manuelle — ' . ($l['contrepartie_nom'] ?? '');
+                        $db->prepare("INSERT INTO member_dons (member_id,montant,communication,statut,note,date_don,ref_import) VALUES (?,?,?,'confirme',?,?,?)")
+                           ->execute([$mid, $l['montant'], $comm, $note,
+                                      ($l['date_virement'] ? $l['date_virement'].' 12:00:00' : date('Y-m-d').' 12:00:00'),
+                                      $l['ref_import']]);
+                    }
+                    $db->prepare("UPDATE import_csv_lignes SET statut='reconcilie',date_reconciliee=NOW() WHERE id=?")
+                       ->execute([$lid]);
+                    $flash_msg = '✓ Paiement réconcilié et don enregistré.';
+                }
+            } catch (Exception $e) { $flash_msg = 'Erreur : ' . $e->getMessage(); }
+        }
+        $current_tab = 'attente';
+
+    } elseif ($action === 'ignorer') {
+        $ids = array_filter(array_map('intval', (array)($_POST['ligne_ids'] ?? [])));
+        if ($ids) {
+            $in = implode(',', $ids);
+            try { $db->exec("UPDATE import_csv_lignes SET statut='ignore' WHERE id IN ($in)"); } catch (Exception $e) {}
+            $flash_msg = '✓ ' . count($ids) . ' paiement(s) ignoré(s) définitivement.';
+        }
+        $current_tab = 'attente';
+
+    } elseif ($action === 'redetection') {
+        try {
+            $pending = $db->query("SELECT * FROM import_csv_lignes WHERE statut='en_attente'")->fetchAll();
+            $mbrs = $db->query("SELECT id,prenom,nom,ogm,iban_membre FROM members WHERE statut='actif'")->fetchAll();
+            $bo=[]; $bi=[];
+            foreach ($mbrs as $m) {
+                if (!empty($m['ogm']))         $bo[$m['ogm']] = $m;
+                if (!empty($m['iban_membre'])) $bi[strtoupper(preg_replace('/\s+/','',$m['iban_membre']))] = $m;
+            }
+            $upd = 0;
+            foreach ($pending as $row) {
+                $nt=$row['tier']; $ns=(int)($row['suggested_member_id']??0);
+                $ogm_r = extract_ogm(($row['communication']??'').' ');
+                $iban_r = strtoupper(preg_replace('/\s+/','',$row['contrepartie_iban']??''));
+                if ($ogm_r && isset($bo[$ogm_r]))     { $nt='ogm';  $ns=$bo[$ogm_r]['id']; }
+                elseif ($iban_r && isset($bi[$iban_r])) { $nt='iban'; $ns=$bi[$iban_r]['id']; }
+                else {
+                    $n = nrm_name($row['contrepartie_nom']??'');
+                    foreach ($mbrs as $m) {
+                        $ln = nrm_name($m['nom']);
+                        if ($ln!==''&&strlen($ln)>=3&&preg_match('/\b'.preg_quote($ln,'/').'\b/',$n)) { $nt='nom';$ns=$m['id'];break; }
+                    }
+                }
+                if ($nt!==$row['tier']||(int)$ns!==(int)($row['suggested_member_id']??0)) {
+                    $db->prepare("UPDATE import_csv_lignes SET tier=?,suggested_member_id=? WHERE id=?")->execute([$nt,$ns,$row['id']]);
+                    $upd++;
+                }
+            }
+            $flash_msg = '✓ Détection relancée — ' . $upd . ' suggestion(s) mise(s) à jour sur ' . count($pending) . ' paiement(s) en attente.';
+        } catch (Exception $e) { $flash_msg = 'Erreur : ' . $e->getMessage(); }
+        $current_tab = 'attente';
+    }
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function nrm_name($s) {
@@ -106,7 +186,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmer_import'])) 
         if ($chk->fetch()) { $skip++; continue; }
 
         if ($tx['tier'] === 'don' && !empty($tx['don_id'])) {
-            // Confirme un don en_attente existant (paiement d'un QR généré)
             $db->prepare("UPDATE member_dons
                           SET statut='confirme', date_don=?, ref_import=?,
                               note=CONCAT(COALESCE(note,''), ' | Confirmé par import CSV')
@@ -114,7 +193,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmer_import'])) 
                ->execute([($tx['date'] ?: date('Y-m-d')) . ' 12:00:00', $tx['ref'], (int)$tx['don_id']]);
             $upd++;
         } else {
-            // Nouveau don rattaché au membre choisi
             $mid = (int)($members[$k] ?? 0);
             if ($mid <= 0) continue;
             $comm = $tx['ogm'] ?: ($tx['comm'] ?: null);
@@ -125,9 +203,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmer_import'])) 
                ->execute([$mid, $tx['montant'], $comm, $note, ($tx['date'] ?: date('Y-m-d')) . ' 12:00:00', $tx['ref']]);
             $ins++;
         }
+        // Si ce don était en staging, le marquer réconcilié
+        if (!empty($tx['is_staging'])) {
+            try { $db->prepare("UPDATE import_csv_lignes SET statut='reconcilie',date_reconciliee=NOW() WHERE ref_import=?")->execute([$tx['ref']]); } catch (Exception $e) {}
+        }
+    }
+
+    // Sauvegarder les non-confirmés (non cochés, hors déjà importés et ignorés) en staging
+    $saved = 0;
+    foreach ($rows as $k => $tx) {
+        if (!empty($decisions[$k])) continue;                          // confirmé, déjà traité
+        if (in_array($tx['tier'], ['deja','ignore_def'], true)) continue; // skip définitifs
+        if (!empty($tx['is_staging'])) continue;                       // déjà en staging, laisser
+        try {
+            $db->prepare("INSERT IGNORE INTO import_csv_lignes
+                          (ref_import,date_virement,montant,contrepartie_iban,contrepartie_nom,
+                           communication,description,tier,suggested_member_id,nom_fichier)
+                          VALUES (?,?,?,?,?,?,?,?,?,?)")
+               ->execute([$tx['ref'], $tx['date']?:null, $tx['montant'], $tx['iban']?:null,
+                          $tx['nom']?:null, $tx['comm']?:null, mb_substr($tx['desc'],0,500),
+                          $tx['tier'], $tx['suggest']?:null, $fname]);
+            $saved++;
+        } catch (Exception $e) {}
     }
     unset($_SESSION['csv_import']);
-    $imported = ['ins' => $ins, 'upd' => $upd, 'skip' => $skip];
+    $imported = ['ins' => $ins, 'upd' => $upd, 'skip' => $skip, 'saved' => $saved];
 }
 
 // ── ÉTAPE 1 : upload + analyse ──────────────────────────────────────────────
@@ -160,8 +260,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                 foreach ($dons as $dn) { $by_ogm_don[$dn['ogm_don']] = $dn; }
             } catch (Exception $e) { /* colonne ogm_don absente : on ignore ce niveau */ }
 
-            // Empreintes déjà importées
-            $refs_exist = [];
+            // Empreintes déjà importées (member_dons) + staging (import_csv_lignes)
+            $refs_exist = []; $refs_staging = []; $refs_ignore = [];
             $allrefs = array_values(array_unique(array_column($txs, 'ref')));
             if ($allrefs) {
                 $in = implode(',', array_fill(0, count($allrefs), '?'));
@@ -169,15 +269,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                     $q = $db->prepare("SELECT ref_import FROM member_dons WHERE ref_import IN ($in)");
                     $q->execute($allrefs);
                     foreach ($q->fetchAll() as $r) $refs_exist[$r['ref_import']] = true;
-                } catch (Exception $e) { /* colonne ref_import absente (migration non lancée) */ }
+                } catch (Exception $e) {}
+                try {
+                    $q = $db->prepare("SELECT ref_import, statut, tier, suggested_member_id FROM import_csv_lignes WHERE ref_import IN ($in)");
+                    $q->execute($allrefs);
+                    foreach ($q->fetchAll() as $r) {
+                        if ($r['statut'] === 'en_attente') $refs_staging[$r['ref_import']] = $r;
+                        else $refs_ignore[$r['ref_import']] = true; // ignore ou reconcilie
+                    }
+                } catch (Exception $e) {}
             }
 
             // Classement
-            $rows = []; $counts = ['don'=>0,'ogm'=>0,'iban'=>0,'nom'=>0,'aucun'=>0,'deja'=>0]; $total_import = 0;
+            $rows = []; $counts = ['don'=>0,'ogm'=>0,'iban'=>0,'nom'=>0,'aucun'=>0,'deja'=>0,'attente'=>0]; $total_import = 0;
             foreach ($txs as $tx) {
-                $tx['tier'] = 'aucun'; $tx['suggest'] = 0; $tx['don_id'] = 0; $tx['membre_label'] = '';
+                $tx['tier'] = 'aucun'; $tx['suggest'] = 0; $tx['don_id'] = 0; $tx['membre_label'] = ''; $tx['is_staging'] = false;
                 if (!empty($refs_exist[$tx['ref']])) {
                     $tx['tier'] = 'deja';
+                } elseif (!empty($refs_ignore[$tx['ref']])) {
+                    continue; // ignoré définitivement ou déjà réconcilié — ne pas afficher
+                } elseif (!empty($refs_staging[$tx['ref']])) {
+                    $st = $refs_staging[$tx['ref']];
+                    $tx['tier'] = 'attente'; $tx['suggest'] = (int)($st['suggested_member_id']??0); $tx['is_staging'] = true;
                 } elseif ($tx['ogm'] && isset($by_ogm_don[$tx['ogm']])) {
                     $dn = $by_ogm_don[$tx['ogm']];
                     $tx['tier'] = 'don'; $tx['don_id'] = $dn['id']; $tx['suggest'] = $dn['member_id'];
@@ -202,7 +315,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                         }
                     }
                 }
-                $counts[$tx['tier']]++;
+                if (isset($counts[$tx['tier']])) $counts[$tx['tier']]++;
                 if ($tx['tier'] !== 'deja') $total_import += $tx['montant'];
                 $rows[] = $tx;
             }
@@ -250,11 +363,11 @@ function member_options($membres, $selected) {
     .btn-p:hover{background:#125a90}
     .btn-g{background:#f0f4f8;color:#555;border-color:#dde4ed}
     .btn-g:hover{background:#e0e8f0}
-    .result-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px}
+    .result-stats{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:20px}
     .stat-box{background:#f8f9fa;border-radius:8px;padding:12px;text-align:center}
     .stat-box .val{font-size:1.5rem;font-weight:800}
     .stat-box .lbl{font-size:0.64rem;color:#888;text-transform:uppercase;letter-spacing:0.04em;margin-top:2px}
-    .val-ok{color:#27ae60}.val-warn{color:#FF9900}.val-blue{color:#1673B2}.val-grey{color:#aaa}
+    .val-ok{color:#27ae60}.val-warn{color:#FF9900}.val-blue{color:#1673B2}.val-grey{color:#aaa}.val-orange{color:#c97300}
     table{width:100%;border-collapse:collapse;font-size:0.8rem}
     th{text-align:left;padding:8px 10px;color:#888;font-weight:600;font-size:0.68rem;text-transform:uppercase;border-bottom:2px solid #eee;white-space:nowrap}
     td{padding:8px 10px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
@@ -264,6 +377,11 @@ function member_options($membres, $selected) {
     .b-info{background:#e6f1fb;color:#1673B2}
     .b-warn{background:#fff3e0;color:#ba7517}
     .b-grey{background:#f0f0f0;color:#888}
+    .b-staging{background:#fff0e0;color:#c97300;border:1px solid #ffd080}
+    .csv-tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:2px solid #e8eef5;padding-bottom:0}
+    .csv-tab{padding:9px 18px;border:none;background:none;font-family:inherit;font-size:.85rem;font-weight:700;color:#888;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+    .csv-tab.active{color:#1673B2;border-bottom-color:#1673B2}
+    .csv-tab .badge-cnt{display:inline-block;background:#FF9900;color:#fff;border-radius:10px;padding:1px 7px;font-size:.65rem;margin-left:5px;vertical-align:middle}
     .ogm{font-family:monospace;font-weight:700;color:#1673B2;font-size:0.76rem}
     .mt{font-weight:700;white-space:nowrap}
     select.msel{padding:5px 8px;border:1.5px solid #dde4ed;border-radius:6px;font-size:0.78rem;font-family:inherit;max-width:200px}
@@ -281,6 +399,14 @@ function member_options($membres, $selected) {
 <div class="main">
   <div class="page-title">📥 Import CSV bancaire</div>
 
+  <!-- Onglets -->
+  <div class="csv-tabs">
+    <button class="csv-tab <?= $current_tab==='import'?'active':'' ?>" onclick="window.location='import_csv.php'">📥 Importer</button>
+    <button class="csv-tab <?= $current_tab==='attente'?'active':'' ?>" onclick="window.location='import_csv.php?tab=attente'">
+      ⏳ En attente<?php if ($pending_count): ?><span class="badge-cnt"><?= $pending_count ?></span><?php endif; ?>
+    </button>
+  </div>
+
   <?php if ($error): ?>
     <div class="flash-err">⚠ <?= htmlspecialchars($error) ?></div>
   <?php endif; ?>
@@ -289,7 +415,10 @@ function member_options($membres, $selected) {
     <div class="flash-ok">
       ✓ Import terminé : <strong><?= $imported['ins'] ?></strong> nouveau(x) don(s),
       <strong><?= $imported['upd'] ?></strong> don(s) en attente confirmé(s),
-      <strong><?= $imported['skip'] ?></strong> ignoré(s) (déjà présents).
+      <strong><?= $imported['skip'] ?></strong> déjà présent(s).
+      <?php if (!empty($imported['saved']) && $imported['saved'] > 0): ?>
+        · <strong><?= $imported['saved'] ?></strong> paiement(s) non réconcilié(s) <a href="import_csv.php?tab=attente">sauvegardé(s) en attente →</a>
+      <?php endif; ?>
     </div>
     <div class="card"><a href="import_csv.php" class="btn btn-p">↻ Nouvel import</a>
       <a href="dons_all.php" class="btn btn-g">Voir les dons</a></div>
@@ -302,6 +431,7 @@ function member_options($membres, $selected) {
       <div class="stat-box"><div class="val val-blue"><?= $results['counts']['iban'] ?></div><div class="lbl">IBAN connu</div></div>
       <div class="stat-box"><div class="val val-warn"><?= $results['counts']['nom'] ?></div><div class="lbl">Nom approchant</div></div>
       <div class="stat-box"><div class="val val-grey"><?= $results['counts']['aucun'] ?></div><div class="lbl">Non attribué</div></div>
+      <div class="stat-box"><div class="val val-orange"><?= $results['counts']['attente'] ?></div><div class="lbl">Déjà en staging</div></div>
       <div class="stat-box"><div class="val val-grey"><?= $results['counts']['deja'] ?></div><div class="lbl">Déjà importés</div></div>
     </div>
 
@@ -321,7 +451,8 @@ function member_options($membres, $selected) {
           <?php foreach ($results['rows'] as $k => $tx):
               $tier = $tx['tier'];
               $badge = ['don'=>['b-ok','Don en attente'],'ogm'=>['b-ok','OGM membre'],'iban'=>['b-info','IBAN connu'],
-                        'nom'=>['b-warn','Nom approchant'],'aucun'=>['b-grey','Non attribué'],'deja'=>['b-grey','Déjà importé']][$tier];
+                        'nom'=>['b-warn','Nom approchant'],'aucun'=>['b-grey','Non attribué'],'deja'=>['b-grey','Déjà importé'],
+                        'attente'=>['b-staging','⏳ Déjà en staging']][$tier] ?? ['b-grey','?'];
               $precheck = in_array($tier, ['don','ogm','iban'], true);
               $fixed = in_array($tier, ['don','ogm'], true);   // membre certain
           ?>
@@ -358,6 +489,90 @@ function member_options($membres, $selected) {
         </div>
       </div>
     </form>
+
+  <?php elseif ($current_tab === 'attente'): ?>
+    <!-- ONGLET EN ATTENTE -->
+    <?php if ($flash_msg): ?><div class="flash-ok"><?= htmlspecialchars($flash_msg) ?></div><?php endif; ?>
+    <?php
+      try {
+        $pending = $db->query("SELECT l.*, m.prenom, m.nom as membre_nom
+                               FROM import_csv_lignes l LEFT JOIN members m ON m.id=l.suggested_member_id
+                               WHERE l.statut='en_attente' ORDER BY l.date_virement DESC, l.montant DESC")->fetchAll();
+        $membres_all = $db->query("SELECT id, prenom, nom FROM members WHERE statut='actif' ORDER BY nom,prenom")->fetchAll();
+      } catch (Exception $e) { $pending=[]; $membres_all=[]; }
+    ?>
+    <div class="card">
+      <h3>⏳ Paiements en attente de réconciliation (<?= count($pending) ?>)</h3>
+      <div class="help">
+        Ces paiements ont été détectés lors d'un import CSV mais <strong>non réconciliés</strong> avec un membre.
+        <br>• <strong>Réconcilier</strong> → sélectionne un membre → le don est enregistré immédiatement.
+        <br>• <strong>Ignorer définitivement</strong> → frais bancaires, erreur de virement… → n'apparaît plus jamais.
+        <br>• <strong>Relancer la détection</strong> → remet à jour les suggestions (utile après l'inscription d'un nouveau membre).
+      </div>
+      <?php if (empty($pending)): ?>
+        <div style="text-align:center;padding:40px 20px;color:#aaa">
+          <div style="font-size:2.5rem;margin-bottom:10px">✅</div>
+          <div>Aucun paiement en attente — tout est réconcilié !</div>
+        </div>
+      <?php else: ?>
+        <div style="display:flex;gap:10px;margin-bottom:16px">
+          <form method="POST">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="redetection">
+            <button class="btn btn-g" type="submit">🔄 Relancer la détection automatique</button>
+          </form>
+        </div>
+        <form method="POST" id="bulk-form">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="ignorer">
+          <div style="overflow-x:auto">
+          <table>
+            <tr>
+              <th><input type="checkbox" id="chk-all" onchange="document.querySelectorAll('.ligne-chk').forEach(c=>c.checked=this.checked)" title="Tout sélectionner"></th>
+              <th>Date</th><th>Montant</th><th>Contrepartie</th><th>Communication</th><th>Détection</th><th>Réconcilier avec…</th>
+            </tr>
+            <?php foreach ($pending as $l):
+              $bt = ['ogm'=>['b-ok','OGM'],'iban'=>['b-info','IBAN'],'nom'=>['b-warn','Nom'],'aucun'=>['b-grey','?']][$l['tier']] ?? ['b-grey','?'];
+            ?>
+            <tr>
+              <td><input type="checkbox" class="ligne-chk" name="ligne_ids[]" value="<?= $l['id'] ?>"></td>
+              <td style="white-space:nowrap"><?= $l['date_virement'] ? date('d/m/Y', strtotime($l['date_virement'])) : '—' ?></td>
+              <td class="mt"><?= number_format((float)$l['montant'],2,',','.') ?> €</td>
+              <td><?= htmlspecialchars($l['contrepartie_nom']?:'—') ?>
+                  <span class="desc-prev"><?= htmlspecialchars(mb_substr($l['description']??'',0,55)) ?></span>
+                  <?php if ($l['contrepartie_iban']): ?><span style="font-size:.65rem;color:#bbb;display:block"><?= htmlspecialchars($l['contrepartie_iban']) ?></span><?php endif; ?>
+              </td>
+              <td><?php $ogm_l=extract_ogm(($l['communication']??'').' ');
+                if ($ogm_l): ?><span class="ogm"><?= htmlspecialchars($ogm_l) ?></span>
+                <?php else: ?><span style="color:#aaa"><?= htmlspecialchars(mb_substr($l['communication']??'',0,30))?:'—' ?></span>
+                <?php endif; ?></td>
+              <td>
+                <span class="badge <?= $bt[0] ?>"><?= $bt[1] ?></span>
+                <?php if ($l['membre_nom']): ?><div style="font-size:.7rem;color:#888;margin-top:3px">→ <?= htmlspecialchars(trim($l['prenom'].' '.$l['membre_nom'])) ?></div><?php endif; ?>
+                <div style="font-size:.62rem;color:#ccc;margin-top:2px"><?= htmlspecialchars(mb_substr($l['nom_fichier']??'',0,22)) ?></div>
+              </td>
+              <td>
+                <form method="POST" style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap">
+                  <?= csrf_field() ?>
+                  <input type="hidden" name="action" value="reconcilier">
+                  <input type="hidden" name="ligne_id" value="<?= $l['id'] ?>">
+                  <select class="msel" name="member_id" style="max-width:170px"><?= member_options($membres_all, (int)$l['suggested_member_id']) ?></select>
+                  <button class="btn btn-p" style="padding:6px 12px;font-size:.78rem" type="submit">✓</button>
+                </form>
+              </td>
+            </tr>
+            <?php endforeach; ?>
+          </table>
+          </div>
+          <div class="action-bar">
+            <button class="btn btn-g" type="submit"
+              onclick="return document.querySelectorAll('.ligne-chk:checked').length?confirm('Ignorer définitivement les lignes sélectionnées ?'):(alert('Aucune ligne sélectionnée.'),false)">
+              🚫 Ignorer la sélection
+            </button>
+          </div>
+        </form>
+      <?php endif; ?>
+    </div>
 
   <?php else: ?>
     <!-- ÉTAPE 1 : upload -->
