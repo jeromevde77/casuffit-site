@@ -238,7 +238,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="card">
   <div class="brand">
-    <h1>Ça suffit ! <span><?= $LANG==='nl'?'VZW':'ASBL' ?></span></h1>
+    <img src="../assets/img/logo.png" alt="Ça suffit !">
+    <h1>Ça suffit !</h1>
     <p><?= tm('inscription_titre') ?></p>
   </div>
   <div style="text-align:right;margin-bottom:8px;font-size:.75rem">
