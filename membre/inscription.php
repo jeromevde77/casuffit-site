@@ -101,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$email)  { $error = tm('err_email'); }
     elseif (!$prenom || !$nom) { $error = tm('err_prenom_nom'); }
+    elseif (!$adresse) { $error = tm('err_adresse'); }
     elseif (!$rgpd) { $error = tm('err_rgpd'); }
     else {
         // Vérifier si email déjà inscrit
@@ -294,7 +295,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <label><?= tm('email') ?></label>
     <input type="email" name="email" value="<?= htmlspecialchars($invite_email ?: (isset($_POST['email']) ? $_POST['email'] : '')) ?>" required <?= $invite_email ? 'readonly style="background:#f5f7fa;color:#888"' : '' ?>>
     <label><?= tm('adresse') ?></label>
-    <input type="text" name="adresse" value="<?= htmlspecialchars(isset($_POST['adresse']) ? $_POST['adresse'] : '') ?>" placeholder="<?= tm('adresse_ph') ?>">
+    <input type="text" name="adresse" value="<?= htmlspecialchars(isset($_POST['adresse']) ? $_POST['adresse'] : '') ?>" placeholder="<?= tm('adresse_ph') ?>" required>
     <div class="form-row">
       <div>
         <label><?= tm('commune') ?></label>
