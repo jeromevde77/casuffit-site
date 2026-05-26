@@ -102,6 +102,7 @@ function sort_th($label, $col, $extra_style=''){
 <?php include __DIR__ . '/../includes/admin_pwa_head.php'; ?>
   <title>Membres — Admin Ça suffit !</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.3.1/css/tom-select.default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333}
@@ -226,6 +227,14 @@ function sort_th($label, $col, $extra_style=''){
         <td>
           <span class="badge <?=$m['statut']==='actif'?'b-ok':'b-off'?>"><?=htmlspecialchars($m['statut'])?></span>
           <?php if($incomplet):?><span class="badge b-wait" style="margin-left:3px" title="Adresse incomplète">⚠️</span><?php endif;?>
+          <?php if(!$incomplet && !empty($m['adresse'])):?>
+            <button type="button" onclick='openAdresseMap(<?= htmlspecialchars(json_encode([
+              "nom"     => $m["prenom"]." ".$m["nom"],
+              "adresse" => $m["adresse"],
+              "cp"      => $m["code_postal"]??'',
+              "commune" => $m["commune"]??'',
+            ])) ?>)' style="background:none;border:none;cursor:pointer;padding:0 0 0 3px;font-size:.85rem;vertical-align:middle;line-height:1" title="Voir sur la carte">📍</button>
+          <?php endif;?>
           <?php if($m['newsletter']):?><span style="font-size:.75rem;margin-left:3px" title="Newsletter">📧</span><?php endif;?>
         </td>
         <td><?=htmlspecialchars($m['commune']??'—')?></td>
@@ -304,8 +313,69 @@ function sort_th($label, $col, $extra_style=''){
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.3.1/js/tom-select.complete.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<!-- Modale carte adresse -->
+<div id="map-modal" onclick="if(event.target===this)closeMapModal()"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;width:560px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee">
+      <div>
+        <div id="map-nom" style="font-weight:700;color:#0e3d6b;font-size:.95rem"></div>
+        <div id="map-addr" style="font-size:.78rem;color:#888;margin-top:3px"></div>
+      </div>
+      <button onclick="closeMapModal()" style="border:none;background:none;font-size:1.5rem;cursor:pointer;color:#bbb;line-height:1">×</button>
+    </div>
+    <div style="position:relative">
+      <div id="map-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#f8fafc;font-size:.85rem;color:#888;z-index:1">⏳ Localisation en cours…</div>
+      <div id="map-leaflet" style="height:340px;border-radius:0 0 12px 12px"></div>
+    </div>
+    <div style="padding:8px 20px;font-size:.65rem;color:#bbb;text-align:right;background:#fafbfc;border-radius:0 0 12px 12px">
+      © <a href="https://www.openstreetmap.org" target="_blank" style="color:#bbb">OpenStreetMap</a>
+    </div>
+  </div>
+</div>
+
 <script>
 new TomSelect('#sel-membre-don',{placeholder:'— rechercher un membre —',create:false,maxOptions:500});
+
+var _leafMap = null;
+
+function openAdresseMap(data) {
+  document.getElementById('map-nom').textContent  = data.nom;
+  document.getElementById('map-addr').textContent = data.adresse + ', ' + data.cp + ' ' + data.commune + ', Belgique';
+  document.getElementById('map-loading').style.display = 'flex';
+  document.getElementById('map-modal').style.display   = 'flex';
+
+  if (_leafMap) { _leafMap.remove(); _leafMap = null; }
+
+  var q = encodeURIComponent(data.adresse + ', ' + data.cp + ' ' + data.commune + ', Belgium');
+  fetch('https://nominatim.openstreetmap.org/search?q=' + q + '&format=json&limit=1', {
+    headers: {'Accept-Language':'fr','User-Agent':'casuffit-admin'}
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(res) {
+    if (!res.length) throw new Error('Adresse introuvable sur la carte');
+    var lat = parseFloat(res[0].lat), lon = parseFloat(res[0].lon);
+    document.getElementById('map-loading').style.display = 'none';
+    _leafMap = L.map('map-leaflet').setView([lat, lon], 17);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors', maxZoom: 19
+    }).addTo(_leafMap);
+    L.marker([lat, lon]).addTo(_leafMap)
+      .bindPopup('<strong>' + data.nom + '</strong><br>' + data.adresse + '<br>' + data.cp + ' ' + data.commune)
+      .openPopup();
+    setTimeout(function(){ _leafMap.invalidateSize(); }, 150);
+  })
+  .catch(function(err) {
+    document.getElementById('map-loading').textContent = '⚠ ' + (err.message || 'Erreur de géocodage');
+  });
+}
+
+function closeMapModal() {
+  document.getElementById('map-modal').style.display = 'none';
+  if (_leafMap) { _leafMap.remove(); _leafMap = null; }
+}
 
 function selectIncomplets(){
   document.querySelectorAll('.mbr-cb').forEach(c=>c.checked=true);
