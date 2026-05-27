@@ -187,6 +187,13 @@ try {
       ⚠ Impossible de récupérer les données météo. La plainte sera générée sans données en temps réel.
     </div>
 
+    <!-- Capture visuelle du tableau météo -->
+    <div id="pl-capture-wrap" class="pl-hidden" style="margin-bottom:14px">
+      <div style="font-size:.8rem;font-weight:700;color:#0e3d6b;margin-bottom:6px">📸 Capture du tableau (jointe à la plainte) :</div>
+      <div id="pl-capture-loading" style="font-size:.78rem;color:#aaa;padding:8px">⏳ Capture en cours…</div>
+      <img id="pl-capture-img" style="display:none;max-width:100%;border:1px solid #dde4ed;border-radius:8px" alt="Capture conditions EBBR">
+    </div>
+
     <div id="complaint-wrap" class="pl-hidden">
       <div style="font-size:.8rem;font-weight:700;color:#0e3d6b;margin:16px 0 8px">Texte de la plainte :</div>
       <div class="pl-complaint-box" id="complaint-text"></div>
@@ -211,6 +218,7 @@ var _commune = '';
 var _piste = '';
 var _metar = null;
 var _plainText = '';
+var _captureDataUrl = null;
 var _dest = 'airportmediation@mobilit.fgov.be';
 
 function confirmCommune() {
@@ -466,6 +474,44 @@ function showResult(d) {
   buildComplaint(d);
   document.getElementById('complaint-wrap').classList.remove('pl-hidden');
   document.getElementById('step-result').scrollIntoView({behavior:'smooth',block:'start'});
+  // Déclencher la capture html2canvas du tableau météo
+  doCapture();
+}
+
+function doCapture() {
+  var captureWrap = document.getElementById('pl-capture-wrap');
+  var loadEl  = document.getElementById('pl-capture-loading');
+  var imgEl   = document.getElementById('pl-capture-img');
+  captureWrap.classList.remove('pl-hidden');
+  _captureDataUrl = null;
+
+  function runCapture() {
+    var el = document.getElementById('meteo-content');
+    if (!el || typeof html2canvas === 'undefined') {
+      loadEl.textContent = '⚠ Capture non disponible — le tableau sera inclus sans image.';
+      return;
+    }
+    html2canvas(el, {scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false})
+      .then(function(canvas) {
+        _captureDataUrl = canvas.toDataURL('image/png');
+        imgEl.src = _captureDataUrl;
+        imgEl.style.display = 'block';
+        loadEl.style.display = 'none';
+      })
+      .catch(function(err) {
+        loadEl.textContent = '⚠ Capture non disponible (' + (err.message||'erreur') + ').';
+      });
+  }
+
+  if (typeof html2canvas !== 'undefined') {
+    runCapture();
+  } else {
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload = runCapture;
+    s.onerror = function(){ loadEl.textContent = '⚠ Impossible de charger la librairie de capture.'; };
+    document.head.appendChild(s);
+  }
 }
 
 function cancelConfirm() {
@@ -485,31 +531,32 @@ function proceedAnyway() {
 function copyComplaint() {
   var btn = event.currentTarget;
   var orig = btn.textContent;
-  // Copie HTML riche si dispo
-  var htmlBody = buildHtmlBody();
-  try {
-    var item = new ClipboardItem({
-      'text/html': new Blob([htmlBody], {type:'text/html'}),
-      'text/plain': new Blob([_plainText], {type:'text/plain'})
-    });
-    navigator.clipboard.write([item]).then(function(){
-      btn.textContent = '✅ Copié !';
-      setTimeout(function(){ btn.textContent = orig; }, 2000);
-    }).catch(function(){
-      fallbackCopy(btn, orig);
-    });
-  } catch(e) { fallbackCopy(btn, orig); }
-}
+  var htmlBody = buildHtmlBody(); // inclut l'image si _captureDataUrl est défini
 
-function fallbackCopy(btn, orig) {
-  var ta = document.createElement('textarea');
-  ta.value = _plainText;
-  ta.style.position = 'fixed'; ta.style.opacity = '0';
-  document.body.appendChild(ta); ta.select();
-  document.execCommand('copy');
-  document.body.removeChild(ta);
-  btn.textContent = '✅ Copié !';
-  setTimeout(function(){ btn.textContent = orig; }, 2000);
+  function copyOk() {
+    btn.textContent = '✓ Copié ! Collez dans votre email';
+    setTimeout(function(){ btn.textContent = orig; }, 4000);
+  }
+  function copyFallback() {
+    navigator.clipboard.writeText(_plainText).then(copyOk).catch(function(){
+      // Dernier recours : sélection manuelle
+      var ta = document.createElement('textarea');
+      ta.value = _plainText; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta); copyOk();
+    });
+  }
+  if (navigator.clipboard && window.ClipboardItem) {
+    try {
+      var item = new ClipboardItem({
+        'text/html': new Blob([htmlBody], {type:'text/html'}),
+        'text/plain': new Blob([_plainText], {type:'text/plain'})
+      });
+      navigator.clipboard.write([item]).then(copyOk).catch(copyFallback);
+    } catch(e) { copyFallback(); }
+  } else {
+    copyFallback();
+  }
 }
 
 function buildHtmlBody() {
@@ -566,6 +613,7 @@ function buildHtmlBody() {
     analyseHtml+
     '<p>Je vous remercie de l\'attention portée à ce message et reste disponible pour tout complément d\'information.</p>'+
     '<p>Cordialement,</p>'+
+    (_captureDataUrl ? '<p><img src="'+_captureDataUrl+'" style="max-width:100%;border:1px solid #ddd;border-radius:8px;margin-top:12px" alt="Capture conditions EBBR"></p>' : '')+
     '<p style="font-size:.8em;color:#888">— Via Ça suffit ! ASBL — casuffit.be</p>'+
     '</div>';
 }
