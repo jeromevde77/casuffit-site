@@ -1523,7 +1523,7 @@ window.pmwOpenPlainte = function(pisteObservee) {
     });
     pmwMailBody =
       'Madame, Monsieur,\n\n' +
-      'Je vous contacte suite à des nuisances aériennes constatées ce jour au-dessus de ma commune.\n\n' +
+      'Je me permets de vous contacter suite à des nuisances aériennes constatées au-dessus de ma commune. Les données météorologiques disponibles ne me permettent pas de comprendre pourquoi la configuration préférentielle du Plan de Répartition du Survol (PRS) n\'est pas appliquée.\n\n' +
       '=== CONDITIONS MÉTÉO AU MOMENT DE LA PLAINTE ===\n' +
       'Date / Heure     : '+dateStr+' à '+timeStr+'\n' +
       'METAR EBBR       : '+(d.metar||'—')+'\n' +
@@ -1716,7 +1716,7 @@ window.pmwCopyComplaint = function() {
   var pisteLabel2 = pisteObservee ? (pisteObservee==='07' ? 'piste 07 (07L/07R)' : 'piste 01') : null;
   var htmlIntro = pisteLabel2
     ? '<p>Madame, Monsieur,</p><p>Je me permets de vous contacter afin de vous signaler qu\'en date du '+obsDateStr+' vers '+obsTimeStr+', j\'ai observé un usage de la <strong>'+pisteLabel2+'</strong> à l\'aéroport de Bruxelles-National (EBBR).</p><p>Les conditions météorologiques semblent indiquer que l\'utilisation des pistes préférentielles 25 aurait pu être envisagée.</p>'
-    : '<p>Madame, Monsieur,</p><p>Je vous contacte suite à des nuisances aériennes constatées au-dessus de ma commune. Les conditions météorologiques relevées démontrent une violation du Plan de Répartition du Survol (PRS).</p>';
+    : '<p>Madame, Monsieur,</p><p>Je me permets de vous contacter suite à des nuisances aériennes constatées au-dessus de ma commune. Les données météorologiques disponibles ne me permettent pas de comprendre pourquoi la configuration préférentielle du Plan de Répartition du Survol (PRS) n\'est pas appliquée.</p>';
 
   var htmlBody = '<div style="font-family:Arial,sans-serif;color:#333;max-width:700px">'
     + htmlIntro

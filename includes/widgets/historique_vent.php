@@ -1066,7 +1066,7 @@ window.pmhOpenPlainteFromModal = function() {
   window._pmhMailDest    = dest;
   window._pmhMailBody    =
     'Madame, Monsieur,\n\n' +
-    'Je vous contacte concernant des nuisances aériennes constatées au-dessus de ma commune, sur la base des données météorologiques historiques de Brussels Airport (EBBR).\n\n' +
+    'Je me permets de vous contacter suite à des nuisances aériennes constatées au-dessus de ma commune. Sur la base des données météorologiques historiques de Brussels Airport (EBBR), je ne comprends pas pourquoi la configuration préférentielle du Plan de Répartition du Survol (PRS) n\'était pas appliquée au créneau concerné.\n\n' +
     '=== CRÉNEAU CONCERNÉ ===\n' +
     'Date / Heure     : '+dateStr+' à '+timeStr+'\n' +
     'Source           : '+(d.metar||'IRM / synop')+'\n\n' +
