@@ -1714,9 +1714,27 @@ window.pmwCopyComplaint = function() {
   var obsDateStr = window._pmwObsDateStr || dateStr;
   var obsTimeStr = window._pmwObsTimeStr || timeStr;
   var pisteLabel2 = pisteObservee ? (pisteObservee==='07' ? 'piste 07 (07L/07R)' : 'piste 01') : null;
-  var htmlIntro = pisteLabel2
-    ? '<p>Madame, Monsieur,</p><p>Je me permets de vous contacter afin de vous signaler qu\'en date du '+obsDateStr+' vers '+obsTimeStr+', j\'ai observé un usage de la <strong>'+pisteLabel2+'</strong> à l\'aéroport de Bruxelles-National (EBBR).</p><p>Les conditions météorologiques semblent indiquer que l\'utilisation des pistes préférentielles 25 aurait pu être envisagée.</p>'
-    : '<p>Madame, Monsieur,</p><p>Je me permets de vous contacter suite à des nuisances aériennes constatées au-dessus de ma commune. Les données météorologiques disponibles ne me permettent pas de comprendre pourquoi la configuration préférentielle du Plan de Répartition du Survol (PRS) n\'est pas appliquée.</p>';
+  var htmlIntro;
+  if (pisteLabel2) {
+    var tw25Rv = d.components && d.components['25R'] ? (d.components['25R'].tw||0).toFixed(1) : '—';
+    var ctxP = '';
+    if (d.prs_active === true) {
+      ctxP = '<p>Les conditions météorologiques semblent indiquer que les pistes 25 constituent la configuration préférentielle (vent arrière 25R : '+tw25Rv+' kt — seuil légal : 7 kt).</p>';
+    } else if (d.prs_active === false) {
+      var hw01v  = d.components && d.components['01']  ? (d.components['01'].hw||0)  : 0;
+      var hw07Rv = d.components && d.components['07R'] ? (d.components['07R'].hw||0) : 0;
+      var altPiste2 = hw07Rv > hw01v ? 'piste 07' : 'piste 01';
+      var obsBetter2 = (pisteObservee==='07' ? 'piste 07' : 'piste 01') === altPiste2;
+      ctxP = obsBetter2
+        ? '<p>Dans les conditions actuelles, les pistes 25 ne peuvent pas être utilisées (vent arrière de '+tw25Rv+' kt sur 25R). La '+pisteLabel2+' semble être la configuration alternative la plus adaptée. Je souhaite néanmoins être informé(e) des mesures prises pour limiter les nuisances.</p>'
+        : '<p>Dans les conditions actuelles, les pistes 25 ne peuvent pas être utilisées (vent arrière de '+tw25Rv+' kt sur 25R). La '+altPiste2+' semblerait cependant plus adaptée dans ces conditions.</p>';
+    }
+    htmlIntro = '<p>Madame, Monsieur,</p>'
+      + '<p>Je me permets de vous contacter afin de vous signaler qu\'en date du '+obsDateStr+' vers '+obsTimeStr+', j\'ai observé un usage de la <strong>'+pisteLabel2+'</strong> à l\'aéroport de Bruxelles-National (EBBR).</p>'
+      + ctxP;
+  } else {
+    htmlIntro = '<p>Madame, Monsieur,</p><p>Je me permets de vous contacter suite à des nuisances aériennes constatées au-dessus de ma commune. Les données météorologiques disponibles ne me permettent pas de comprendre pourquoi la configuration préférentielle du Plan de Répartition du Survol (PRS) n\'est pas appliquée.</p>';
+  }
 
   var htmlBody = '<div style="font-family:Arial,sans-serif;color:#333;max-width:700px">'
     + htmlIntro
