@@ -1728,7 +1728,7 @@ window.pmwCopyComplaint = function() {
     + '<tr><td style="padding:8px 12px;font-weight:bold">Rafales</td><td style="padding:8px 12px">'+(d.wgst ? d.wgst+' kt' : '—')+(d.wgst_irm?' (IRM: '+d.wgst_irm+' kt)':'')+'</td></tr>'
     + '</table>'
     + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Configuration BATC en service</h3>'
-    + '<div style="display:inline-block;background:#fde8e8;border:2px solid #e53e3e;border-radius:8px;padding:10px 20px;font-size:1.1em;font-weight:bold;color:#c0392b">'+window._currentBatcRwy+' — NON AUTORISÉE</div>'
+    + '<div style="display:inline-block;background:#fde8e8;border:2px solid #e53e3e;border-radius:8px;padding:10px 20px;font-size:1.1em;font-weight:bold;color:#c0392b">Configuration en service : '+window._currentBatcRwy+'</div>'
     + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Planning PRS applicable</h3>'
     + '<div style="background:#f0f4f8;padding:12px;border-radius:6px;font-family:monospace;font-size:.85em;white-space:pre-wrap">'+planStr+'</div>'
     + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Analyse réglementaire</h3>'
