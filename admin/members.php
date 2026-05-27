@@ -62,8 +62,10 @@ $page=min($page,$total_pages);
 $offset=($page-1)*$per_page;
 
 $stmt=$db->prepare("SELECT m.*,COUNT(d.id) as nb_dons,
-    COALESCE(SUM(CASE WHEN d.statut='confirme' THEN d.montant ELSE 0 END),0) as total_dons
+    COALESCE(SUM(CASE WHEN d.statut='confirme' THEN d.montant ELSE 0 END),0) as total_dons,
+    s.source as sub_source, s.source_import as sub_source_import
     FROM members m LEFT JOIN member_dons d ON d.member_id=m.id
+    LEFT JOIN subscribers s ON s.id=m.subscriber_id
     $sql_where GROUP BY m.id ORDER BY {$sort_map[$sort]} {$dir} LIMIT $per_page OFFSET $offset");
 $stmt->execute($params); $membres=$stmt->fetchAll();
 
@@ -239,12 +241,17 @@ function sort_th($label, $col, $extra_style=''){
       </tr>
       <?php foreach ($membres as $m):
         $incomplet=(trim($m['adresse']??'')===''||trim($m['code_postal']??'')==='');
+        $src=$m['sub_source']??null; $src_imp=$m['sub_source_import']??null;
+        if($src==='membre')          $src_badge='<span class="badge b-src-site" title="Inscription directe sur le site">🌐 Site</span>';
+        elseif($src_imp==='wix'||$src==='wix_import') $src_badge='<span class="badge b-src-nl" title="Venu de la newsletter Wix">📧 Newsletter</span>';
+        else                         $src_badge='';
       ?>
       <tr<?= $incomplet?' style="background:#fff8ee"':''?>>
         <td style="width:28px"><?php if($incomplet):?><input type="checkbox" class="mbr-cb" value="<?=$m['id']?>" title="Adresse incomplète" <?= $filt_incomplet ? 'checked' : '' ?>><?php endif;?></td>
         <td>
           <span style="font-family:monospace;font-size:.7rem;font-weight:700;color:#1673B2;display:block"><?=htmlspecialchars($m['code_membre'])?></span>
           <span style="font-weight:600"><?=htmlspecialchars($m['prenom'].' '.$m['nom'])?></span>
+          <?php if($src_badge):?><div style="margin-top:3px"><?=$src_badge?></div><?php endif;?>
         </td>
         <td style="font-size:.75rem"><?=htmlspecialchars($m['email'])?></td>
         <td>
@@ -280,6 +287,10 @@ function sort_th($label, $col, $extra_style=''){
     <?php foreach ($membres as $m):
       $incomplet=(trim($m['adresse']??'')===''||trim($m['code_postal']??'')==='');
       $lang=strtoupper($m['lang']??'fr');
+      $src=$m['sub_source']??null; $src_imp=$m['sub_source_import']??null;
+      if($src==='membre')          $src_badge='<span class="badge b-src-site" title="Inscription directe">🌐 Site</span>';
+      elseif($src_imp==='wix'||$src==='wix_import') $src_badge='<span class="badge b-src-nl" title="Newsletter Wix">📧 Newsletter</span>';
+      else                         $src_badge='';
     ?>
     <div class="mb-card<?= $incomplet?' mb-incomplete':''?>">
       <?php if($incomplet):?>
@@ -293,6 +304,7 @@ function sort_th($label, $col, $extra_style=''){
         <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
           <span class="badge <?=$m['statut']==='actif'?'b-ok':'b-off'?>"><?=htmlspecialchars($m['statut'])?></span>
           <?php if($incomplet):?><span class="badge b-wait">⚠️ Adresse</span><?php endif;?>
+          <?php if($src_badge):?><?=$src_badge?><?php endif;?>
         </div>
       </div>
       <div class="mb-email"><?=htmlspecialchars($m['email'])?></div>
