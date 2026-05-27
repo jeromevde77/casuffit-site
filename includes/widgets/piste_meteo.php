@@ -1533,9 +1533,9 @@ window.pmwOpenPlainte = function(pisteObservee) {
       'Config saisie    : '+window._currentBatcRwy+'\n\n' +
       '=== PLANNING AIP ===\n' +
       planStr+'\n\n' +
-      '=== VIOLATION CONSTATÉE ===\n' +
-      'Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21),\n' +
-      'la config '+window._currentBatcRwy+' n\'est PAS autorisée dans les conditions actuelles :\n' +
+      '=== ANALYSE MÉTÉO PRS ===\n' +
+      'D\'après les données météo et l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21),\n' +
+      'je me demande si la configuration '+window._currentBatcRwy+' correspond à la configuration préférentielle dans les conditions actuelles :\n' +
       why.map(function(w){ return '  • '+w; }).join('\n')+'\n\n' +
       'Une capture d\'écran du tableau de bord est jointe à ce message.\n\n' +
       'Dans l\'attente de votre réponse,\n' +
@@ -1702,8 +1702,8 @@ window.pmwCopyComplaint = function() {
   var d = pmwState.data || {};
   var planStr = pmwMailBody.split('=== PLANNING AIP ===')[1]
     ? pmwMailBody.split('=== PLANNING AIP ===')[1].split('===')[0].trim() : '';
-  var whyArr = pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1]
-    ? pmwMailBody.split('=== VIOLATION CONSTATÉE ===')[1].split('\u2022').slice(1).map(function(w){return w.trim().split('\n')[0];}) : [];
+  var whyArr = pmwMailBody.split('=== ANALYSE MÉTÉO PRS ===')[1]
+    ? pmwMailBody.split('=== ANALYSE MÉTÉO PRS ===')[1].split('\u2022').slice(1).map(function(w){return w.trim().split('\n')[0];}) : [];
 
   var captureHtml = pmwCaptureDataUrl
     ? '<p><img src="'+pmwCaptureDataUrl+'" style="max-width:100%;border:1px solid #ddd;border-radius:8px" alt="Capture conditions EBBR"></p>' : '';
@@ -1740,12 +1740,12 @@ window.pmwCopyComplaint = function() {
     + (pisteLabel2
       ? '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Demande</h3>'
         + '<div style="background:#f0f4f8;border-radius:8px;padding:14px 18px;font-size:.95em">Je souhaiterais obtenir les raisons opérationnelles ou météorologiques qui ont justifié l\'utilisation de la <strong>'+pisteLabel2+'</strong> dans ces conditions.</div>'
-      : '<h3 style="color:#c0392b;border-bottom:2px solid #c0392b;padding-bottom:6px;margin-top:20px">Violations constatées</h3>'
+      : '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Données météo et question</h3>'
         + '<ul style="background:#fde8e8;border-radius:6px;padding:16px 16px 16px 32px">'
         + whyArr.map(function(w){return '<li>'+w+'</li>';}).join('')
         + '</ul>')
     + captureHtml
-    + '<p style="margin-top:8px;font-size:.85em;color:#666">Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21).</p>'
+    + '<p style="margin-top:8px;font-size:.85em;color:#666">Données calculées sur base de l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21) — à titre indicatif.</p>'
     + (pisteLabel2
       ? '<p>Je vous remercie de l\'attention portée à ce message et reste disponible pour tout complément d\'information.</p>'
       : '<p>Je vous remercie de bien vouloir prendre en compte cette plainte et de m\'informer des suites qui y seront données.</p>')
