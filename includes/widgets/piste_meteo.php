@@ -1727,20 +1727,39 @@ window.pmwCopyComplaint = function() {
     + '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Vent moyen</td><td style="padding:8px 12px">'+(d.wspd||'—')+' kt — '+(d.wdir||'—')+'°</td></tr>'
     + '<tr><td style="padding:8px 12px;font-weight:bold">Rafales</td><td style="padding:8px 12px">'+(d.wgst ? d.wgst+' kt' : '—')+(d.wgst_irm?' (IRM: '+d.wgst_irm+' kt)':'')+'</td></tr>'
     + '</table>'
-    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Configuration BATC en service</h3>'
-    + '<div style="display:inline-block;background:#fde8e8;border:2px solid #e53e3e;border-radius:8px;padding:10px 20px;font-size:1.1em;font-weight:bold;color:#c0392b">Configuration en service : '+window._currentBatcRwy+'</div>'
-    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Planning PRS applicable</h3>'
-    + '<div style="background:#f0f4f8;padding:12px;border-radius:6px;font-family:monospace;font-size:.85em;white-space:pre-wrap">'+planStr+'</div>'
-    + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Analyse réglementaire</h3>'
-    + '<table style="width:100%;border-collapse:collapse;font-size:.85em">'
-    + '<tr style="background:#0e3d6b;color:#fff"><th style="padding:8px 12px;text-align:left">Critère</th><th style="padding:8px 12px;text-align:left">AIP 2013 (légal)</th><th style="padding:8px 12px;text-align:left">AIP Actuel (skeyes)</th></tr>'
-    + '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent arrière piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (max 10 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (pratique ~6.5 kt)</td></tr>'
-    + '<tr style="background:#f9f9f9"><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent latéral piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">15 kt (max 20 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">20 kt</td></tr>'
-    + '</table>'
     + (pisteLabel2
-      ? '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Demande</h3>'
-        + '<div style="background:#f0f4f8;border-radius:8px;padding:14px 18px;font-size:.95em">Je souhaiterais obtenir les raisons opérationnelles ou météorologiques qui ont justifié l\'utilisation de la <strong>'+pisteLabel2+'</strong> dans ces conditions.</div>'
-      : '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Données météo et question</h3>'
+      // ── Flux piste-observée : composantes de vent ──────────────────────
+      ? (function(){
+          var c25R=(d.components||{})['25R']||{},c25L=(d.components||{})['25L']||{};
+          var tw25R=(c25R.tw||0).toFixed(1),tw25L=(c25L.tw||0).toFixed(1);
+          var xw25R=(c25R.xw||0).toFixed(1);
+          var tw25Rg=c25R.tw_g!==null&&c25R.tw_g!==undefined?(c25R.tw_g||0).toFixed(1):null;
+          var prsSpan=d.prs_active
+            ?'<span style="color:#27ae60;font-weight:bold">✅ PRS actif — piste 25 requise</span>'
+            :'<span style="color:#c0392b;font-weight:bold">⛔ Hors PRS — piste 25 non utilisable dans ces conditions</span>';
+          return '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Composantes de vent — piste 25</h3>'
+            +'<table style="width:100%;border-collapse:collapse;font-size:.9em">'
+            +'<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Vent arrière 25R</td><td style="padding:8px 12px">'+tw25R+' kt <small style="color:#888">(seuil AIP 2013 : 7 kt)</small></td></tr>'
+            +'<tr><td style="padding:8px 12px;font-weight:bold">Vent arrière 25L</td><td style="padding:8px 12px">'+tw25L+' kt</td></tr>'
+            +'<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Vent latéral 25R</td><td style="padding:8px 12px">'+xw25R+' kt <small style="color:#888">(seuil : 15 kt)</small></td></tr>'
+            +(tw25Rg?'<tr><td style="padding:8px 12px;font-weight:bold">Rafale arrière 25R</td><td style="padding:8px 12px">'+tw25Rg+' kt <small style="color:#888">(seuil : 10 kt)</small></td></tr>':'')
+            +'<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Analyse PRS</td><td style="padding:8px 12px">'+prsSpan+'</td></tr>'
+            +'</table>'
+            +'<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Demande</h3>'
+            +'<div style="background:#f0f4f8;border-radius:8px;padding:14px 18px;font-size:.95em">Je souhaiterais obtenir les raisons opérationnelles ou météorologiques qui ont justifié l'utilisation de la <strong>'+pisteLabel2+'</strong> dans ces conditions.</div>';
+        })()
+      // ── Flux BATC : config, planning, analyse réglementaire ────────────
+      : '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Configuration BATC en service</h3>'
+        + '<div style="display:inline-block;background:#fde8e8;border:2px solid #e53e3e;border-radius:8px;padding:10px 20px;font-size:1.1em;font-weight:bold;color:#c0392b">Configuration en service : '+window._currentBatcRwy+'</div>'
+        + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Planning PRS applicable</h3>'
+        + '<div style="background:#f0f4f8;padding:12px;border-radius:6px;font-family:monospace;font-size:.85em;white-space:pre-wrap">'+planStr+'</div>'
+        + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Analyse réglementaire</h3>'
+        + '<table style="width:100%;border-collapse:collapse;font-size:.85em">'
+        + '<tr style="background:#0e3d6b;color:#fff"><th style="padding:8px 12px;text-align:left">Critère</th><th style="padding:8px 12px;text-align:left">AIP 2013 (légal)</th><th style="padding:8px 12px;text-align:left">AIP Actuel (skeyes)</th></tr>'
+        + '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent arrière piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (max 10 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (pratique ~6.5 kt)</td></tr>'
+        + '<tr style="background:#f9f9f9"><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent latéral piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">15 kt (max 20 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">20 kt</td></tr>'
+        + '</table>'
+        + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Données météo et question</h3>'
         + '<ul style="background:#fde8e8;border-radius:6px;padding:16px 16px 16px 32px">'
         + whyArr.map(function(w){return '<li>'+w+'</li>';}).join('')
         + '</ul>')
