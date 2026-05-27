@@ -159,6 +159,19 @@ try {
     </details>
   </div>
 
+  <!-- ÉTAPE 2.5 : Avertissement si piste adaptée aux conditions -->
+  <div class="pl-card pl-hidden" id="step-confirm" style="border:2px solid #FF9900">
+    <div class="pl-card-title" style="color:#b45309"><span class="pl-step-badge" style="background:#FF9900">⚠</span> Vérification</div>
+    <div id="confirm-msg" style="font-size:.85rem;line-height:1.7;color:#555;margin-bottom:16px"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="pl-btn pl-btn-grey" onclick="cancelConfirm()" style="flex:1">← Revenir au choix de piste</button>
+      <button class="pl-btn" onclick="proceedAnyway()"
+        style="flex:1;background:#e53e3e;color:#fff;border-color:#e53e3e">
+        Je souhaite quand même signaler ce cas
+      </button>
+    </div>
+  </div>
+
   <!-- ÉTAPE 3 : Météo + plainte -->
   <div class="pl-card pl-hidden" id="step-result">
     <div class="pl-card-title"><span class="pl-step-badge">3</span> Conditions météo &amp; plainte</div>
@@ -251,17 +264,13 @@ function fetchMetar() {
     .then(function(d){
       _metar = d;
       document.getElementById('meteo-loading').style.display = 'none';
-      renderMeteo(d);
-      buildComplaint(d);
-      document.getElementById('meteo-content').classList.remove('pl-hidden');
-      document.getElementById('complaint-wrap').classList.remove('pl-hidden');
+      checkJustification(d);
     })
     .catch(function(){
       _metar = null;
       document.getElementById('meteo-loading').style.display = 'none';
       document.getElementById('meteo-error').classList.remove('pl-hidden');
-      buildComplaint(null);
-      document.getElementById('complaint-wrap').classList.remove('pl-hidden');
+      showResult(null); // pas de données, on laisse passer
     });
 }
 
@@ -412,6 +421,65 @@ function buildComplaint(d) {
     '— Via Ça suffit ! ASBL — casuffit.be';
 
   document.getElementById('complaint-text').textContent = _plainText;
+}
+
+function checkJustification(d) {
+  if (!d) { showResult(d); return; }
+  if (d.prs_active) { showResult(d); return; } // PRS actif → plainte justifiée
+  // Hors PRS : la piste 25 ne peut pas être utilisée
+  // Vérifier si la piste observée est la meilleure alternative
+  var comps = d.components || {};
+  var hw01  = (comps['01']  || {}).hw || 0;
+  var hw07R = (comps['07R'] || {}).hw || 0;
+  var bestAlt = hw07R > hw01 ? '07' : '01'; // piste avec le meilleur vent de face
+  if (_piste === bestAlt) {
+    // La piste observée EST la plus adaptée → demander confirmation
+    var pisteLabel  = _piste === '07' ? 'piste 07' : 'piste 01';
+    var altLabel    = bestAlt === '07' ? 'piste 07 (07L/07R)' : 'piste 01';
+    var altHw       = Math.max(hw01, hw07R).toFixed(1);
+    var tw25R       = (comps['25R'] ? comps['25R'].tw || 0 : 0).toFixed(1);
+    var windDesc    = (d.wdir ? d.wdir+'°' : '—') + ' / ' + (d.wspd || '—') + ' kt';
+    document.getElementById('confirm-msg').innerHTML =
+      '<strong>D'après les conditions météo actuelles, la '+pisteLabel+' est la configuration la plus adaptée.</strong><br><br>'+
+      '<ul style="margin:8px 0 8px 18px;line-height:2">'+
+      '<li>Vent : '+windDesc+'</li>'+
+      '<li>Vent arrière sur piste 25R : <strong>'+tw25R+' kt</strong> (seuil légal 7 kt → piste 25 <strong>non utilisable</strong>)</li>'+
+      '<li>Vent de face sur '+altLabel+' : <strong>'+altHw+' kt</strong> → configuration appropriée</li>'+
+      '</ul>'+
+      '<em>Porter plainte dans ce cas pourrait nuire à la crédibilité de votre démarche. '+
+      'Si vous avez d'autres raisons de vous plaindre (bruit, fréquence, horaires…), vous pouvez quand même continuer.</em>';
+    document.getElementById('step-confirm').classList.remove('pl-hidden');
+    document.getElementById('step-confirm').scrollIntoView({behavior:'smooth',block:'start'});
+    document.getElementById('step-result').classList.add('pl-hidden');
+  } else {
+    showResult(d); // piste observée n'est pas la meilleure → plainte justifiée
+  }
+}
+
+function showResult(d) {
+  document.getElementById('step-confirm').classList.add('pl-hidden');
+  document.getElementById('step-result').classList.remove('pl-hidden');
+  if (d) {
+    renderMeteo(d);
+    document.getElementById('meteo-content').classList.remove('pl-hidden');
+  }
+  buildComplaint(d);
+  document.getElementById('complaint-wrap').classList.remove('pl-hidden');
+  document.getElementById('step-result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function cancelConfirm() {
+  document.getElementById('step-confirm').classList.add('pl-hidden');
+  document.getElementById('step-result').classList.add('pl-hidden');
+  // Dé-sélectionner la piste
+  document.getElementById('btn-piste-01').classList.remove('selected');
+  document.getElementById('btn-piste-07').classList.remove('selected');
+  document.getElementById('step-piste').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function proceedAnyway() {
+  document.getElementById('step-confirm').classList.add('pl-hidden');
+  showResult(_metar);
 }
 
 function copyComplaint() {
