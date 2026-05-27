@@ -448,14 +448,14 @@ function checkJustification(d) {
     var tw25R       = (comps['25R'] ? comps['25R'].tw || 0 : 0).toFixed(1);
     var windDesc    = (d.wdir ? d.wdir+'°' : '—') + ' / ' + (d.wspd || '—') + ' kt';
     document.getElementById('confirm-msg').innerHTML =
-      '<strong>D'après les conditions météo actuelles, la '+pisteLabel+' est la configuration la plus adaptée.</strong><br><br>'+
+      '<strong>D\'après les conditions météo actuelles, la '+pisteLabel+' est la configuration la plus adaptée.</strong><br><br>'+
       '<ul style="margin:8px 0 8px 18px;line-height:2">'+
       '<li>Vent : '+windDesc+'</li>'+
       '<li>Vent arrière sur piste 25R : <strong>'+tw25R+' kt</strong> (seuil légal 7 kt → piste 25 <strong>non utilisable</strong>)</li>'+
       '<li>Vent de face sur '+altLabel+' : <strong>'+altHw+' kt</strong> → configuration appropriée</li>'+
       '</ul>'+
       '<em>Porter plainte dans ce cas pourrait nuire à la crédibilité de votre démarche. '+
-      'Si vous avez d'autres raisons de vous plaindre (bruit, fréquence, horaires…), vous pouvez quand même continuer.</em>';
+      'Si vous avez d\'autres raisons de vous plaindre (bruit, fréquence, horaires…), vous pouvez quand même continuer.</em>';
     document.getElementById('step-confirm').classList.remove('pl-hidden');
     document.getElementById('step-confirm').scrollIntoView({behavior:'smooth',block:'start'});
     document.getElementById('step-result').classList.add('pl-hidden');
