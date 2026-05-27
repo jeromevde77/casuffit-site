@@ -228,9 +228,39 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
       Rafales incluses. Donnée indicative, non contractuelle.
     </p>
 
+    <!-- Bouton "Porter plainte" permanent -->
+    <div class="pmw-report-wrap">
+      <button class="pmw-report-btn" id="pmw-report-btn" onclick="pmwOpenRwySelector()">
+        Vous observez la piste 01 ou 07 en service ? <strong>Porter plainte →</strong>
+      </button>
+    </div>
+
   </div><!-- /pmw-body -->
 </div>
 
+<!-- Modale sélection piste -->
+<div class="pmw-rwy-overlay" id="pmw-rwy-overlay" onclick="if(event.target===this)pmwCloseRwySelector()">
+  <div class="pmw-rwy-modal">
+    <div class="pmw-rwy-title">Quelle piste observez-vous ?</div>
+    <div class="pmw-rwy-sub">Regardez l'avion depuis chez vous — vers le nord ou vers l'est ?</div>
+    <div class="pmw-rwy-btns">
+      <button class="pmw-rwy-btn" onclick="pmwSelectRwy('01')">
+        <span class="pmw-rwy-icon">↑</span>
+        <strong>Piste 01</strong>
+        <span>vers le nord</span>
+      </button>
+      <button class="pmw-rwy-btn" onclick="pmwSelectRwy('07')">
+        <span class="pmw-rwy-icon">→</span>
+        <strong>Piste 07</strong>
+        <span>07L / 07R — vers l'est</span>
+      </button>
+    </div>
+    <a href="https://www.batc.be/fr/pistes-en-usage/actuel-prevision" target="_blank" rel="noopener" class="pmw-rwy-batc">
+      🔗 Vérifier la piste en service sur BATC
+    </a>
+    <button class="pmw-rwy-cancel" onclick="pmwCloseRwySelector()">Annuler</button>
+  </div>
+</div>
 <!-- Modale mode d'emploi -->
 <div class="pmw-help-overlay" id="pmw-help-overlay" onclick="if(event.target===this) pmwCloseHelp()">
   <div class="pmw-help-modal">
@@ -576,6 +606,27 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
 .pmw-links{display:flex;gap:12px;flex-wrap:wrap;padding-top:4px}
 .pmw-links a{font-size:.7rem;color:#1673B2;text-decoration:none}
 .pmw-links a:hover{text-decoration:underline}
+/* Bouton "Porter plainte" permanent */
+.pmw-report-wrap{padding-top:6px}
+.pmw-report-btn{width:100%;padding:13px 16px;border:2px solid #dde4ed;border-radius:10px;background:#f8fafc;color:#555;font-size:.82rem;font-family:inherit;cursor:pointer;text-align:left;transition:all .18s;line-height:1.4}
+.pmw-report-btn:hover{border-color:#1673B2;background:#eef5fc;color:#0e3d6b}
+.pmw-report-btn.alert{background:#fff8ee;border-color:#FF9900;color:#7a3a00}
+.pmw-report-btn.alert:hover{background:#fff3e0;border-color:#e08000}
+/* Modale sélection piste */
+.pmw-rwy-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center}
+.pmw-rwy-overlay.open{display:flex}
+.pmw-rwy-modal{background:#fff;border-radius:16px;padding:30px 28px;max-width:420px;width:94%;box-shadow:0 8px 40px rgba(0,0,0,.25);text-align:center}
+.pmw-rwy-title{font-size:1.1rem;font-weight:800;color:#0e3d6b;margin-bottom:6px}
+.pmw-rwy-sub{font-size:.8rem;color:#888;margin-bottom:20px;line-height:1.5}
+.pmw-rwy-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.pmw-rwy-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:18px 12px;border:2px solid #dde4ed;border-radius:12px;background:#f8fafc;cursor:pointer;font-family:inherit;transition:all .15s}
+.pmw-rwy-btn:hover{border-color:#1673B2;background:#eef5fc}
+.pmw-rwy-icon{font-size:1.6rem;line-height:1;color:#0e3d6b}
+.pmw-rwy-btn strong{font-size:.95rem;color:#0e3d6b}
+.pmw-rwy-btn span{font-size:.72rem;color:#888}
+.pmw-rwy-batc{display:block;font-size:.78rem;color:#1673B2;text-decoration:none;margin-bottom:14px}
+.pmw-rwy-batc:hover{text-decoration:underline}
+.pmw-rwy-cancel{background:none;border:none;color:#aaa;font-size:.78rem;cursor:pointer;font-family:inherit;padding:4px}
 .pmw-disclaimer{font-size:.62rem;color:#bbb;line-height:1.6;font-style:italic;margin:0}
 </style>
 
@@ -695,12 +746,14 @@ function renderWind(d){
 
   if(d.prs_active){
     badge.className='pmw-prs-badge pmw-prs-on'; badge.textContent='PRS actif';
+  if(window.pmwUpdateReportBtn) pmwUpdateReportBtn(false);
     var subTxt = 'Pistes préférentielles applicables';
     if(isNordSector) subTxt += ' — vent de face optimal (' + wdir + '° ' + dirText(wdir) + ')';
     document.getElementById('pmw-prs-sub').textContent = subTxt;
     document.getElementById('pmw-alt-configs').style.display='none';
   }else{
     badge.className='pmw-prs-badge pmw-prs-off'; badge.textContent='HORS PRS';
+  if(window.pmwUpdateReportBtn) pmwUpdateReportBtn(true);
     var subTxt2 = 'Pistes alternatives possibles :';
     if(isNordSector) subTxt2 = '⚠ Vent ' + wdir + '° ' + dirText(wdir) + ' — secteur favorable 25, mais seuils dépassés';
     document.getElementById('pmw-prs-sub').textContent = subTxt2;
@@ -1365,7 +1418,7 @@ setInterval(load, REFRESH);
 var pmwCaptureDataUrl = null;
 var pmwMailBody = '';
 
-window.pmwOpenPlainte = function() {
+window.pmwOpenPlainte = function(pisteObservee) {
   var _pd = window._pmwData ? window._pmwData() : null;
   if(!_pd || !_pd.data || !_pd.rwy) { alert('Données non disponibles, veuillez patienter.'); return; }
   var d = _pd.data;
@@ -1393,37 +1446,78 @@ window.pmwOpenPlainte = function() {
   var plan    = d.aip_planning || {};
   var planStr = plan.label_dep ? 'DEP: '+plan.label_dep+' / ARR: '+plan.label_arr+' ('+plan.jour+' · '+plan.plage+')' : 'Non disponible';
 
-  var CFG_RWYS = {'25R/25L':['25R','25L'],'19/25R':['19','25R'],'07L/07R':['07L','07R'],'01/07R':['01','07R'],'01/01':['01'],'19/19':['19']};
   var comps = d.components || {};
-  var batcPistes = CFG_RWYS[window._currentBatcRwy] || [];
-  var why = [];
-  batcPistes.forEach(function(rwy){
-    var c = comps[rwy]; if(!c) return;
-    var m = c.tw||0, g = (c.tw_g!==null&&c.tw_g!==undefined)?c.tw_g:m;
-    if(m>7) why.push('piste '+rwy+' : vent arrière moyen '+m.toFixed(1)+' kt > 7 kt');
-    else if(g>10) why.push('piste '+rwy+' : rafale arrière '+g.toFixed(1)+' kt > 10 kt (seuil AIP 2013)');
-  });
+  var tw25R = comps['25R'] ? (comps['25R'].tw||0).toFixed(1) : '—';
+  var tw25L = comps['25L'] ? (comps['25L'].tw||0).toFixed(1) : '—';
+  var xw25R = comps['25R'] ? (comps['25R'].xw||0).toFixed(1) : '—';
+  var tw25Rg = comps['25R'] && comps['25R'].tw_g!==null && comps['25R'].tw_g!==undefined ? (comps['25R'].tw_g||0).toFixed(1) : null;
 
-  pmwMailBody =
-    'Madame, Monsieur,\n\n' +
-    'Je vous contacte suite à des nuisances aériennes constatées ce jour au-dessus de ma commune.\n\n' +
-    '=== CONDITIONS MÉTÉO AU MOMENT DE LA PLAINTE ===\n' +
-    'Date / Heure     : '+dateStr+' à '+timeStr+'\n' +
-    'METAR EBBR       : '+(d.metar||'—')+'\n' +
-    'Vent moyen       : '+(d.wspd||'—')+' kt / '+(d.wdir||'—')+'°\n' +
-    'Rafales          : '+(d.wgst ? d.wgst+' kt' : '—')+(d.wgst_irm?' (IRM: '+d.wgst_irm+' kt)':'')+'\n\n' +
-    '=== CONFIG BATC EN SERVICE ===\n' +
-    'Config saisie    : '+window._currentBatcRwy+'\n\n' +
-    '=== PLANNING AIP ===\n' +
-    planStr+'\n\n' +
-    '=== VIOLATION CONSTATÉE ===\n' +
-    'Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21),\n' +
-    'la config '+window._currentBatcRwy+' n\'est PAS autorisée dans les conditions actuelles :\n' +
-    why.map(function(w){ return '  • '+w; }).join('\n')+'\n\n' +
-    'Une capture d\'écran du tableau de bord est jointe à ce message.\n\n' +
-    'Dans l\'attente de votre réponse,\n' +
-    'Veuillez agréer mes salutations distinguées.\n\n' +
-    '— Via Ça suffit ! ASBL — casuffit.be';
+  if (pisteObservee) {
+    // ── Texte humble : piste observée par le résident ─────────────
+    var pisteLabel = pisteObservee === '07' ? 'piste 07 (07L/07R)' : 'piste 01';
+    var obsTime = d.obs_time ? new Date(d.obs_time) : new Date();
+    var obsDateStr = obsTime.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    var obsTimeStr = obsTime.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC';
+
+    pmwMailBody =
+      'Madame, Monsieur,\n\n' +
+      'Je me permets de vous contacter afin de vous signaler qu\'en date du '+obsDateStr+
+      ' vers '+obsTimeStr+', j\'ai observé un usage de la '+pisteLabel+
+      ' à l\'aéroport de Bruxelles-National (EBBR).\n\n' +
+      'Les conditions météorologiques au moment de mon observation semblent indiquer' +
+      ' que l\'utilisation des pistes préférentielles 25 aurait pu être envisagée :\n\n' +
+      '=== CONDITIONS MÉTÉO EBBR ===\n' +
+      'METAR EBBR              : '+(d.metar||'—')+'\n' +
+      'Date / Heure (METAR)    : '+obsDateStr+' à '+obsTimeStr+'\n' +
+      'Vent moyen              : '+(d.wdir||'—')+'° / '+(d.wspd||'—')+' kt\n' +
+      'Rafales                 : '+(d.wgst ? d.wgst+' kt' : '—')+(d.wgst_irm?' (IRM: '+d.wgst_irm+' kt)':'')+' \n' +
+      'Composante arrière 25R  : '+tw25R+' kt  (seuil légal AIP 2013 : 7 kt)\n' +
+      'Composante arrière 25L  : '+tw25L+' kt\n' +
+      'Composante latérale 25R : '+xw25R+' kt  (seuil légal : 15 kt)\n' +
+      (tw25Rg ? 'Rafale arrière 25R      : '+tw25Rg+' kt  (seuil légal : 10 kt)\n' : '') +
+      '\n=== PLANNING PRS APPLICABLE ===\n' +
+      planStr+'\n\n' +
+      'Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21), les pistes 25 constituent' +
+      ' la configuration préférentielle lorsque les conditions météorologiques le permettent.\n\n' +
+      'Je souhaiterais dès lors obtenir les raisons opérationnelles ou météorologiques qui ont' +
+      ' justifié l\'utilisation de la '+pisteLabel+' dans ces conditions.\n\n' +
+      'Je vous remercie de l\'attention portée à ce message et reste disponible pour tout' +
+      ' complément d\'information.\n\n' +
+      'Cordialement,\n\n' +
+      '— Via Ça suffit ! ASBL — casuffit.be';
+
+  } else {
+    // ── Texte technique BATC (flux existant, inchangé) ─────────────
+    var CFG_RWYS = {'25R/25L':['25R','25L'],'19/25R':['19','25R'],'07L/07R':['07L','07R'],'01/07R':['01','07R'],'01/01':['01'],'19/19':['19']};
+    var batcPistes = CFG_RWYS[window._currentBatcRwy] || [];
+    var why = [];
+    batcPistes.forEach(function(rwy){
+      var c = comps[rwy]; if(!c) return;
+      var m = c.tw||0, g = (c.tw_g!==null&&c.tw_g!==undefined)?c.tw_g:m;
+      if(m>7) why.push('piste '+rwy+' : vent arrière moyen '+m.toFixed(1)+' kt > 7 kt');
+      else if(g>10) why.push('piste '+rwy+' : rafale arrière '+g.toFixed(1)+' kt > 10 kt (seuil AIP 2013)');
+    });
+    pmwMailBody =
+      'Madame, Monsieur,\n\n' +
+      'Je vous contacte suite à des nuisances aériennes constatées ce jour au-dessus de ma commune.\n\n' +
+      '=== CONDITIONS MÉTÉO AU MOMENT DE LA PLAINTE ===\n' +
+      'Date / Heure     : '+dateStr+' à '+timeStr+'\n' +
+      'METAR EBBR       : '+(d.metar||'—')+'\n' +
+      'Vent moyen       : '+(d.wspd||'—')+' kt / '+(d.wdir||'—')+'°\n' +
+      'Rafales          : '+(d.wgst ? d.wgst+' kt' : '—')+(d.wgst_irm?' (IRM: '+d.wgst_irm+' kt)':'')+'\n\n' +
+      '=== CONFIG BATC EN SERVICE ===\n' +
+      'Config saisie    : '+window._currentBatcRwy+'\n\n' +
+      '=== PLANNING AIP ===\n' +
+      planStr+'\n\n' +
+      '=== VIOLATION CONSTATÉE ===\n' +
+      'Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21),\n' +
+      'la config '+window._currentBatcRwy+' n\'est PAS autorisée dans les conditions actuelles :\n' +
+      why.map(function(w){ return '  • '+w; }).join('\n')+'\n\n' +
+      'Une capture d\'écran du tableau de bord est jointe à ce message.\n\n' +
+      'Dans l\'attente de votre réponse,\n' +
+      'Veuillez agréer mes salutations distinguées.\n\n' +
+      '— Via Ça suffit ! ASBL — casuffit.be';
+  }
 
   var mailEl = document.getElementById('pmw-plainte-mail');
   if(mailEl) mailEl.textContent = pmwMailBody;
@@ -1471,6 +1565,31 @@ window.pmwOpenPlainte = function() {
 
 window.pmwClosePlainte = function() {
   document.getElementById('pmw-plainte-overlay').classList.remove('open');
+};
+
+// ── Sélecteur de piste ───────────────────────────────────────────────────
+window.pmwOpenRwySelector = function() {
+  document.getElementById('pmw-rwy-overlay').classList.add('open');
+};
+window.pmwCloseRwySelector = function() {
+  document.getElementById('pmw-rwy-overlay').classList.remove('open');
+};
+window.pmwSelectRwy = function(piste) {
+  pmwCloseRwySelector();
+  pmwOpenPlainte(piste); // passe la piste sélectionnée
+};
+
+// ── Met à jour le bouton report selon l'état PRS ──────────────────────────
+window.pmwUpdateReportBtn = function(alert) {
+  var btn = document.getElementById('pmw-report-btn');
+  if (!btn) return;
+  if (alert) {
+    btn.className = 'pmw-report-btn alert';
+    btn.innerHTML = '⚠ Les conditions indiquent un usage anormal de la piste 25. <strong>Porter plainte →</strong>';
+  } else {
+    btn.className = 'pmw-report-btn';
+    btn.innerHTML = 'Vous observez la piste 01 ou 07 en service ? <strong>Porter plainte →</strong>';
+  }
 };
 
 // Ouvre un nouvel email vers le médiateur, sujet pré-rempli (le corps se colle ensuite)
@@ -1566,9 +1685,13 @@ window.pmwCopyComplaint = function() {
     ? '<p><img src="'+pmwCaptureDataUrl+'" style="max-width:100%;border:1px solid #ddd;border-radius:8px" alt="Capture conditions EBBR"></p>' : '';
 
   // ── HTML riche du message (collable dans Gmail/Outlook/Mail) ──────────
+  var pisteLabel2 = pisteObservee ? (pisteObservee==='07' ? 'piste 07 (07L/07R)' : 'piste 01') : null;
+  var htmlIntro = pisteLabel2
+    ? '<p>Madame, Monsieur,</p><p>Je me permets de vous contacter afin de vous signaler qu\'en date du '+obsDateStr+' vers '+obsTimeStr+', j\'ai observé un usage de la <strong>'+pisteLabel2+'</strong> à l\'aéroport de Bruxelles-National (EBBR).</p><p>Les conditions météorologiques semblent indiquer que l\'utilisation des pistes préférentielles 25 aurait pu être envisagée.</p>'
+    : '<p>Madame, Monsieur,</p><p>Je vous contacte suite à des nuisances aériennes constatées au-dessus de ma commune. Les conditions météorologiques relevées démontrent une violation du Plan de Répartition du Survol (PRS).</p>';
+
   var htmlBody = '<div style="font-family:Arial,sans-serif;color:#333;max-width:700px">'
-    + '<p>Madame, Monsieur,</p>'
-    + '<p>Je vous contacte suite à des nuisances aériennes constatées au-dessus de ma commune. Les conditions météorologiques relevées démontrent une violation du Plan de Répartition du Survol (PRS).</p>'
+    + htmlIntro
     + '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px">Conditions météo EBBR</h3>'
     + '<table style="width:100%;border-collapse:collapse;font-size:.9em">'
     + '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Date / Heure</td><td style="padding:8px 12px">'+dateStr+' à '+timeStr+'</td></tr>'
@@ -1586,13 +1709,18 @@ window.pmwCopyComplaint = function() {
     + '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent arrière piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (max 10 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">7 kt (pratique ~6.5 kt)</td></tr>'
     + '<tr style="background:#f9f9f9"><td style="padding:8px 12px;border-bottom:1px solid #eee">Vent latéral piste 25</td><td style="padding:8px 12px;border-bottom:1px solid #eee">15 kt (max 20 kt rafales)</td><td style="padding:8px 12px;border-bottom:1px solid #eee">20 kt</td></tr>'
     + '</table>'
-    + '<h3 style="color:#c0392b;border-bottom:2px solid #c0392b;padding-bottom:6px;margin-top:20px">Violations constatées</h3>'
-    + '<ul style="background:#fde8e8;border-radius:6px;padding:16px 16px 16px 32px">'
-    + whyArr.map(function(w){return '<li>'+w+'</li>';}).join('')
-    + '</ul>'
+    + (pisteLabel2
+      ? '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Demande</h3>'
+        + '<div style="background:#f0f4f8;border-radius:8px;padding:14px 18px;font-size:.95em">Je souhaiterais obtenir les raisons opérationnelles ou météorologiques qui ont justifié l\'utilisation de la <strong>'+pisteLabel2+'</strong> dans ces conditions.</div>'
+      : '<h3 style="color:#c0392b;border-bottom:2px solid #c0392b;padding-bottom:6px;margin-top:20px">Violations constatées</h3>'
+        + '<ul style="background:#fde8e8;border-radius:6px;padding:16px 16px 16px 32px">'
+        + whyArr.map(function(w){return '<li>'+w+'</li>';}).join('')
+        + '</ul>')
     + captureHtml
-    + '<p style="margin-top:8px;font-size:.85em;color:#666">Selon l\'instruction ministérielle du 17/07/2013 (IM 2013) — seule base légale valide.</p>'
-    + '<p>Je vous remercie de bien vouloir prendre en compte cette plainte et de m\'informer des suites qui y seront données.</p>'
+    + '<p style="margin-top:8px;font-size:.85em;color:#666">Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21).</p>'
+    + (pisteLabel2
+      ? '<p>Je vous remercie de l\'attention portée à ce message et reste disponible pour tout complément d\'information.</p>'
+      : '<p>Je vous remercie de bien vouloir prendre en compte cette plainte et de m\'informer des suites qui y seront données.</p>')
     + '<p>Cordialement,</p>'
     + '</div>';
 
