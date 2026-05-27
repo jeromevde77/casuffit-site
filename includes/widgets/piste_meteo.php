@@ -1369,6 +1369,12 @@ window.pmwOpenPlainte = function() {
   var _pd = window._pmwData ? window._pmwData() : null;
   if(!_pd || !_pd.data || !_pd.rwy) { alert('Données non disponibles, veuillez patienter.'); return; }
   var d = _pd.data;
+  // ── Tracking clic plainte ──────────────────────────────────────────
+  fetch('/api/track_plainte.php', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({source:'piste_meteo', alert: d.alert||false})
+  }).catch(function(){});
   window._currentBatcRwy = _pd.rwy;
   var overlay = document.getElementById('pmw-plainte-overlay');
   var loadEl  = document.getElementById('pmw-plainte-loading');

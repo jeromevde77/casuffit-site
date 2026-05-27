@@ -1038,6 +1038,12 @@ function pmhRenderWidgetModal(wrap, d) {
 window.pmhOpenPlainteFromModal = function() {
   var d = window._pmhPlainteData;
   if (!d) return;
+  // ── Tracking clic plainte historique ────────────────────────────────
+  fetch('/api/track_plainte.php', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({source:'historique_vent', alert: !d.aip2013})
+  }).catch(function(){});
   var dest = (document.getElementById('pmh')?.getAttribute('data-plainte-dest')) || 'airportmediation@mobilit.fgov.be';
 
   var t = new Date(d.obs_time);
