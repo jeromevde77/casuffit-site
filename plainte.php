@@ -640,7 +640,8 @@ function openMail() {
   var now = new Date();
   var dateStr = now.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
   var subj = 'Plainte nuisance aérienne EBBR — '+pisteLabel+' — '+dateStr;
-  window.location.href = 'mailto:'+_dest+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(_plainText);
+  var body = '[ Coller ici le contenu de votre plainte ]';
+  window.location.href = 'mailto:'+_dest+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
 }
 </script>
 
