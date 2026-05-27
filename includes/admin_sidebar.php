@@ -12,8 +12,6 @@
   <nav>
     <div class="nav-section">Contenu</div>
     <a href="dashboard.php"   <?= basename($_SERVER['PHP_SELF'])==='dashboard.php'   ?'class="active"':'' ?>>Dashboard</a>
-    <a href="stats.php"      <?= basename($_SERVER['PHP_SELF'])==='stats.php'      ?'class="active"':'' ?>>Statistiques</a>
-    <a href="plainte_stats.php" <?= basename($_SERVER['PHP_SELF'])==='plainte_stats.php' ?'class="active"':'' ?>>✉ Clics plaintes</a>
     <a href="pages.php"       <?= basename($_SERVER['PHP_SELF'])==='pages.php'       ?'class="active"':'' ?>>Pages</a>
     <a href="news.php"        <?= basename($_SERVER['PHP_SELF'])==='news.php'        ?'class="active"':'' ?>>Actualités</a>
     <a href="medias.php"      <?= basename($_SERVER['PHP_SELF'])==='medias.php'      ?'class="active"':'' ?>>Médias</a>
@@ -27,10 +25,14 @@
     <a href="coda.php"        <?= basename($_SERVER['PHP_SELF'])==='coda.php'        ?'class="active"':'' ?>>Import CODA</a>
     <a href="import_csv.php"  <?= basename($_SERVER['PHP_SELF'])==='import_csv.php'  ?'class="active"':'' ?>>Import CSV</a>
     <a href="import_wix.php"  <?= basename($_SERVER['PHP_SELF'])==='import_wix.php'  ?'class="active"':'' ?>>Import Wix</a>
+    <div class="nav-section">Statistiques</div>
+    <a href="stats.php"         <?= basename($_SERVER['PHP_SELF'])==='stats.php'         ?'class="active"':'' ?>>Audience</a>
+    <a href="plainte_stats.php" <?= basename($_SERVER['PHP_SELF'])==='plainte_stats.php' ?'class="active"':'' ?>>Clics plaintes</a>
+    <a href="landing_stats.php" <?= basename($_SERVER['PHP_SELF'])==='landing_stats.php' ?'class="active"':'' ?>>Stats flyers</a>
+    <a href="email_stats.php"   <?= basename($_SERVER['PHP_SELF'])==='email_stats.php'   ?'class="active"':'' ?>>Ouvertures emails</a>
     <div class="nav-section">Outils</div>
     <a href="landing.php" <?= basename($_SERVER['PHP_SELF'])==='landing.php' ?'class="active"':'' ?>>Landing /agir</a>
     <a href="qr.php" <?= basename($_SERVER['PHP_SELF'])==='qr.php' ?'class="active"':'' ?>>QR Codes</a>
-    <a href="landing_stats.php" <?= basename($_SERVER['PHP_SELF'])==='landing_stats.php' ?'class="active"':'' ?>>Stats flyers</a>
     <a href="email_templates.php" <?= basename($_SERVER['PHP_SELF'])==='email_templates.php' ?'class="active"':'' ?>>Templates email</a>
     <a href="tracks_ebbr.php" <?= basename($_SERVER['PHP_SELF'])==='tracks_ebbr.php' ?'class="active"':'' ?>>Traces EBBR</a>
     <a href="backup.php" <?= basename($_SERVER['PHP_SELF'])==='backup.php' ?'class="active"':'' ?>>Backup &amp; Export</a>
@@ -38,7 +40,6 @@
     <a href="subscribers.php" <?= basename($_SERVER['PHP_SELF'])==='subscribers.php' ?'class="active"':'' ?>>Abonnés</a>
     <a href="compose.php"     <?= basename($_SERVER['PHP_SELF'])==='compose.php'     ?'class="active"':'' ?>>Rédaction</a>
     <a href="newsletters.php" <?= basename($_SERVER['PHP_SELF'])==='newsletters.php' ?'class="active"':'' ?>>Envoyer / Historique</a>
-    <a href="email_stats.php" <?= basename($_SERVER['PHP_SELF'])==='email_stats.php' ?'class="active"':'' ?>>Ouvertures emails</a>
   </nav>
   <div class="sidebar-footer">
     <a href="<?= SITE_URL ?>" target="_blank">Voir le site</a>
