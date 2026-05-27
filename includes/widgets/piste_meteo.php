@@ -175,10 +175,9 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
     </div>
 
     <!-- ── VÉRIFICATION BATC (bloc séparé, action de l'utilisateur) ──── -->
-    <div class="pmw-batc-block">
-      <div class="pmw-batc-block-head">
-        <span class="pmw-batc-block-title">Vérifier la piste réellement en service</span>
-      </div>
+    <details class="pmw-batc-details" id="pmw-batc-details">
+      <summary class="pmw-batc-summary">Vérifier la piste réellement en service</summary>
+      <div class="pmw-batc-block">
       <div class="pmw-batc-explain">
         <p class="pmw-batc-explain-intro">La piste réellement en service n'est pas récupérable automatiquement. Pour vérifier si elle respecte le PRS :</p>
         <div class="pmw-batc-step">
@@ -208,7 +207,8 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
       </div>
       <!-- Verdict + bouton plainte -->
       <div class="pmw-verdict" id="pmw-verdict" style="display:none"></div>
-    </div>
+      </div>
+    </details>
     <details class="pmw-details">
       <summary>METAR / TAF bruts</summary>
       <div class="pmw-raw-lbl">METAR</div>
@@ -540,6 +540,12 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
 .pmw-batc-clear{color:#e53e3e;border-color:#fca5a5;background:#fff5f5}
 .pmw-batc-clear:hover{background:#fee2e2}
 /* ── Bloc BATC séparé visuellement (neutre) ── */
+.pmw-batc-details{margin-top:6px;border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden}
+.pmw-batc-summary{font-size:.82rem;font-weight:800;color:#0e3d6b;cursor:pointer;padding:12px 16px;background:#fafbfc;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+.pmw-batc-summary::-webkit-details-marker{display:none}
+.pmw-batc-summary::before{content:'▶';font-size:.6rem;color:#1673B2;transition:transform .2s;flex-shrink:0}
+.pmw-batc-details[open] .pmw-batc-summary::before{transform:rotate(90deg)}
+.pmw-batc-details .pmw-batc-block{margin-top:0;background:#fafbfc;border:none;border-radius:0;padding:0 16px 14px;border-top:1px solid #e2e8f0}
 .pmw-batc-block{margin-top:6px;background:#fafbfc;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px 16px}
 .pmw-batc-block-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .pmw-batc-block-title{font-size:.82rem;font-weight:800;color:#0e3d6b}
