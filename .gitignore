@@ -38,3 +38,4 @@ Thumbs.db
 .vscode/
 config.php
 *.log
+admin/EMERGENCY_ACTIVE

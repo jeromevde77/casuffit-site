@@ -25,6 +25,10 @@
     <a href="coda.php"        <?= basename($_SERVER['PHP_SELF'])==='coda.php'        ?'class="active"':'' ?>>Import CODA</a>
     <a href="import_csv.php"  <?= basename($_SERVER['PHP_SELF'])==='import_csv.php'  ?'class="active"':'' ?>>Import CSV</a>
     <a href="import_wix.php"  <?= basename($_SERVER['PHP_SELF'])==='import_wix.php'  ?'class="active"':'' ?>>Import Wix</a>
+    <div class="nav-section">Sécurité</div>
+    <a href="admin_users.php" <?= basename($_SERVER['PHP_SELF'])==='admin_users.php' ?'class="active"':'' ?>>Comptes admin</a>
+    <a href="setup_totp.php"  <?= basename($_SERVER['PHP_SELF'])==='setup_totp.php'  ?'class="active"':'' ?>>Mon 2FA</a>
+    <a href="backup_codes.php" <?= basename($_SERVER['PHP_SELF'])==='backup_codes.php' ?'class="active"':'' ?>>Codes de secours</a>
     <div class="nav-section">Statistiques</div>
     <a href="stats.php"         <?= basename($_SERVER['PHP_SELF'])==='stats.php'         ?'class="active"':'' ?>>Audience</a>
     <a href="plainte_stats.php" <?= basename($_SERVER['PHP_SELF'])==='plainte_stats.php' ?'class="active"':'' ?>>Clics plaintes</a>
