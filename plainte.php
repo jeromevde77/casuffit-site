@@ -315,23 +315,80 @@ function buildComplaint(d) {
   var now = new Date();
   var dateStr = now.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
   var obsTimeStr = '—', obsDateStr = dateStr, metatLine = '—';
-  var tw25R='—', tw25L='—', xw25R='—', tw25Rg=null, prsLine='';
+  var tw25Rv=0, tw25Lv=0, xw25Rv=0, tw25Rg=null;
+  var tw25R='—', tw25L='—', xw25R='—';
+  var prsActive = null;
 
   if (d) {
     var comps = d.components || {};
     var c25R = comps['25R']||{};
     var c25L = comps['25L']||{};
-    tw25R = (c25R.tw||0).toFixed(1)+' kt';
-    tw25L = (c25L.tw||0).toFixed(1)+' kt';
-    xw25R = (c25R.xw||0).toFixed(1)+' kt';
+    var c01  = comps['01'] ||{};
+    var c07R = comps['07R']||{};
+    tw25Rv = c25R.tw||0; tw25Lv = c25L.tw||0; xw25Rv = c25R.xw||0;
+    tw25R = tw25Rv.toFixed(1)+' kt';
+    tw25L = tw25Lv.toFixed(1)+' kt';
+    xw25R = xw25Rv.toFixed(1)+' kt';
     if (c25R.tw_g!==null&&c25R.tw_g!==undefined) tw25Rg = (c25R.tw_g||0).toFixed(1)+' kt';
     metatLine = d.metar||'—';
+    prsActive = d.prs_active;
     if (d.obs_time) {
       var obs = new Date(d.obs_time);
       obsDateStr = obs.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
       obsTimeStr = obs.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC';
     }
-    prsLine = '\nAnalyse PRS (outil casuffit.be) : '+(d.prs_active?'PRS actif — piste 25 requise':'HORS PRS');
+    // Pour le cas Hors PRS, trouver la piste alternative avec le meilleur vent de face
+    var hw01  = c01.hw  || 0;
+    var hw07R = c07R.hw || 0;
+    var _altPiste  = hw07R > hw01 ? 'piste 07' : 'piste 01';
+    var _altHw     = Math.max(hw01, hw07R).toFixed(1);
+    var _obsPiste  = _piste === '07' ? 'piste 07' : 'piste 01';
+    var _obsIsBetter = (_obsPiste === _altPiste);
+  }
+
+  // ── Construction du contexte selon l'état PRS ───────────────────────
+  var contextLines = '';
+  var demandeLines = '';
+
+  if (prsActive === true) {
+    // CAS 1 : PRS actif — piste 25 requise, mais on observe 01/07
+    contextLines =
+      'Les conditions météorologiques au moment de mon observation indiquent que les pistes 25'+
+      ' constituent la configuration préférentielle selon le Plan de Répartition du Survol :\n'+
+      '  • Vent arrière sur 25R : '+tw25R+' (seuil légal AIP 2013 : 7 kt)\n'+
+      (tw25Rg ? '  • Rafale arrière 25R : '+tw25Rg+' (seuil légal : 10 kt)\n' : '')+
+      '  • Vent arrière sur 25L : '+tw25L+'\n'+
+      '  • Analyse PRS (casuffit.be) : PRS actif — pistes 25 requises';
+    demandeLines =
+      'Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21), les pistes 25'+
+      ' doivent être utilisées en priorité dans ces conditions.\n\n'+
+      'Je souhaiterais dès lors obtenir les raisons opérationnelles ou météorologiques'+
+      ' qui ont justifié l\'utilisation de la '+pisteLabel+' plutôt que des pistes 25.';
+
+  } else if (prsActive === false) {
+    // CAS 2 : Hors PRS — piste 25 impossible (vent arrière trop élevé)
+    // La question est : pourquoi cette piste plutôt que l'autre alternative ?
+    contextLines =
+      'Les conditions météorologiques indiquent que les pistes 25 ne peuvent pas être utilisées'+
+      ' (vent arrière de '+tw25R+' sur 25R, dépassant le seuil légal de 7 kt). Hors PRS.\n\n'+
+      'Avec un vent de '+(d?d.wdir||'—':'—')+'° à '+(d?d.wspd||'—':'—')+' kt,'+
+      (_obsIsBetter
+        ? ' la '+pisteLabel+' (vent de face '+_altHw+' kt) est la configuration la plus adaptée aux conditions.'
+        : ' la '+_altPiste+' présenterait un vent de face de '+_altHw+' kt, ce qui en ferait une configuration alternative plus adaptée que la '+pisteLabel+'.')+
+      '\n  • Vent arrière sur 25R : '+tw25R+' (seuil légal : 7 kt) → piste 25 impossible'+
+      '\n  • Analyse PRS (casuffit.be) : HORS PRS';
+    demandeLines = _obsIsBetter
+      ? 'Je souhaiterais obtenir une confirmation de la configuration en service et une information'+
+        ' sur les mesures prises pour limiter les nuisances dans ce contexte météorologique.'
+      : 'Je souhaiterais obtenir les raisons opérationnelles qui ont conduit à utiliser la '+
+        pisteLabel+' plutôt que la '+_altPiste+' dans ces conditions.';
+
+  } else {
+    // CAS 3 : pas de données météo
+    contextLines = 'Je n\'ai pas pu obtenir les données météo en temps réel au moment de mon observation.';
+    demandeLines =
+      'Je souhaiterais obtenir les raisons opérationnelles ou météorologiques'+
+      ' qui ont justifié l\'utilisation de la '+pisteLabel+' à ce moment.';
   }
 
   _plainText =
@@ -339,8 +396,6 @@ function buildComplaint(d) {
     'Je me permets de vous contacter afin de vous signaler qu\'en date du '+obsDateStr+
     ' vers '+obsTimeStr+', j\'ai observé'+communeText+' un usage de la '+pisteLabel+
     ' à l\'aéroport de Bruxelles-National (EBBR).\n\n'+
-    'Les conditions météorologiques au moment de mon observation semblent indiquer'+
-    ' que l\'utilisation des pistes préférentielles 25 aurait pu être envisagée.\n\n'+
     '=== CONDITIONS MÉTÉO EBBR ===\n'+
     'METAR               : '+metatLine+'\n'+
     'Date / Heure (obs.) : '+obsDateStr+' à '+obsTimeStr+'\n'+
@@ -348,11 +403,9 @@ function buildComplaint(d) {
     'Vent arrière 25L    : '+tw25L+'\n'+
     'Vent latéral 25R    : '+xw25R+' (seuil légal : 15 kt)\n'+
     (tw25Rg ? 'Rafale arrière 25R  : '+tw25Rg+' (seuil légal : 10 kt)\n' : '')+
-    prsLine+'\n\n'+
-    'Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21), les pistes 25'+
-    ' constituent la configuration préférentielle lorsque les conditions météorologiques le permettent.\n\n'+
-    'Je souhaiterais dès lors obtenir les raisons opérationnelles ou météorologiques qui ont'+
-    ' justifié l\'utilisation de la '+pisteLabel+' dans ces conditions.\n\n'+
+    '\n=== ANALYSE ===\n'+
+    contextLines+'\n\n'+
+    demandeLines+'\n\n'+
     'Je vous remercie de l\'attention portée à ce message et reste disponible pour tout'+
     ' complément d\'information.\n\n'+
     'Cordialement,\n\n'+
@@ -397,35 +450,52 @@ function buildHtmlBody() {
   var communeText = _commune ? ', habitant(e) de <strong>'+_commune+'</strong>,' : ',';
   var now = new Date();
   var obsTimeStr='—', obsDateStr=now.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
-  var tw25R='—',tw25L='—',xw25R='—',tw25Rg=null,metatLine='—',prsLine='';
+  var tw25R='—',tw25L='—',xw25R='—',tw25Rg=null,metatLine='—',tw25Rv=0;
+  var prsActive=null, altPiste='', altHw='', obsBetter=false, prsLine='';
   if (d) {
     var comps=d.components||{}; var c25R=comps['25R']||{}; var c25L=comps['25L']||{};
-    tw25R=(c25R.tw||0).toFixed(1)+' kt'; tw25L=(c25L.tw||0).toFixed(1)+' kt';
+    var c01=comps['01']||{}; var c07R=comps['07R']||{};
+    tw25Rv=c25R.tw||0;
+    tw25R=tw25Rv.toFixed(1)+' kt'; tw25L=(c25L.tw||0).toFixed(1)+' kt';
     xw25R=(c25R.xw||0).toFixed(1)+' kt';
     if(c25R.tw_g!==null&&c25R.tw_g!==undefined) tw25Rg=(c25R.tw_g||0).toFixed(1)+' kt';
-    metatLine=d.metar||'—';
+    metatLine=d.metar||'—'; prsActive=d.prs_active;
+    altPiste=(c07R.hw||0)>(c01.hw||0)?'piste 07':'piste 01';
+    altHw=Math.max(c07R.hw||0,c01.hw||0).toFixed(1);
+    obsBetter=(_piste==='07'?'piste 07':'piste 01')===altPiste;
     if(d.obs_time){var obs=new Date(d.obs_time);
       obsDateStr=obs.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
       obsTimeStr=obs.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC';}
-    prsLine='<tr><td style="padding:8px 12px;font-weight:bold">Analyse PRS</td><td style="padding:8px 12px">'+(d.prs_active?'<span style="color:#27ae60;font-weight:bold">✅ PRS actif — piste 25 requise</span>':'<span style="color:#c0392b;font-weight:bold">⛔ HORS PRS</span>')+'</td></tr>';
+    prsLine='<tr><td style="padding:8px 12px;font-weight:bold">Analyse PRS</td><td style="padding:8px 12px">'+(prsActive?'<span style="color:#27ae60;font-weight:bold">✅ PRS actif — pistes 25 requises</span>':'<span style="color:#c0392b;font-weight:bold">⛔ HORS PRS — pistes 25 impossibles</span>')+'</td></tr>';
   }
+  var analyseHtml = prsActive === true
+    ? '<p>Les conditions météo indiquent que les pistes 25 constituent la configuration préférentielle'+
+      ' (vent arrière 25R : <strong>'+tw25R+'</strong> — seuil légal AIP 2013 : 7 kt).</p>'+
+      '<p>Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21), les pistes 25 doivent'+
+      ' être utilisées prioritairement dans ces conditions.</p>'+
+      '<p>Je souhaiterais obtenir les raisons opérationnelles qui ont justifié l\'utilisation de la <strong>'+pisteLabel+'</strong> plutôt que des pistes 25.</p>'
+    : prsActive === false
+      ? '<p>Les conditions actuelles ne permettent pas d\'utiliser les pistes 25 (vent arrière de <strong>'+tw25R+'</strong> sur 25R — seuil légal : 7 kt). La configuration HORS PRS s\'applique.</p>'+
+        (obsBetter
+          ? '<p>La <strong>'+pisteLabel+'</strong> est la configuration la plus adaptée aux conditions actuelles. Je souhaite être informé(e) des mesures prises pour limiter les nuisances.</p>'
+          : '<p>Avec ce vent ('+( d?d.wdir+'°':'')+'), la <strong>'+altPiste+'</strong> (vent de face '+altHw+' kt) serait la configuration alternative la plus adaptée. Je souhaiterais obtenir les raisons du choix de la '+pisteLabel+' à la place.</p>')
+      : '<p>Je souhaiterais obtenir les raisons opérationnelles ou météorologiques qui ont justifié l\'utilisation de la <strong>'+pisteLabel+'</strong>.</p>';
+
   return '<div style="font-family:Arial,sans-serif;color:#333;max-width:680px">'+
     '<p>Madame, Monsieur,</p>'+
     '<p>Je me permets de vous contacter afin de vous signaler qu\'en date du '+obsDateStr+' vers '+obsTimeStr+', j\'ai observé'+communeText+' un usage de la <strong>'+pisteLabel+'</strong> à l\'aéroport de Bruxelles-National (EBBR).</p>'+
-    '<p>Les conditions météorologiques au moment de mon observation semblent indiquer que l\'utilisation des pistes préférentielles 25 aurait pu être envisagée.</p>'+
     '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Conditions météo EBBR</h3>'+
     '<table style="width:100%;border-collapse:collapse;font-size:.9em">'+
     '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">METAR</td><td style="padding:8px 12px;font-family:monospace;font-size:.85em">'+metatLine+'</td></tr>'+
     '<tr><td style="padding:8px 12px;font-weight:bold">Date / Heure obs.</td><td style="padding:8px 12px">'+obsDateStr+' à '+obsTimeStr+'</td></tr>'+
-    '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Vent arrière 25R</td><td style="padding:8px 12px">'+tw25R+' <small style="color:#888">(seuil légal AIP 2013 : 7 kt)</small></td></tr>'+
+    '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Vent arrière 25R</td><td style="padding:8px 12px">'+tw25R+' <small style="color:#888">(seuil légal : 7 kt)</small></td></tr>'+
     '<tr><td style="padding:8px 12px;font-weight:bold">Vent arrière 25L</td><td style="padding:8px 12px">'+tw25L+'</td></tr>'+
     '<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Vent latéral 25R</td><td style="padding:8px 12px">'+xw25R+' <small style="color:#888">(seuil légal : 15 kt)</small></td></tr>'+
     (tw25Rg ? '<tr><td style="padding:8px 12px;font-weight:bold">Rafale arrière 25R</td><td style="padding:8px 12px">'+tw25Rg+' <small style="color:#888">(seuil légal : 10 kt)</small></td></tr>' : '')+
     prsLine+
     '</table>'+
-    '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Demande</h3>'+
-    '<p>Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21), les pistes 25 constituent la configuration préférentielle lorsque les conditions météorologiques le permettent.</p>'+
-    '<p>Je souhaiterais dès lors obtenir les raisons opérationnelles ou météorologiques qui ont justifié l\'utilisation de la <strong>'+pisteLabel+'</strong> dans ces conditions.</p>'+
+    '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Analyse et demande</h3>'+
+    analyseHtml+
     '<p>Je vous remercie de l\'attention portée à ce message et reste disponible pour tout complément d\'information.</p>'+
     '<p>Cordialement,</p>'+
     '<p style="font-size:.8em;color:#888">— Via Ça suffit ! ASBL — casuffit.be</p>'+
