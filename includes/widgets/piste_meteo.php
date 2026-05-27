@@ -1746,7 +1746,7 @@ window.pmwCopyComplaint = function() {
             +'<tr style="background:#f0f4f8"><td style="padding:8px 12px;font-weight:bold">Analyse PRS</td><td style="padding:8px 12px">'+prsSpan+'</td></tr>'
             +'</table>'
             +'<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Demande</h3>'
-            +'<div style="background:#f0f4f8;border-radius:8px;padding:14px 18px;font-size:.95em">Je souhaiterais obtenir les raisons opérationnelles ou météorologiques qui ont justifié l'utilisation de la <strong>'+pisteLabel2+'</strong> dans ces conditions.</div>';
+            +'<div style="background:#f0f4f8;border-radius:8px;padding:14px 18px;font-size:.95em">Je souhaiterais obtenir les raisons opérationnelles ou météorologiques qui ont justifié l\'utilisation de la <strong>'+pisteLabel2+'</strong> dans ces conditions.</div>';
         })()
       // ── Flux BATC : config, planning, analyse réglementaire ────────────
       : '<h3 style="color:#0e3d6b;border-bottom:2px solid #0e3d6b;padding-bottom:6px;margin-top:20px">Configuration BATC en service</h3>'
