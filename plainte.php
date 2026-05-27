@@ -4,6 +4,11 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/membre/functions.php';
 session_start();
 
+// Destinataires depuis la config (même source que piste_meteo)
+$plainte_dest_raw = function_exists('cfg') ? cfg('plainte_destinataires', 'airportmediation@mobilit.fgov.be') : 'airportmediation@mobilit.fgov.be';
+$plainte_dest_list = array_filter(array_map('trim', explode(',', $plainte_dest_raw)));
+$plainte_dest_js = htmlspecialchars(implode(',', $plainte_dest_list));
+
 // Pré-remplir la commune si membre connecté
 $commune_prefill = '';
 try {
@@ -89,6 +94,20 @@ try {
     /* Commune display */
     .pl-commune-tag{display:inline-flex;align-items:center;gap:6px;background:#e6f1fb;color:#1673B2;padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:600;margin-bottom:10px}
     .pl-commune-change{font-size:.7rem;color:#888;text-decoration:underline;cursor:pointer;background:none;border:none;font-family:inherit}
+    /* Steps */
+    .pl-steps-block{margin-bottom:18px}
+    .pl-step-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;font-size:.85rem;line-height:1.5;color:#444}
+    .pl-step-n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#1673B2;color:#fff;font-size:.72rem;font-weight:800;flex-shrink:0;margin-top:1px}
+    /* Boutons plainte */
+    .pl-copy-btn{display:block;width:100%;padding:16px;background:#FF9900;color:#fff;font-weight:800;font-size:.95rem;border:none;border-radius:10px;cursor:pointer;font-family:inherit;transition:background .3s;margin-bottom:10px;text-align:center;box-shadow:0 2px 8px rgba(255,153,0,.3)}
+    .pl-copy-btn:hover{background:#e08800}
+    .pl-copy-btn.copied{background:#27ae60;box-shadow:0 2px 8px rgba(39,174,96,.3)}
+    .pl-mail-btn{display:block;width:100%;padding:16px;background:#0e3d6b;color:#fff;font-weight:800;font-size:.95rem;border:none;border-radius:10px;cursor:pointer;font-family:inherit;transition:background .18s;text-align:center}
+    .pl-mail-btn:hover{background:#1673B2}
+    /* Texte brut optionnel */
+    .pl-txt-details{margin-top:12px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}
+    .pl-txt-details summary{font-size:.75rem;color:#aaa;cursor:pointer;padding:7px 12px;background:#f8fafc;user-select:none;list-style:none}
+    .pl-txt-details summary::-webkit-details-marker{display:none}
     /* Hidden */
     .pl-hidden{display:none}
     @media(max-width:480px){
@@ -195,15 +214,34 @@ try {
     </div>
 
     <div id="complaint-wrap" class="pl-hidden">
-      <div style="font-size:.8rem;font-weight:700;color:#0e3d6b;margin:16px 0 8px">Texte de la plainte :</div>
-      <div class="pl-complaint-box" id="complaint-text"></div>
-      <div class="pl-actions">
-        <button class="pl-btn pl-btn-grey" onclick="copyComplaint()">📋 Copier le texte</button>
-        <button class="pl-btn pl-btn-orange" id="mailto-btn" onclick="openMail()">✉ Ouvrir email pré-adressé</button>
+      <!-- 3 étapes -->
+      <div class="pl-steps-block">
+        <div class="pl-step-row">
+          <span class="pl-step-n">1</span>
+          <div><strong>Copiez le contenu de la plainte</strong> — toutes les données (météo, conditions, analyse) sont copiées en un clic.</div>
+        </div>
+        <div class="pl-step-row">
+          <span class="pl-step-n">2</span>
+          <div>Ouvrez un nouvel email vers le médiateur aérien fédéral (bouton ci-dessous, l'adresse est pré-remplie).</div>
+        </div>
+        <div class="pl-step-row">
+          <span class="pl-step-n">3</span>
+          <div>Collez le contenu dans le corps du message (Ctrl+V / Cmd+V) et envoyez.</div>
+        </div>
       </div>
-      <p style="font-size:.7rem;color:#aaa;margin-top:10px;line-height:1.5">
-        Destinataire : Médiateur aérien fédéral (<a href="https://airportmediation.be/fr" target="_blank" style="color:#aaa">airportmediation.be</a>)
-      </p>
+      <!-- Bouton copier → devient vert -->
+      <button class="pl-copy-btn" id="pl-copy-btn" onclick="copyComplaint()">
+        📋 Copier le contenu de la plainte
+      </button>
+      <!-- Bouton mailto bleu -->
+      <button class="pl-mail-btn" onclick="openMail()">
+        ✉ Ouvrir un email pré-adressé
+      </button>
+      <!-- Texte brut en option -->
+      <details class="pl-txt-details">
+        <summary>Voir le texte brut</summary>
+        <div class="pl-complaint-box" id="complaint-text"></div>
+      </details>
     </div>
   </div>
 
@@ -219,7 +257,7 @@ var _piste = '';
 var _metar = null;
 var _plainText = '';
 var _captureDataUrl = null;
-var _dest = 'airportmediation@mobilit.fgov.be';
+var _dest = '<?= $plainte_dest_js ?>';
 
 function confirmCommune() {
   var val = document.getElementById('commune-input').value.trim();
@@ -529,13 +567,14 @@ function proceedAnyway() {
 }
 
 function copyComplaint() {
-  var btn = event.currentTarget;
+  var btn = document.getElementById('pl-copy-btn');
   var orig = btn.textContent;
   var htmlBody = buildHtmlBody(); // inclut l'image si _captureDataUrl est défini
 
   function copyOk() {
-    btn.textContent = '✓ Copié ! Collez dans votre email';
-    setTimeout(function(){ btn.textContent = orig; }, 4000);
+    btn.textContent = '✓ Copié ! Collez le contenu dans votre email';
+    btn.classList.add('copied');
+    setTimeout(function(){ btn.textContent = orig; btn.classList.remove('copied'); }, 5000);
   }
   function copyFallback() {
     navigator.clipboard.writeText(_plainText).then(copyOk).catch(function(){
