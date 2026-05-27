@@ -206,12 +206,7 @@ try {
       ⚠ Impossible de récupérer les données météo. La plainte sera générée sans données en temps réel.
     </div>
 
-    <!-- Capture visuelle du tableau météo -->
-    <div id="pl-capture-wrap" class="pl-hidden" style="margin-bottom:14px">
-      <div style="font-size:.8rem;font-weight:700;color:#0e3d6b;margin-bottom:6px">📸 Capture du tableau (jointe à la plainte) :</div>
-      <div id="pl-capture-loading" style="font-size:.78rem;color:#aaa;padding:8px">⏳ Capture en cours…</div>
-      <img id="pl-capture-img" style="display:none;max-width:100%;border:1px solid #dde4ed;border-radius:8px" alt="Capture conditions EBBR">
-    </div>
+    <!-- Capture silencieuse en arrière-plan (embarquée dans le HTML copié) -->
 
     <div id="complaint-wrap" class="pl-hidden">
       <!-- 3 étapes -->
@@ -517,37 +512,20 @@ function showResult(d) {
 }
 
 function doCapture() {
-  var captureWrap = document.getElementById('pl-capture-wrap');
-  var loadEl  = document.getElementById('pl-capture-loading');
-  var imgEl   = document.getElementById('pl-capture-img');
-  captureWrap.classList.remove('pl-hidden');
   _captureDataUrl = null;
-
   function runCapture() {
     var el = document.getElementById('meteo-content');
-    if (!el || typeof html2canvas === 'undefined') {
-      loadEl.textContent = '⚠ Capture non disponible — le tableau sera inclus sans image.';
-      return;
-    }
+    if (!el || typeof html2canvas === 'undefined') return;
     html2canvas(el, {scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false})
-      .then(function(canvas) {
-        _captureDataUrl = canvas.toDataURL('image/png');
-        imgEl.src = _captureDataUrl;
-        imgEl.style.display = 'block';
-        loadEl.style.display = 'none';
-      })
-      .catch(function(err) {
-        loadEl.textContent = '⚠ Capture non disponible (' + (err.message||'erreur') + ').';
-      });
+      .then(function(canvas) { _captureDataUrl = canvas.toDataURL('image/png'); })
+      .catch(function(){});
   }
-
   if (typeof html2canvas !== 'undefined') {
     runCapture();
   } else {
     var s = document.createElement('script');
     s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
     s.onload = runCapture;
-    s.onerror = function(){ loadEl.textContent = '⚠ Impossible de charger la librairie de capture.'; };
     document.head.appendChild(s);
   }
 }
