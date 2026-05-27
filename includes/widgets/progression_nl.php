@@ -29,5 +29,8 @@ $widget_no_scale = true;
         <span class="stat-lab">Van strijd</span>
       </div>
     </div>
+    <a href="/plainte.php" style="display:block;width:100%;margin-top:14px;padding:14px 16px;background:#FF9900;color:#fff;font-weight:700;font-size:.88rem;text-align:center;border-radius:10px;text-decoration:none;box-shadow:0 2px 8px rgba(255,153,0,.3);">
+      Ik stel een abnormaal gebruik van de startbaan vast en wil klacht indienen
+    </a>
   </div>
 </section>
