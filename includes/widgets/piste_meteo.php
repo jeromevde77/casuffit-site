@@ -1473,12 +1473,15 @@ window.pmwOpenPlainte = function(pisteObservee) {
   var xw25R = comps['25R'] ? (comps['25R'].xw||0).toFixed(1) : '—';
   var tw25Rg = comps['25R'] && comps['25R'].tw_g!==null && comps['25R'].tw_g!==undefined ? (comps['25R'].tw_g||0).toFixed(1) : null;
 
+  // Stocker pour pmwCopyComplaint (portée différente)
+  window._pmwPisteObservee = pisteObservee || null;
   if (pisteObservee) {
     // ── Texte humble : piste observée par le résident ─────────────
     var pisteLabel = pisteObservee === '07' ? 'piste 07 (07L/07R)' : 'piste 01';
     var obsTime = d.obs_time ? new Date(d.obs_time) : new Date();
     var obsDateStr = obsTime.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
     var obsTimeStr = obsTime.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC';
+    window._pmwObsDateStr = obsDateStr; window._pmwObsTimeStr = obsTimeStr;
 
     pmwMailBody =
       'Madame, Monsieur,\n\n' +
@@ -1706,6 +1709,10 @@ window.pmwCopyComplaint = function() {
     ? '<p><img src="'+pmwCaptureDataUrl+'" style="max-width:100%;border:1px solid #ddd;border-radius:8px" alt="Capture conditions EBBR"></p>' : '';
 
   // ── HTML riche du message (collable dans Gmail/Outlook/Mail) ──────────
+  // Lire depuis window.* (set par pmwOpenPlainte)
+  var pisteObservee = window._pmwPisteObservee || null;
+  var obsDateStr = window._pmwObsDateStr || dateStr;
+  var obsTimeStr = window._pmwObsTimeStr || timeStr;
   var pisteLabel2 = pisteObservee ? (pisteObservee==='07' ? 'piste 07 (07L/07R)' : 'piste 01') : null;
   var htmlIntro = pisteLabel2
     ? '<p>Madame, Monsieur,</p><p>Je me permets de vous contacter afin de vous signaler qu\'en date du '+obsDateStr+' vers '+obsTimeStr+', j\'ai observé un usage de la <strong>'+pisteLabel2+'</strong> à l\'aéroport de Bruxelles-National (EBBR).</p><p>Les conditions météorologiques semblent indiquer que l\'utilisation des pistes préférentielles 25 aurait pu être envisagée.</p>'
