@@ -1420,7 +1420,8 @@ var pmwMailBody = '';
 
 window.pmwOpenPlainte = function(pisteObservee) {
   var _pd = window._pmwData ? window._pmwData() : null;
-  if(!_pd || !_pd.data || !_pd.rwy) { alert('Données non disponibles, veuillez patienter.'); return; }
+  if(!_pd || !_pd.data) { alert('Données météo non disponibles, veuillez patienter.'); return; }
+  if(!pisteObservee && !_pd.rwy) { alert('Sélectionnez d\'abord une configuration BATC.'); return; }
   var d = _pd.data;
   // ── Tracking clic plainte ──────────────────────────────────────────
   fetch('/api/track_plainte.php', {
@@ -1428,7 +1429,7 @@ window.pmwOpenPlainte = function(pisteObservee) {
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({source:'piste_meteo', alert: d.alert||false})
   }).catch(function(){});
-  window._currentBatcRwy = _pd.rwy;
+  if(_pd.rwy) window._currentBatcRwy = _pd.rwy;
   var overlay = document.getElementById('pmw-plainte-overlay');
   var loadEl  = document.getElementById('pmw-plainte-loading');
   var imgEl   = document.getElementById('pmw-plainte-img');
