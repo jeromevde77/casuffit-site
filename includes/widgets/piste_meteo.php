@@ -231,7 +231,7 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
     <!-- Bouton "Porter plainte" permanent -->
     <div class="pmw-report-wrap">
       <button class="pmw-report-btn" id="pmw-report-btn" onclick="pmwOpenRwySelector()">
-        Vous observez la piste 01 ou 07 en service ? <strong>Porter plainte →</strong>
+        Je constate un usage anormal des pistes, je désire porter plainte
       </button>
     </div>
 
@@ -255,9 +255,15 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
         <span>07L / 07R — vers l'est</span>
       </button>
     </div>
-    <a href="https://www.batc.be/fr/pistes-en-usage/actuel-prevision" target="_blank" rel="noopener" class="pmw-rwy-batc">
-      🔗 Vérifier la piste en service sur BATC
-    </a>
+    <details class="pmw-rwy-details">
+      <summary>🔗 Vérifier la piste en service sur BATC</summary>
+      <div class="pmw-rwy-details-body">
+        <p>Si vous n'êtes pas sûr(e) de la piste utilisée, consultez le site BATC qui affiche en temps réel les pistes en service à Brussels Airport.</p>
+        <a href="https://www.batc.be/fr/pistes-en-usage/actuel-prevision" target="_blank" rel="noopener">
+          Ouvrir BATC — Pistes en service ↗
+        </a>
+      </div>
+    </details>
     <button class="pmw-rwy-cancel" onclick="pmwCloseRwySelector()">Annuler</button>
   </div>
 </div>
@@ -608,10 +614,10 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
 .pmw-links a:hover{text-decoration:underline}
 /* Bouton "Porter plainte" permanent */
 .pmw-report-wrap{padding-top:6px}
-.pmw-report-btn{width:100%;padding:13px 16px;border:2px solid #dde4ed;border-radius:10px;background:#f8fafc;color:#555;font-size:.82rem;font-family:inherit;cursor:pointer;text-align:left;transition:all .18s;line-height:1.4}
-.pmw-report-btn:hover{border-color:#1673B2;background:#eef5fc;color:#0e3d6b}
-.pmw-report-btn.alert{background:#fff8ee;border-color:#FF9900;color:#7a3a00}
-.pmw-report-btn.alert:hover{background:#fff3e0;border-color:#e08000}
+.pmw-report-btn{width:100%;padding:14px 16px;border:none;border-radius:10px;background:#FF9900;color:#fff;font-size:.88rem;font-weight:700;font-family:inherit;cursor:pointer;text-align:center;transition:all .18s;line-height:1.4;box-shadow:0 2px 8px rgba(255,153,0,.3)}
+.pmw-report-btn:hover{background:#e08800;box-shadow:0 3px 12px rgba(255,153,0,.45)}
+.pmw-report-btn.alert{background:#e53e3e;box-shadow:0 2px 8px rgba(229,62,62,.3)}
+.pmw-report-btn.alert:hover{background:#c0392b}
 /* Modale sélection piste */
 .pmw-rwy-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center}
 .pmw-rwy-overlay.open{display:flex}
@@ -626,6 +632,14 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
 .pmw-rwy-btn span{font-size:.72rem;color:#888}
 .pmw-rwy-batc{display:block;font-size:.78rem;color:#1673B2;text-decoration:none;margin-bottom:14px}
 .pmw-rwy-batc:hover{text-decoration:underline}
+.pmw-rwy-details{margin-bottom:14px;text-align:left}
+.pmw-rwy-details summary{font-size:.78rem;color:#1673B2;cursor:pointer;padding:7px 10px;border-radius:6px;background:#f0f9ff;border:1px solid #bdd5f5;list-style:none;display:flex;align-items:center;gap:6px;user-select:none}
+.pmw-rwy-details summary::-webkit-details-marker{display:none}
+.pmw-rwy-details summary::before{content:'▶';font-size:.6rem;color:#1673B2;transition:transform .2s}
+.pmw-rwy-details[open] summary::before{transform:rotate(90deg)}
+.pmw-rwy-details-body{padding:10px 12px;font-size:.78rem;color:#555;line-height:1.6;background:#f8fafc;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 6px 6px}
+.pmw-rwy-details-body a{display:inline-block;margin-top:8px;color:#1673B2;font-weight:600;text-decoration:none}
+.pmw-rwy-details-body a:hover{text-decoration:underline}
 .pmw-rwy-cancel{background:none;border:none;color:#aaa;font-size:.78rem;cursor:pointer;font-family:inherit;padding:4px}
 .pmw-disclaimer{font-size:.62rem;color:#bbb;line-height:1.6;font-style:italic;margin:0}
 </style>
@@ -1586,10 +1600,10 @@ window.pmwUpdateReportBtn = function(alert) {
   if (!btn) return;
   if (alert) {
     btn.className = 'pmw-report-btn alert';
-    btn.innerHTML = '⚠ Hors PRS — La piste 01 ou 07 ne devrait pas être en service. <strong>Porter plainte →</strong>';
+    btn.textContent = 'Je constate un usage anormal des pistes, je désire porter plainte';
   } else {
     btn.className = 'pmw-report-btn';
-    btn.innerHTML = 'Vous observez la piste 01 ou 07 en service ? <strong>Porter plainte →</strong>';
+    btn.textContent = 'Je constate un usage anormal des pistes, je désire porter plainte';
   }
 };
 
