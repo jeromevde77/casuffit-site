@@ -1586,7 +1586,7 @@ window.pmwUpdateReportBtn = function(alert) {
   if (!btn) return;
   if (alert) {
     btn.className = 'pmw-report-btn alert';
-    btn.innerHTML = '⚠ Les conditions indiquent un usage anormal de la piste 25. <strong>Porter plainte →</strong>';
+    btn.innerHTML = '⚠ Hors PRS — La piste 01 ou 07 ne devrait pas être en service. <strong>Porter plainte →</strong>';
   } else {
     btn.className = 'pmw-report-btn';
     btn.innerHTML = 'Vous observez la piste 01 ou 07 en service ? <strong>Porter plainte →</strong>';
