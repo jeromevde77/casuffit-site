@@ -148,8 +148,8 @@ th { font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:#88
     toast.style.display = 'none';
     var fd = new FormData();
     fd.append('campagne', campagne);
-    fd.append('_csrf', '<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>');
-    fetch('resend_campaign.php', {method:'POST', body:fd})
+    fd.append('_csrf', '<?= htmlspecialchars(csrf_token()) ?>');
+    fetch('resend_campaign.php', {method:'POST', body:fd, headers:{'Accept':'application/json'}})
       .then(function(r){ return r.json(); })
       .then(function(d){
         toast.className = 'resend-toast ' + (d.ok ? 'ok' : 'err');
