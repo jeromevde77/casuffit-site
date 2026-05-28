@@ -205,7 +205,28 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
   </div>
 
   <div class="footer">
-    <a href="/">← <?= $is_nl ? 'Volledige site' : 'Site complet' ?> casuffit.be</a>
+    <!-- Partage -->
+    <div class="share" style="margin-bottom:20px">
+      <div style="font-size:.8rem;color:#888;margin-bottom:10px;font-weight:600">
+        <?= $is_nl ? '📢 Deel met vrienden' : '📢 Partager avec vos proches' ?>
+      </div>
+      <div class="share-btns">
+        <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.casuffit.be%2Fagir"
+           target="_blank" rel="noopener" class="share-btn share-fb">Facebook</a>
+        <a href="mailto:?subject=<?= rawurlencode($is_nl ? 'Stop de hinder — Ça suffit !' : 'Stop aux nuisances — Ça suffit !') ?>&body=<?= rawurlencode($is_nl ? "Sluit u aan bij de strijd tegen vliegtuighinder boven uw gemeente:\nhttps://www.casuffit.be/agir" : "Rejoignez le mouvement contre les nuisances aériennes au-dessus de nos communes :\nhttps://www.casuffit.be/agir") ?>"
+           class="share-btn share-mail">Email</a>
+        <a href="https://wa.me/?text=<?= rawurlencode($is_nl ? "Sluit u aan bij de strijd — https://www.casuffit.be/agir" : "Rejoignez le mouvement — https://www.casuffit.be/agir") ?>"
+           target="_blank" rel="noopener" class="share-btn share-wa">WhatsApp</a>
+      </div>
+    </div>
+    <!-- Lien site principal -->
+    <a href="/" style="display:inline-block;color:#1673B2;text-decoration:none;font-size:.82rem;font-weight:600">
+      ← <?= $is_nl ? 'Volledige site' : 'Site complet' ?> casuffit.be
+    </a>
+    <div style="margin-top:8px;font-size:.72rem;color:#bbb">
+      © <?= date('Y') ?> Ça suffit ! ASBL —
+      <a href="http://www.facebook.com/piste01casuffit" target="_blank" rel="noopener" style="color:#bbb">Facebook</a>
+    </div>
   </div>
 
 </div>
