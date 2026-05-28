@@ -202,29 +202,31 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
       <a href="/wind.php" class="btn btn-blue">→ <?= $is_nl ? 'Toegang tot de tools' : 'Accéder aux outils' ?></a>
     </div>
 
+    <!-- Retour site — sur fond blanc, juste après le dernier bloc -->
+    <div style="text-align:center;padding:8px 0 4px">
+      <a href="/" class="btn btn-blue" style="max-width:320px;margin:0 auto;display:block">
+        ← <?= $is_nl ? 'Naar de volledige site' : 'Retour au site complet' ?> casuffit.be
+      </a>
+    </div>
+
   </div>
 
   <div class="footer">
-    <!-- Partage -->
-    <p style="font-size:.85rem;color:#555;font-weight:600;margin-bottom:12px">
+    <p style="font-size:.85rem;color:rgba(255,255,255,.8);font-weight:600;margin-bottom:12px">
       📢 <?= $is_nl ? 'Deel met vrienden' : 'Partager avec vos proches' ?>
     </p>
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:20px">
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
       <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.casuffit.be%2Fagir"
          target="_blank" rel="noopener"
          style="display:inline-block;padding:12px 24px;background:#1877F2;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:.9rem">
         Facebook
       </a>
       <a href="mailto:?subject=<?= rawurlencode($is_nl ? 'Stop de hinder — Ça suffit !' : 'Stop aux nuisances — Ça suffit !') ?>&body=<?= rawurlencode($is_nl ? "Sluit u aan:\nhttps://www.casuffit.be/agir" : "Rejoignez le mouvement :\nhttps://www.casuffit.be/agir") ?>"
-         style="display:inline-block;padding:12px 24px;background:#555;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:.9rem">
+         style="display:inline-block;padding:12px 24px;background:rgba(255,255,255,.2);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:.9rem;border:2px solid rgba(255,255,255,.4)">
         Email
       </a>
     </div>
-    <!-- Retour site principal -->
-    <a href="/" class="btn btn-blue" style="max-width:320px;margin:0 auto 16px;display:block">
-      ← <?= $is_nl ? 'Naar de volledige site' : 'Retour au site complet' ?> casuffit.be
-    </a>
-    <div style="font-size:.72rem;color:#bbb;margin-top:4px">© <?= date('Y') ?> Ça suffit ! ASBL</div>
+    <div style="font-size:.72rem;color:rgba(255,255,255,.5)">© <?= date('Y') ?> Ça suffit ! ASBL</div>
   </div>
 
 </div>
