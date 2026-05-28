@@ -24,6 +24,10 @@ try {
                             FROM email_opens WHERE campagne = ? ORDER BY premiere_ouverture IS NULL, derniere_ouverture DESC");
         $st->execute([$campagne_sel]);
         $details = $st->fetchAll();
+        $nb_non_ouvreurs = count(array_filter($details, fn($d) => $d['premiere_ouverture'] === null));
+        // Campagnes gérées pour le renvoi
+        $campagnes_resend = ['invite_membre','invite_wix','rappel_adresse'];
+        $can_resend = in_array($campagne_sel, $campagnes_resend) && $nb_non_ouvreurs > 0;
     }
 } catch (Throwable $e) {
     $table_ok = false;
@@ -53,6 +57,12 @@ th { font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:#88
 .lien-camp { color:#1673B2; text-decoration:none; font-weight:600; }
 .muted { color:#aaa; }
 .note { background:#fff8ee; border:1px solid #FF9900; border-radius:8px; padding:12px 16px; font-size:.82rem; color:#555; margin-bottom:18px; line-height:1.5; }
+.btn-resend { background:#1673B2; color:#fff; border:none; border-radius:8px; padding:10px 20px; font-size:.85rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .18s; }
+.btn-resend:hover { background:#0e3d6b; }
+.btn-resend:disabled { background:#aaa; cursor:not-allowed; }
+.resend-toast { display:none; margin-top:10px; padding:10px 14px; border-radius:8px; font-size:.82rem; font-weight:600; }
+.resend-toast.ok  { background:#e8f8f0; color:#1a7a4a; border:1px solid #b2f0d0; }
+.resend-toast.err { background:#fde8e8; color:#c0392b; border:1px solid #fca5a5; }
 </style>
 </head>
 <body>
@@ -97,13 +107,28 @@ th { font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:#88
 
   <?php if ($campagne_sel && $details): ?>
   <div class="es-card">
-    <h3 style="margin:0 0 12px;font-size:.95rem;color:#0e3d6b">Détail — <?= htmlspecialchars($campagne_sel) ?></h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px">
+      <h3 style="margin:0;font-size:.95rem;color:#0e3d6b">Détail — <?= htmlspecialchars($campagne_sel) ?></h3>
+      <?php if ($can_resend): ?>
+      <div>
+        <button class="btn-resend" id="btn-resend"
+          onclick="resendCampaign('<?= htmlspecialchars($campagne_sel) ?>', <?= $nb_non_ouvreurs ?>)">
+          ✉ Renvoyer aux <?= $nb_non_ouvreurs ?> non-ouvreur<?= $nb_non_ouvreurs>1?'s':'' ?>
+        </button>
+        <div class="resend-toast" id="resend-toast"></div>
+      </div>
+      <?php elseif ($nb_non_ouvreurs === 0): ?>
+        <span style="color:#1a7a4a;font-size:.82rem;font-weight:600">✓ Tous ont ouvert</span>
+      <?php elseif (!in_array($campagne_sel, ['invite_membre','invite_wix','rappel_adresse'])): ?>
+        <span style="color:#aaa;font-size:.78rem">Renvoi non disponible pour cette campagne</span>
+      <?php endif; ?>
+    </div>
     <table>
       <tr><th>Email</th><th>Ouvert ?</th><th>1re ouverture</th><th>Dernière</th><th>Nb</th></tr>
       <?php foreach ($details as $d): ?>
-      <tr>
+      <tr style="<?= $d['premiere_ouverture'] ? '' : 'background:#fff8ee' ?>">
         <td style="font-size:.8rem"><?= htmlspecialchars($d['email']) ?></td>
-        <td><?= $d['premiere_ouverture'] ? '<span style="color:#1a7a4a;font-weight:700">✓ oui</span>' : '<span class="muted">non</span>' ?></td>
+        <td><?= $d['premiere_ouverture'] ? '<span style="color:#1a7a4a;font-weight:700">✓</span>' : '<span class="muted">✗ non ouvert</span>' ?></td>
         <td class="muted"><?= $d['premiere_ouverture'] ? date('d/m/Y H:i', strtotime($d['premiere_ouverture'])) : '—' ?></td>
         <td class="muted"><?= $d['derniere_ouverture'] ? date('d/m/Y H:i', strtotime($d['derniere_ouverture'])) : '—' ?></td>
         <td><?= (int)$d['nb_ouvertures'] ?></td>
@@ -111,6 +136,32 @@ th { font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:#88
       <?php endforeach; ?>
     </table>
   </div>
+
+  <script>
+  function resendCampaign(campagne, nb) {
+    if (!confirm('Renvoyer le mail aux ' + nb + ' non-ouvreur(s) de la campagne "' + campagne + '" ?\n\nLeur tracking sera réinitialisé.')) return;
+    var btn   = document.getElementById('btn-resend');
+    var toast = document.getElementById('resend-toast');
+    btn.disabled = true; btn.textContent = '⏳ Envoi en cours…';
+    toast.style.display = 'none';
+    var fd = new FormData();
+    fd.append('campagne', campagne);
+    fd.append('_csrf', '<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>');
+    fetch('resend_campaign.php', {method:'POST', body:fd})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        toast.className = 'resend-toast ' + (d.ok ? 'ok' : 'err');
+        toast.textContent = d.msg || (d.error || 'Erreur inconnue');
+        toast.style.display = 'block';
+        btn.textContent = d.ok ? '✓ Renvoyé' : '✉ Renvoyer aux non-ouvreurs';
+        if (!d.ok) btn.disabled = false;
+      })
+      .catch(function(){
+        toast.className='resend-toast err'; toast.textContent='Erreur réseau.'; toast.style.display='block';
+        btn.disabled=false; btn.textContent='✉ Renvoyer aux non-ouvreurs';
+      });
+  }
+  </script>
   <?php endif; ?>
 
   <?php endif; ?>
