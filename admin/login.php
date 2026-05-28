@@ -44,7 +44,7 @@ if ($step === 'password' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 unset($_SESSION['admin_2fa_pending'], $_SESSION['admin_2fa_user']);
                 $db->prepare("UPDATE admin_users SET last_login=NOW(), last_login_ip=? WHERE id=?")->execute([$_SERVER['REMOTE_ADDR']??'', $admin['id']]);
                 session_write_close();
-                _adminRedirect('setup_totp.php?first=1'); exit;
+                header('Location: setup_totp.php?first=1', true, 303); exit;
             }
             header('Location: login.php?step=totp'); exit;
         }
@@ -76,22 +76,14 @@ if ($step === 'totp' && $_SERVER['REQUEST_METHOD'] === 'POST') {
           $warn=$used_backup>=0?"<p style='color:#b45309'>⚠ Code de secours utilisé. Restants : $used_backup</p>":'';
           sendMail($admin['email'], '🔐 Connexion admin Ça suffit !', "<p>Connexion de <strong>{$admin['username']}</strong> le $now depuis IP $ip.</p>$warn<p>Si ce n'est pas toi, change ton mot de passe immédiatement.</p>");
         } catch (Exception $e) {}
-        session_write_close();
         $redir = ($used_backup >= 0 && $used_backup <= 2) ? 'backup_codes.php?warn=1' : 'dashboard.php';
-        _adminRedirect($redir); exit;
+        session_write_close();
+        header('Location: ' . $redir, true, 303);
+        exit;
     }
 }
 if ($step === 'totp' && empty($_SESSION['admin_2fa_pending'])) { header('Location: login.php'); exit; }
-function _adminRedirect(string $url): void {
-    echo '<!DOCTYPE html><html><head><meta charset="UTF-8">
-<meta http-equiv="refresh" content="1;url=' . htmlspecialchars($url) . '">
-<title>Redirection...</title>
-<style>body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0e3d6b;color:#fff;margin:0}
-p{opacity:.7;font-size:.9rem}</style></head>
-<body><p>Connexion réussie, redirection...</p>
-<script>window.location.replace(' . json_encode($url) . ');</script>
-</head></html>';
-}
+
 ?><!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <?php include __DIR__ . '/../includes/admin_pwa_head.php'; ?>
