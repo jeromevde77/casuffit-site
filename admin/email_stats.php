@@ -2,6 +2,7 @@
 // v2 — fix affichage CSS sidebar (inclusion dans <style>)
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
+require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
 $table_ok = true;

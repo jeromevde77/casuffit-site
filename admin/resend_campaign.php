@@ -13,10 +13,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['ok'=>false,'error'=>'POST requis']); exit;
 }
 
-$submitted = $_POST['_csrf'] ?? '';
+$submitted = $_POST['_csrf'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
 $expected  = $_SESSION['_csrf_token'] ?? '';
 if (!$expected || !$submitted || !hash_equals($expected, $submitted)) {
-    echo json_encode(['ok'=>false,'error'=>'Token CSRF invalide']); exit;
+    echo json_encode(['ok'=>false,'error'=>'Token CSRF invalide — rechargez la page et réessayez']); exit;
 }
 
 $db       = getDB();
