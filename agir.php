@@ -30,12 +30,12 @@ try {
         $agir_contenu = ($is_nl && !empty($lp['contenu_nl'])) ? $lp['contenu_nl'] : ($lp['contenu'] ?? '');
     }
 } catch (Exception $e) {}
-$obj_total   = (float)cfg('objectif_total', 20000);
-$date_lancement = cfg('date_lancement', '2024-01-01');
+$obj_total      = (float)cfg('objectif_total', 20000);
+$date_lancement = cfg('date_lancement', '2026-05-25');
 try {
-    $obj_actuel = (float)$db->query(
-        "SELECT COALESCE(SUM(montant),0) FROM member_dons WHERE statut='confirme'"
-    )->fetchColumn();
+    $q = $db->prepare("SELECT COALESCE(SUM(montant),0) FROM member_dons WHERE statut='confirme' AND date_don >= ?");
+    $q->execute([$date_lancement]);
+    $obj_actuel = (float)$q->fetchColumn();
 } catch (Exception $e) { $obj_actuel = 0; }
 $pct = $obj_total > 0 ? min(100, round($obj_actuel / $obj_total * 100)) : 0;
 ?>
