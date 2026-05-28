@@ -206,27 +206,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
 
   <div class="footer">
     <!-- Partage -->
-    <div class="share" style="margin-bottom:20px">
-      <div style="font-size:.8rem;color:#888;margin-bottom:10px;font-weight:600">
-        <?= $is_nl ? '📢 Deel met vrienden' : '📢 Partager avec vos proches' ?>
-      </div>
-      <div class="share-btns">
-        <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.casuffit.be%2Fagir"
-           target="_blank" rel="noopener" class="share-btn share-fb">Facebook</a>
-        <a href="mailto:?subject=<?= rawurlencode($is_nl ? 'Stop de hinder — Ça suffit !' : 'Stop aux nuisances — Ça suffit !') ?>&body=<?= rawurlencode($is_nl ? "Sluit u aan bij de strijd tegen vliegtuighinder boven uw gemeente:\nhttps://www.casuffit.be/agir" : "Rejoignez le mouvement contre les nuisances aériennes au-dessus de nos communes :\nhttps://www.casuffit.be/agir") ?>"
-           class="share-btn share-mail">Email</a>
-        <a href="https://wa.me/?text=<?= rawurlencode($is_nl ? "Sluit u aan bij de strijd — https://www.casuffit.be/agir" : "Rejoignez le mouvement — https://www.casuffit.be/agir") ?>"
-           target="_blank" rel="noopener" class="share-btn share-wa">WhatsApp</a>
-      </div>
+    <p style="font-size:.85rem;color:#555;font-weight:600;margin-bottom:12px">
+      📢 <?= $is_nl ? 'Deel met vrienden' : 'Partager avec vos proches' ?>
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:20px">
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.casuffit.be%2Fagir"
+         target="_blank" rel="noopener"
+         style="display:inline-block;padding:12px 24px;background:#1877F2;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:.9rem">
+        Facebook
+      </a>
+      <a href="mailto:?subject=<?= rawurlencode($is_nl ? 'Stop de hinder — Ça suffit !' : 'Stop aux nuisances — Ça suffit !') ?>&body=<?= rawurlencode($is_nl ? "Sluit u aan:\nhttps://www.casuffit.be/agir" : "Rejoignez le mouvement :\nhttps://www.casuffit.be/agir") ?>"
+         style="display:inline-block;padding:12px 24px;background:#555;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:.9rem">
+        Email
+      </a>
     </div>
-    <!-- Lien site principal -->
-    <a href="/" style="display:inline-block;color:#1673B2;text-decoration:none;font-size:.82rem;font-weight:600">
-      ← <?= $is_nl ? 'Volledige site' : 'Site complet' ?> casuffit.be
+    <!-- Retour site principal -->
+    <a href="/" class="btn btn-blue" style="max-width:320px;margin:0 auto 16px;display:block">
+      ← <?= $is_nl ? 'Naar de volledige site' : 'Retour au site complet' ?> casuffit.be
     </a>
-    <div style="margin-top:8px;font-size:.72rem;color:#bbb">
-      © <?= date('Y') ?> Ça suffit ! ASBL —
-      <a href="http://www.facebook.com/piste01casuffit" target="_blank" rel="noopener" style="color:#bbb">Facebook</a>
-    </div>
+    <div style="font-size:.72rem;color:#bbb;margin-top:4px">© <?= date('Y') ?> Ça suffit ! ASBL</div>
   </div>
 
 </div>
