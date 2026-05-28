@@ -143,7 +143,36 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
 
   <div class="content">
 
-    <!-- Progression (toujours affichée) -->
+    <!-- 1. PORTER PLAINTE — action urgente -->
+    <div class="cta-block" style="border-left:4px solid #FF9900">
+      <h3>⚠ <?= $is_nl ? 'Klacht indienen' : 'Porter plainte' ?></h3>
+      <p style="margin-bottom:10px">
+        <?= $is_nl
+          ? 'Stelt u <strong>nu</strong> een abnormaal gebruik van de startbaan vast?'
+          : 'Vous constatez <strong>en ce moment</strong> un usage anormal de la piste ?' ?>
+      </p>
+      <a href="/plainte.php<?= $is_nl ? '?lang=nl' : '' ?>" class="btn btn-orange" style="margin-bottom:8px">
+        ⚠ <?= $is_nl ? 'Klacht indienen — abnormaal gebruik' : 'Porter plainte — usage anormal' ?>
+      </a>
+      <a href="/wind.php" class="btn btn-outline" style="font-size:.88rem;padding:11px 14px">
+        🕐 <?= $is_nl ? 'Overlast in het verleden → Windgeschiedenis' : 'Nuisance passée → Historique du vent' ?>
+      </a>
+    </div>
+
+    <!-- 2. NOS OUTILS EN TEMPS RÉEL -->
+    <div class="cta-block">
+      <h3>📡 <?= $is_nl ? 'Onze tools' : 'Nos outils' ?></h3>
+      <p>
+        <?= $is_nl
+          ? 'Weer, vluchten, windgeschiedenis en PRS-analyse in realtime.'
+          : 'Météo, vols, historique du vent et analyse PRS en temps réel.' ?>
+      </p>
+      <a href="/wind.php" class="btn btn-blue">
+        → <?= $is_nl ? 'Toegang tot de tools' : 'Accéder aux outils' ?>
+      </a>
+    </div>
+
+    <!-- 3. PROGRESSION / DON -->
     <div class="progress-card">
       <div class="progress-title">
         <?= $is_nl ? '🎯 Doelstelling — Juridische strijd' : '🎯 Objectif — Combat juridique' ?>
@@ -155,47 +184,35 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
       <div class="progress-bar"><div class="progress-fill" style="width:<?= $pct ?>%"></div></div>
     </div>
 
-    <!-- Contenu 100% éditable depuis Admin → Outils → Landing /agir -->
-    <div class="content-editable-zone">
-      <?= $agir_contenu ?>
-    </div>
-
-    <!-- Section porter plainte -->
-    <div class="cta-block" style="border-left:4px solid #FF9900">
-      <h3>⚠ <?= $is_nl ? 'Klacht indienen' : 'Porter plainte' ?></h3>
-      <p>
-        <?= $is_nl
-          ? 'U stelt <strong>op dit moment</strong> een abnormaal gebruik van de startbaan vast? Dien in enkele klikken een klacht in bij de federale luchthavenbemiddelaar.'
-          : 'Vous constatez <strong>en ce moment</strong> un usage anormal de la piste ? Déposez une plainte en quelques clics auprès du médiateur aérien fédéral.' ?>
-      </p>
-      <a href="/plainte.php<?= $is_nl ? '?lang=nl' : '' ?>" class="btn btn-orange" style="margin-bottom:10px">
-        ⚠ <?= $is_nl ? 'Klacht indienen — abnormaal gebruik' : 'Porter plainte — usage anormal' ?>
-      </a>
-      <a href="/wind.php#historique" class="btn btn-outline" style="font-size:.88rem;padding:11px 14px">
-        🕐 <?= $is_nl ? 'Overlast in het verleden → Windgeschiedenis' : 'Nuisance passée → Historique du vent' ?>
-      </a>
-    </div>
-
-    <!-- Section espace membre -->
+    <!-- 4. ESPACE MEMBRE -->
     <div class="cta-block" style="border-left:4px solid #1673B2">
       <h3>👤 <?= $is_nl ? 'Ledenruimte' : 'Espace membre' ?></h3>
       <?php if ($is_logged_in_membre): ?>
-        <p><?= $is_nl ? 'Welkom! U bent verbonden met uw ledenruimte.' : 'Bienvenue ! Vous êtes connecté à votre espace membre.' ?></p>
+        <p><?= $is_nl ? 'U bent verbonden.' : 'Vous êtes connecté.' ?></p>
         <a href="/membre/dashboard.php" class="btn btn-blue">
           → <?= $is_nl ? 'Mijn ledenruimte' : 'Mon espace membre' ?>
         </a>
       <?php else: ?>
-        <p><?= $is_nl
-          ? 'Volg uw lidmaatschap, uw giften en uw acties op. Heeft u al een account?'
-          : 'Suivez votre adhésion, vos dons et vos actions. Vous avez déjà un compte ?' ?></p>
-        <a href="/membre/login.php" class="btn btn-blue" style="margin-bottom:10px">
-          → <?= $is_nl ? 'Inloggen op mijn ledenruimte' : 'Me connecter à mon espace membre' ?>
+        <p>
+          <?= $is_nl
+            ? 'Volg uw lidmaatschap en giften op. Al een account?'
+            : 'Suivez votre adhésion et vos dons. Déjà un compte ?' ?>
+        </p>
+        <a href="/membre/login.php" class="btn btn-blue" style="margin-bottom:8px">
+          → <?= $is_nl ? 'Inloggen' : 'Me connecter' ?>
         </a>
         <a href="/membre/inscription.php" class="btn btn-outline" style="font-size:.88rem;padding:11px 14px">
           ✨ <?= $is_nl ? 'Mijn gratis ledenruimte aanmaken' : 'Créer mon espace membre gratuit' ?>
         </a>
       <?php endif; ?>
     </div>
+
+    <!-- 5. CONTENU ÉDITABLE (admin → Landing /agir) -->
+    <?php if (!empty($agir_contenu)): ?>
+    <div class="content-editable-zone">
+      <?= $agir_contenu ?>
+    </div>
+    <?php endif; ?>
 
   </div>
 
