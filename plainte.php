@@ -4,6 +4,12 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/membre/functions.php';
 session_start();
 
+// Langue (FR par défaut, NL via ?lang=nl)
+$lang = ($_GET['lang'] ?? 'fr') === 'nl' ? 'nl' : 'fr';
+$is_nl = ($lang === 'nl');
+
+function tr(bool $nl, string $fr, string $nls): string { return $nl ? $nls : $fr; }
+
 // Destinataires depuis la config (même source que piste_meteo)
 $plainte_dest_raw = function_exists('cfg') ? cfg('plainte_destinataires', 'airportmediation@mobilit.fgov.be') : 'airportmediation@mobilit.fgov.be';
 $plainte_dest_list = array_filter(array_map('trim', explode(',', $plainte_dest_raw)));
@@ -22,11 +28,11 @@ try {
 } catch (Exception $e) {}
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<?= '<html lang="'.htmlspecialchars($lang).'">'?>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Porter plainte — Nuisances aériennes Brussels Airport</title>
+  <title><?= tr($is_nl,"Porter plainte — Nuisances aériennes Brussels Airport","Klacht indienen — Luchthinder Brussels Airport") ?></title>
   <meta name="description" content="Portez plainte facilement contre les nuisances aériennes de Brussels Airport">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -125,32 +131,32 @@ try {
     <img src="/assets/img/logo.png" alt="Ça suffit !">
     <div class="pl-logo-name">Ça suffit <span>!</span></div>
   </div>
-  <div class="pl-header-sub">Porter plainte — Nuisances aériennes Brussels Airport<br>Piste 01 / Piste 07</div>
+  <div class="pl-header-sub"><?= tr($is_nl,"Porter plainte — Nuisances aériennes Brussels Airport<br>Piste 01 / Piste 07","Klacht indienen — Luchthinder Brussels Airport<br>Baan 01 / Baan 07") ?></div>
 </div>
 
 <div class="pl-wrap">
 
   <!-- ÉTAPE 1 : Commune -->
   <div class="pl-card" id="step-commune">
-    <div class="pl-card-title"><span class="pl-step-badge">1</span> Votre commune</div>
+    <div class="pl-card-title"><span class="pl-step-badge">1</span> <?= tr($is_nl,"Votre commune","Uw gemeente") ?></div>
     <p style="font-size:.82rem;color:#666;margin-bottom:14px;line-height:1.6">
-      Indiquez votre commune pour personnaliser la plainte. Ce champ restera dans le texte généré.
+      <?= tr($is_nl,"Indiquez votre commune pour personnaliser la plainte.","Geef uw gemeente op om de klacht te personaliseren.") ?>
     </p>
     <div class="pl-commune-wrap">
-      <input type="text" id="commune-input" placeholder="ex: Kraainem, Wezembeek-Oppem…"
+      <input type="text" id="commune-input" placeholder="<?= tr($is_nl,'ex: Kraainem, Wezembeek-Oppem…','bijv: Kraainem, Wezembeek-Oppem…') ?>"
              value="<?= $commune_prefill ?>" autocomplete="off" maxlength="80">
-      <button class="pl-btn pl-btn-orange" onclick="confirmCommune()">Continuer →</button>
+      <button class="pl-btn pl-btn-orange" onclick="confirmCommune()"><?= tr($is_nl,"Continuer →","Verder →") ?></button>
     </div>
-    <p id="commune-error" style="color:#c0392b;font-size:.75rem;margin-top:6px;display:none">Veuillez indiquer votre commune.</p>
+    <p id="commune-error" style="color:#c0392b;font-size:.75rem;margin-top:6px;display:none"><?= tr($is_nl,"Veuillez indiquer votre commune.","Geef uw gemeente op.") ?></p>
   </div>
 
   <!-- ÉTAPE 2 : Sélection piste -->
   <div class="pl-card pl-hidden" id="step-piste">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div class="pl-card-title" style="margin-bottom:0"><span class="pl-step-badge">2</span> Quelle piste observez-vous ?</div>
+      <div class="pl-card-title" style="margin-bottom:0"><span class="pl-step-badge">2</span> <?= tr($is_nl,"Quelle piste observez-vous ?","Welke baan ziet u in gebruik?") ?></div>
       <span class="pl-commune-tag" id="commune-display">
         📍 <span id="commune-label"></span>
-        <button class="pl-commune-change" onclick="resetCommune()">modifier</button>
+        <button class="pl-commune-change" onclick="resetCommune()"><?= tr($is_nl,"modifier","wijzigen") ?></button>
       </span>
     </div>
     <div class="pl-piste-grid">
@@ -170,32 +176,35 @@ try {
       <div class="pl-batc-body">
         Le site BATC affiche en temps réel la configuration des pistes en service à Brussels Airport.<br><br>
         <a href="https://www.batc.be/fr/pistes-en-usage/actuel-prevision" target="_blank" rel="noopener">
-          Ouvrir BATC — Pistes en service ↗
+          <?= tr($is_nl,"Ouvrir BATC — Pistes en service ↗","BATC openen — Banen in gebruik ↗") ?>
         </a><br><br>
-        Si vous voyez un avion <strong>passer vers le nord</strong> au-dessus de votre commune → Piste 01.<br>
-        Si vous voyez un avion <strong>passer vers l'est</strong> → Piste 07.
+        <?= tr($is_nl,"Si vous voyez un avion <strong>passer vers le nord</strong> → Piste 01.","Ziet u een vliegtuig <strong>naar het noorden vliegen</strong> → Baan 01.") ?><br>
+        <?= tr($is_nl,"Si vous voyez un avion <strong>passer vers l'est</strong> → Piste 07.","Ziet u een vliegtuig <strong>naar het oosten vliegen</strong> → Baan 07.") ?>
       </div>
     </details>
   </div>
 
   <!-- ÉTAPE 2.5 : Avertissement si piste adaptée aux conditions -->
   <div class="pl-card pl-hidden" id="step-confirm" style="border:2px solid #FF9900">
-    <div class="pl-card-title" style="color:#b45309"><span class="pl-step-badge" style="background:#FF9900">⚠</span> Vérification</div>
+    <div class="pl-card-title" style="color:#b45309"><span class="pl-step-badge" style="background:#FF9900">⚠</span> <?= tr($is_nl,"Vérification","Verificatie") ?></div>
     <div id="confirm-msg" style="font-size:.85rem;line-height:1.7;color:#555;margin-bottom:16px"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="pl-btn pl-btn-grey" onclick="cancelConfirm()" style="flex:1">← Revenir au choix de piste</button>
+      <button class="pl-btn pl-btn-grey" onclick="cancelConfirm()" style="flex:1"><?= tr($is_nl,"← Revenir au choix de piste","← Terug naar baankeuze") ?></button>
       <button class="pl-btn" onclick="proceedAnyway()"
         style="flex:1;background:#e53e3e;color:#fff;border-color:#e53e3e">
-        Je souhaite quand même signaler ce cas
+        <?= tr($is_nl,"Je souhaite quand même signaler ce cas","Ik wil dit geval toch melden") ?>
       </button>
     </div>
   </div>
 
   <!-- ÉTAPE 3 : Météo + plainte -->
   <div class="pl-card pl-hidden" id="step-result">
-    <div class="pl-card-title"><span class="pl-step-badge">3</span> Conditions météo &amp; plainte</div>
+    <div class="pl-card-title"><span class="pl-step-badge">3</span> <?= tr($is_nl,"Conditions météo &amp; plainte","Weersomstandigheden &amp; klacht") ?></div>
 
-    <div id="meteo-loading" class="pl-meteo-loading">⏳ Récupération des données météo EBBR…</div>
+    <p style="font-size:.78rem;background:#f0f4f8;border-radius:8px;padding:8px 12px;margin-bottom:12px;line-height:1.6">
+      ⚡ <?php if($is_nl): ?>Voor overlast <strong>op dit moment</strong>. Voor overlast in het <strong>verleden</strong> → <a href="/wind.php#historique" style="color:#1673B2">Windgeschiedenis</a><?php else: ?>Pour une nuisance <strong>en ce moment</strong>. Pour une nuisance dans le <strong>passé</strong> → <a href="/wind.php#historique" style="color:#1673B2">Historique du vent</a><?php endif; ?>
+    </p>
+    <div id="meteo-loading" class="pl-meteo-loading"><?= tr($is_nl,"⏳ Récupération des données météo EBBR…","⏳ Weergegevens EBBR worden opgehaald…") ?></div>
     <div id="meteo-content" class="pl-hidden">
       <div id="prs-badge" class="pl-prs-badge"></div>
       <table class="pl-meteo-table" id="meteo-table"></table>
@@ -213,35 +222,35 @@ try {
       <div class="pl-steps-block">
         <div class="pl-step-row">
           <span class="pl-step-n">1</span>
-          <div><strong>Copiez le contenu de la plainte</strong> — toutes les données (météo, conditions, analyse) sont copiées en un clic.</div>
+          <div><?= tr($is_nl,"<strong>Copiez le contenu de la plainte</strong> — toutes les données (météo, conditions, analyse) sont copiées en un clic.","<strong>Kopieer de inhoud van de klacht</strong> — alle gegevens worden in één klik gekopieerd.") ?></div>
         </div>
         <div class="pl-step-row">
           <span class="pl-step-n">2</span>
-          <div>Ouvrez un nouvel email vers le médiateur aérien fédéral (bouton ci-dessous, l'adresse est pré-remplie).</div>
+          <div><?= tr($is_nl,"Ouvrez un nouvel email vers le médiateur aérien fédéral (bouton ci-dessous, l'adresse est pré-remplie).","Open een nieuw e-mailbericht (onderstaande knop, het adres is vooraf ingevuld).") ?></div>
         </div>
         <div class="pl-step-row">
           <span class="pl-step-n">3</span>
-          <div>Collez le contenu dans le corps du message (Ctrl+V / Cmd+V) et envoyez.</div>
+          <div><?= tr($is_nl,"Collez le contenu dans le corps du message (Ctrl+V / Cmd+V) et envoyez.","Plak de inhoud in de berichttekst (Ctrl+V / Cmd+V) en verzend.") ?></div>
         </div>
       </div>
       <!-- Bouton copier → devient vert -->
       <button class="pl-copy-btn" id="pl-copy-btn" onclick="copyComplaint()">
-        📋 Copier le contenu de la plainte
+        <?= tr($is_nl,'📋 Copier le contenu de la plainte','📋 Inhoud van de klacht kopiëren') ?>
       </button>
       <!-- Bouton mailto bleu -->
       <button class="pl-mail-btn" onclick="openMail()">
-        ✉ Ouvrir un email pré-adressé
+        <?= tr($is_nl,'✉ Ouvrir un email pré-adressé','✉ Voorgeadresseerde e-mail openen') ?>
       </button>
       <!-- Texte brut en option -->
       <details class="pl-txt-details">
-        <summary>Voir le texte brut</summary>
+        <summary><?= tr($is_nl,"Voir le texte brut","Platte tekst bekijken") ?></summary>
         <div class="pl-complaint-box" id="complaint-text"></div>
       </details>
     </div>
   </div>
 
   <div style="text-align:center;margin-top:8px">
-    <a href="/" style="font-size:.75rem;color:#aaa;text-decoration:none">← Retour au site casuffit.be</a>
+    <a href="/" style="font-size:.75rem;color:#aaa;text-decoration:none"><?= tr($is_nl,"← Retour au site casuffit.be","← Terug naar casuffit.be") ?></a>
   </div>
 
 </div>
@@ -547,10 +556,11 @@ function proceedAnyway() {
 function copyComplaint() {
   var btn = document.getElementById('pl-copy-btn');
   var orig = btn.textContent;
+  var copyOkText = <?= json_encode(tr($is_nl,'✓ Copié ! Collez le contenu dans votre email','✓ Gekopieerd! Plak de inhoud in uw e-mail')) ?>;
   var htmlBody = buildHtmlBody(); // inclut l'image si _captureDataUrl est défini
 
   function copyOk() {
-    btn.textContent = '✓ Copié ! Collez le contenu dans votre email';
+    btn.textContent = copyOkText;
     btn.classList.add('copied');
     setTimeout(function(){ btn.textContent = orig; btn.classList.remove('copied'); }, 5000);
   }
@@ -639,8 +649,8 @@ function openMail() {
   var pisteLabel = _piste==='07' ? 'piste 07' : 'piste 01';
   var now = new Date();
   var dateStr = now.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
-  var subj = 'Plainte nuisance aérienne EBBR — '+pisteLabel+' — '+dateStr;
-  var body = '[ Coller ici le contenu de votre plainte ]';
+  var subj = <?= json_encode(tr($is_nl,'Klacht luchthinder EBBR','Plainte nuisance aérienne EBBR')) ?> + ' — '+pisteLabel+' — '+dateStr;
+  var body = <?= json_encode(tr($is_nl,'[ Inhoud van uw klacht hier plakken ]','[ Coller ici le contenu de votre plainte ]')) ?>;
   window.location.href = 'mailto:'+_dest+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
 }
 </script>

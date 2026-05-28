@@ -536,12 +536,15 @@ function member_options($membres, $selected) {
     <!-- ONGLET EN ATTENTE -->
     <?php if ($flash_msg): ?><div class="flash-ok"><?= htmlspecialchars($flash_msg) ?></div><?php endif; ?>
     <?php
+      $filtre_reconcil = ($_GET['reconcil'] ?? '') === '1';
       try {
+        $reconcil_where = $filtre_reconcil ? " AND l.tier IN ('ogm','iban','nom') AND l.suggested_member_id IS NOT NULL" : "";
         $pending = $db->query("SELECT l.*, m.prenom, m.nom as membre_nom
                                FROM import_csv_lignes l LEFT JOIN members m ON m.id=l.suggested_member_id
-                               WHERE l.statut='en_attente' ORDER BY l.date_virement DESC, l.montant DESC")->fetchAll();
+                               WHERE l.statut='en_attente'$reconcil_where ORDER BY l.date_virement DESC, l.montant DESC")->fetchAll();
+        $count_reconcil = (int)$db->query("SELECT COUNT(*) FROM import_csv_lignes WHERE statut='en_attente' AND tier IN ('ogm','iban','nom') AND suggested_member_id IS NOT NULL")->fetchColumn();
         $membres_all = $db->query("SELECT id, prenom, nom FROM members WHERE statut='actif' ORDER BY nom,prenom")->fetchAll();
-      } catch (Exception $e) { $pending=[]; $membres_all=[]; }
+      } catch (Exception $e) { $pending=[]; $membres_all=[]; $count_reconcil=0; $filtre_reconcil=false; }
     ?>
     <div class="card">
       <h3>⏳ Paiements en attente de réconciliation (<?= count($pending) ?>)</h3>
@@ -557,12 +560,21 @@ function member_options($membres, $selected) {
           <div>Aucun paiement en attente — tout est réconcilié !</div>
         </div>
       <?php else: ?>
-        <div style="display:flex;gap:10px;margin-bottom:16px">
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
           <form method="POST">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="redetection">
             <button class="btn btn-g" type="submit">🔄 Relancer la détection automatique</button>
           </form>
+          <?php if ($filtre_reconcil): ?>
+            <a href="import_csv.php?tab=attente" class="btn btn-g" style="text-decoration:none">
+              ✕ Afficher tout (<?= count($pending) + ($count_reconcil - count($pending)) ?> total)
+            </a>
+          <?php elseif ($count_reconcil > 0): ?>
+            <a href="import_csv.php?tab=attente&reconcil=1" class="btn" style="background:#1673B2;color:#fff;text-decoration:none">
+              🔗 Afficher seulement les réconciliables (<?= $count_reconcil ?>)
+            </a>
+          <?php endif; ?>
         </div>
       <style>
       /* ── Cartes paiements en attente ─────────────────────── */

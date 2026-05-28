@@ -84,7 +84,7 @@ if ($step === 'totp' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($step === 'totp' && empty($_SESSION['admin_2fa_pending'])) { header('Location: login.php'); exit; }
 function _adminRedirect(string $url): void {
     echo '<!DOCTYPE html><html><head><meta charset="UTF-8">
-<meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url) . '">
+<meta http-equiv="refresh" content="1;url=' . htmlspecialchars($url) . '">
 <title>Redirection...</title>
 <style>body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0e3d6b;color:#fff;margin:0}
 p{opacity:.7;font-size:.9rem}</style></head>

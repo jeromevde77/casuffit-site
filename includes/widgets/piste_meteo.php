@@ -233,6 +233,9 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
       <button class="pmw-report-btn" id="pmw-report-btn" onclick="pmwOpenRwySelector()">
         Je constate un usage anormal des pistes, je désire porter plainte
       </button>
+      <p class="pmw-report-note">
+        Pour la situation <strong>en ce moment</strong>. Pour une nuisance <strong>passée</strong> → onglet Historique du vent.
+      </p>
     </div>
 
   </div><!-- /pmw-body -->
@@ -622,6 +625,9 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
 .pmw-report-wrap{padding-top:6px}
 .pmw-report-btn{width:100%;padding:14px 16px;border:none;border-radius:10px;background:#FF9900;color:#fff;font-size:.88rem;font-weight:700;font-family:inherit;cursor:pointer;text-align:center;transition:all .18s;line-height:1.4;box-shadow:0 2px 8px rgba(255,153,0,.3)}
 .pmw-report-btn:hover{background:#e08800;box-shadow:0 3px 12px rgba(255,153,0,.45)}
+.pmw-report-note{font-size:.7rem;color:#999;margin-top:5px;line-height:1.5;text-align:center}
+.pmw-report-note a{color:#1673B2;text-decoration:none}
+.pmw-report-note a:hover{text-decoration:underline}
 .pmw-report-btn.alert{background:#e53e3e;box-shadow:0 2px 8px rgba(229,62,62,.3)}
 .pmw-report-btn.alert:hover{background:#c0392b}
 /* Modale sélection piste */
