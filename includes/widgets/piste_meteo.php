@@ -231,7 +231,7 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
     <!-- Bouton "Porter plainte" permanent -->
     <div class="pmw-report-wrap">
       <button class="pmw-report-btn" id="pmw-report-btn" onclick="pmwOpenRwySelector()">
-        Je constate un usage anormal des pistes, je désire porter plainte
+        ⚠ Porter plainte — usage anormal
       </button>
       <p class="pmw-report-note">
         Pour la situation <strong>en ce moment</strong>. Pour une nuisance <strong>passée</strong> → onglet Historique du vent.
@@ -1615,10 +1615,10 @@ window.pmwUpdateReportBtn = function(alert) {
   if (!btn) return;
   if (alert) {
     btn.className = 'pmw-report-btn alert';
-    btn.textContent = 'Je constate un usage anormal des pistes, je désire porter plainte';
+    btn.textContent = '⚠ Porter plainte — usage anormal';
   } else {
     btn.className = 'pmw-report-btn';
-    btn.textContent = 'Je constate un usage anormal des pistes, je désire porter plainte';
+    btn.textContent = '⚠ Porter plainte — usage anormal';
   }
 };
 
