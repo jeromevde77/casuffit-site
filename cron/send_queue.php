@@ -47,6 +47,27 @@ foreach ($queue as $item) {
     include __DIR__ . '/../templates/email_newsletter.php';
     $html_body = ob_get_clean();
 
+    // Tracking ouverture : pixel + email_opens
+    $track_campagne = 'newsletter_' . $item['newsletter_id'];
+    $track_token    = bin2hex(random_bytes(16));
+    try {
+        $exists = $db->prepare("SELECT id FROM email_opens WHERE campagne=? AND email=?");
+        $exists->execute([$track_campagne, $item['email']]);
+        if ($exists->fetch()) {
+            $db->prepare("UPDATE email_opens SET token=?, premiere_ouverture=NULL, derniere_ouverture=NULL, nb_ouvertures=0 WHERE campagne=? AND email=?")
+               ->execute([$track_token, $track_campagne, $item['email']]);
+        } else {
+            $db->prepare("INSERT INTO email_opens (campagne, email, token) VALUES (?,?,?)")
+               ->execute([$track_campagne, $item['email'], $track_token]);
+        }
+        $pixel   = '<img src="' . SITE_URL . '/api/open.php?t=' . $track_token . '" width="1" height="1" style="display:none" alt="">';
+        $html_body = str_contains($html_body, '</body>')
+            ? str_replace('</body>', $pixel . '</body>', $html_body)
+            : $html_body . $pixel;
+    } catch (Throwable $e) {
+        log_msg("  ⚠ Tracking ignoré pour {$item['email']}: " . $e->getMessage());
+    }
+
     // Envoi
     [$ok, $err] = !empty(BREVO_API_KEY)
         ? sendViaBrevo($item['email'], trim($item['prenom'].' '.$item['nom']), $sujet, $html_body)

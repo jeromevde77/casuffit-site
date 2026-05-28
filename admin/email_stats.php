@@ -27,7 +27,8 @@ try {
         $nb_non_ouvreurs = count(array_filter($details, fn($d) => $d['premiere_ouverture'] === null));
         // Campagnes gérées pour le renvoi
         $campagnes_resend = ['invite_membre','invite_wix','rappel_adresse'];
-        $can_resend = in_array($campagne_sel, $campagnes_resend) && $nb_non_ouvreurs > 0;
+        $can_resend = (in_array($campagne_sel, $campagnes_resend) || preg_match('/^newsletter_\d+$/', $campagne_sel))
+                      && $nb_non_ouvreurs > 0;
     }
 } catch (Throwable $e) {
     $table_ok = false;
@@ -119,7 +120,7 @@ th { font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:#88
       </div>
       <?php elseif ($nb_non_ouvreurs === 0): ?>
         <span style="color:#1a7a4a;font-size:.82rem;font-weight:600">✓ Tous ont ouvert</span>
-      <?php elseif (!in_array($campagne_sel, ['invite_membre','invite_wix','rappel_adresse'])): ?>
+      <?php elseif (!in_array($campagne_sel, ['invite_membre','invite_wix','rappel_adresse']) && !preg_match('/^newsletter_\d+$/', $campagne_sel)): ?>
         <span style="color:#aaa;font-size:.78rem">Renvoi non disponible pour cette campagne</span>
       <?php endif; ?>
     </div>
