@@ -69,16 +69,16 @@ if ($step === 'totp' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['admin_logged_in'] = true; $_SESSION['admin_id'] = $admin['id'];
         $_SESSION['admin_role'] = $admin['role']; $_SESSION['admin_last_activity'] = time();
         unset($_SESSION['admin_2fa_pending'], $_SESSION['admin_2fa_user']);
-        session_regenerate_id(true);
         $db->prepare("UPDATE admin_users SET last_login=NOW(), last_login_ip=? WHERE id=?")->execute([$_SERVER['REMOTE_ADDR']??'', $admin['id']]);
+        $redir = ($used_backup >= 0 && $used_backup <= 2) ? 'backup_codes.php?warn=1' : 'dashboard.php';
+        session_write_close();
+        header('Location: ' . $redir, true, 303);
+        // Notification email envoyée après le redirect (non bloquant)
         try { require_once __DIR__ . '/../includes/mail_helper.php';
           $ip=$_SERVER['REMOTE_ADDR']??'?'; $now=date('d/m/Y H:i:s');
           $warn=$used_backup>=0?"<p style='color:#b45309'>⚠ Code de secours utilisé. Restants : $used_backup</p>":'';
           sendMail($admin['email'], '🔐 Connexion admin Ça suffit !', "<p>Connexion de <strong>{$admin['username']}</strong> le $now depuis IP $ip.</p>$warn<p>Si ce n'est pas toi, change ton mot de passe immédiatement.</p>");
         } catch (Exception $e) {}
-        $redir = ($used_backup >= 0 && $used_backup <= 2) ? 'backup_codes.php?warn=1' : 'dashboard.php';
-        session_write_close();
-        header('Location: ' . $redir, true, 303);
         exit;
     }
 }
