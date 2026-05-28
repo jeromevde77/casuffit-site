@@ -3,6 +3,8 @@
 // URL courte : casuffit.be/agir
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/lang.php';
+session_start();
+$is_logged_in_membre = !empty($_SESSION['membre_id']);
 
 // UTM tracking — toutes les visites depuis cette page sont taggées
 $source = $_GET['utm_source'] ?? 'flyer';
@@ -156,6 +158,43 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
     <!-- Contenu 100% éditable depuis Admin → Outils → Landing /agir -->
     <div class="content-editable-zone">
       <?= $agir_contenu ?>
+    </div>
+
+    <!-- Section porter plainte -->
+    <div class="cta-block" style="border-left:4px solid #FF9900">
+      <h3>⚠ <?= $is_nl ? 'Klacht indienen' : 'Porter plainte' ?></h3>
+      <p>
+        <?= $is_nl
+          ? 'U stelt <strong>op dit moment</strong> een abnormaal gebruik van de startbaan vast? Dien in enkele klikken een klacht in bij de federale luchthavenbemiddelaar.'
+          : 'Vous constatez <strong>en ce moment</strong> un usage anormal de la piste ? Déposez une plainte en quelques clics auprès du médiateur aérien fédéral.' ?>
+      </p>
+      <a href="/plainte.php<?= $is_nl ? '?lang=nl' : '' ?>" class="btn btn-orange" style="margin-bottom:10px">
+        ⚠ <?= $is_nl ? 'Klacht indienen — abnormaal gebruik' : 'Porter plainte — usage anormal' ?>
+      </a>
+      <a href="/wind.php#historique" class="btn btn-outline" style="font-size:.88rem;padding:11px 14px">
+        🕐 <?= $is_nl ? 'Overlast in het verleden → Windgeschiedenis' : 'Nuisance passée → Historique du vent' ?>
+      </a>
+    </div>
+
+    <!-- Section espace membre -->
+    <div class="cta-block" style="border-left:4px solid #1673B2">
+      <h3>👤 <?= $is_nl ? 'Ledenruimte' : 'Espace membre' ?></h3>
+      <?php if ($is_logged_in_membre): ?>
+        <p><?= $is_nl ? 'Welkom! U bent verbonden met uw ledenruimte.' : 'Bienvenue ! Vous êtes connecté à votre espace membre.' ?></p>
+        <a href="/membre/dashboard.php" class="btn btn-blue">
+          → <?= $is_nl ? 'Mijn ledenruimte' : 'Mon espace membre' ?>
+        </a>
+      <?php else: ?>
+        <p><?= $is_nl
+          ? 'Volg uw lidmaatschap, uw giften en uw acties op. Heeft u al een account?'
+          : 'Suivez votre adhésion, vos dons et vos actions. Vous avez déjà un compte ?' ?></p>
+        <a href="/membre/login.php" class="btn btn-blue" style="margin-bottom:10px">
+          → <?= $is_nl ? 'Inloggen op mijn ledenruimte' : 'Me connecter à mon espace membre' ?>
+        </a>
+        <a href="/membre/inscription.php" class="btn btn-outline" style="font-size:.88rem;padding:11px 14px">
+          ✨ <?= $is_nl ? 'Mijn gratis ledenruimte aanmaken' : 'Créer mon espace membre gratuit' ?>
+        </a>
+      <?php endif; ?>
     </div>
 
   </div>
