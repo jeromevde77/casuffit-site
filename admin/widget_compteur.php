@@ -1,28 +1,22 @@
 <?php
 // admin/widget_compteur.php — Prévisualisation du widget compteur public (draft)
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+ini_set('display_errors', 1); error_reporting(E_ALL);
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../membre/functions.php';
 session_start(); requireAdmin();
 $db = getDB();
 
 // ── Données compteurs ─────────────────────────────────────────────────────
-$membres_actifs   = (int)$db->query("SELECT COUNT(*) FROM members WHERE statut='actif'")->fetchColumn();
-$abonnes_actifs   = (int)$db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'")->fetchColumn();
-$abonnes_nl       = (int)$db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif' AND source_import='wix'")->fetchColumn();
-$communes_membres = (int)$db->query("SELECT COUNT(DISTINCT TRIM(commune)) FROM members WHERE statut='actif' AND commune IS NOT NULL AND commune != ''")->fetchColumn();
+$membres_actifs   = 0; $abonnes_actifs = 0; $abonnes_nl = 0;
+$communes_membres = 0; $plaintes = 0; $communes_map = [];
 
-// Plaintes (si table existe)
-$plaintes = 0;
+try { $membres_actifs   = (int)$db->query("SELECT COUNT(*) FROM members WHERE statut='actif'")->fetchColumn(); } catch(Exception $e) {}
+try { $abonnes_actifs   = (int)$db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'")->fetchColumn(); } catch(Exception $e) {}
+try { $abonnes_nl       = (int)$db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif' AND source='wix_import'")->fetchColumn(); } catch(Exception $e) {}
+try { $communes_membres = (int)$db->query("SELECT COUNT(DISTINCT TRIM(commune)) FROM members WHERE statut='actif' AND commune IS NOT NULL AND commune != ''")->fetchColumn(); } catch(Exception $e) {}
 try { $plaintes = (int)$db->query("SELECT COALESCE(SUM(nb_clics),0) FROM plainte_clicks")->fetchColumn(); } catch(Exception $e) {}
-
-// Communes + nb membres pour la carte
-$communes_map = $db->query("
-    SELECT TRIM(commune) as commune, COUNT(*) as nb
-    FROM members WHERE statut='actif' AND commune IS NOT NULL AND commune != ''
-    GROUP BY TRIM(commune) ORDER BY nb DESC
-")->fetchAll(PDO::FETCH_ASSOC);
+try {
+    $communes_map = $db->query("SELECT TRIM(commune) as commune, COUNT(*) as nb FROM members WHERE statut='actif' AND commune IS NOT NULL AND commune != '' GROUP BY TRIM(commune) ORDER BY nb DESC")->fetchAll(PDO::FETCH_ASSOC);
+} catch(Exception $e) {}
 
 $communes_json = json_encode($communes_map, JSON_UNESCAPED_UNICODE);
 ?><!DOCTYPE html>
