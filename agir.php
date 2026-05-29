@@ -192,7 +192,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
     <div class="cta-block">
       <h3>💛 <?= $is_nl ? 'De juridische strijd steunen' : 'Soutenir le combat juridique' ?></h3>
       <p><?= $is_nl ? 'Help ons de juridische strijd tegen de Belgische Staat te financieren.' : 'Aidez-nous à financer la suite de notre combat juridique contre l\'État belge.' ?></p>
-      <a href="/" class="btn btn-orange">💳 <?= $is_nl ? 'Een gift doen' : 'Faire un don' ?></a>
+      <a href="/don.php<?= $is_nl ? '?lang=nl' : '' ?>" class="btn btn-orange">💳 <?= $is_nl ? 'Een gift doen' : 'Faire un don' ?></a>
     </div>
 
     <!-- 6. NOS OUTILS -->
