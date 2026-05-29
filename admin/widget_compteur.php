@@ -1,6 +1,9 @@
 <?php
 // admin/widget_compteur.php — Prévisualisation du widget compteur public (draft)
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../membre/functions.php';
 session_start(); requireAdmin();
 $db = getDB();
 
