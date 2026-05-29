@@ -56,6 +56,7 @@ return [
     'wind.tab.history'     => 'Historique',
     'wind.tab.rose'        => 'Rose des vents',
     'wind.tab.flights'     => 'Vols',
+    'wind.tab.don'         => 'Soutenir',
     'wind.refresh'         => 'Actualiser',
 
     // ── Header / Bandeau d'annonce ───────────────────────────────────────

@@ -456,6 +456,117 @@ $api_token = $_SESSION['api_token'];
     <?php include __DIR__ . '/includes/widgets/vols_brussels.php'; ?>
   </div>
 
+  <!-- Vue : Soutenir -->
+  <div class="app-view" id="view-don">
+    <?php
+      // Variables nécessaires au widget don
+      $date_lancement  = cfg('date_lancement', '2026-05-25');
+      $montant_initial = floatval(cfg('montant_initial', 0));
+      $objectif_don    = floatval(cfg('montant_objectif', 15000));
+      try {
+          $q = $db->prepare("SELECT COALESCE(SUM(montant),0) FROM member_dons WHERE statut='confirme' AND date_don >= ?");
+          $q->execute([$date_lancement]);
+          $recolte_don = $montant_initial + floatval($q->fetchColumn());
+      } catch (Exception $e) { $recolte_don = $montant_initial; }
+      $pct_don = $objectif_don > 0 ? min(100, round($recolte_don / $objectif_don * 100)) : 0;
+      $iban_don  = cfg('iban', 'BE41 0689 0149 6910');
+      $bic_don   = cfg('bic', 'GKCCBEBB');
+      $benef_don = cfg('beneficiaire', 'Ça suffit ! ASBL');
+      $is_logged_don = !empty($_SESSION['membre_id']);
+      $is_nl_wind = (LANG === 'nl');
+    ?>
+    <div style="padding:16px;max-width:600px;margin:0 auto">
+
+      <!-- Progression -->
+      <div style="background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07)">
+        <div style="font-size:.72rem;font-weight:700;color:#0e3d6b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+          🎯 <?= $is_nl_wind ? 'Doelstelling — Juridische strijd' : 'Objectif — Combat juridique' ?>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <span style="font-size:1.4rem;font-weight:800;color:#0e3d6b"><?= number_format($recolte_don,0,',',' ') ?> €</span>
+          <span style="font-size:.85rem;color:#666">/ <?= number_format($objectif_don,0,',',' ') ?> €</span>
+        </div>
+        <div style="height:10px;background:#e2e8f0;border-radius:5px;overflow:hidden">
+          <div style="height:100%;width:<?= $pct_don ?>%;background:linear-gradient(90deg,#1673B2,#FF9900);border-radius:5px"></div>
+        </div>
+        <div style="font-size:.72rem;color:#888;text-align:right;margin-top:4px"><?= $pct_don ?>% <?= $is_nl_wind ? 'bereikt' : 'atteint' ?></div>
+      </div>
+
+      <!-- Options don -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+
+        <!-- Membre -->
+        <div style="border:2px solid #FF9900;border-radius:10px;padding:16px;background:#fffdf7">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <span style="font-size:1.4rem">👤</span>
+            <div>
+              <div style="font-size:.9rem;font-weight:700;color:#0e3d6b"><?= $is_nl_wind ? 'Lid worden' : 'Devenir membre' ?></div>
+              <div style="font-size:.72rem;color:#666"><?= $is_nl_wind ? 'Persoonlijke QR-code + nieuwsbrief' : 'QR code personnel + newsletter' ?></div>
+            </div>
+          </div>
+          <?php if ($is_logged_don): ?>
+            <a href="/membre/dashboard.php" style="display:block;text-align:center;background:#FF9900;color:#fff;padding:12px;border-radius:8px;font-size:.88rem;font-weight:700;text-decoration:none">
+              → <?= $is_nl_wind ? 'Mijn ledenruimte' : 'Mon espace membre' ?>
+            </a>
+          <?php else: ?>
+            <a href="/membre/inscription.php" style="display:block;text-align:center;background:#FF9900;color:#fff;padding:12px;border-radius:8px;font-size:.88rem;font-weight:700;text-decoration:none;margin-bottom:8px">
+              ✦ <?= $is_nl_wind ? 'Mijn ledenruimte aanmaken' : 'Créer mon espace membre' ?>
+            </a>
+            <a href="/membre/login.php" style="display:block;text-align:center;font-size:.78rem;color:#1673B2;text-decoration:none;padding:6px">
+              <?= $is_nl_wind ? 'Al lid → inloggen' : 'Déjà membre → accéder à mon espace' ?>
+            </a>
+          <?php endif; ?>
+        </div>
+
+        <!-- Don anonyme -->
+        <div style="border:2px solid #bdd5f5;border-radius:10px;padding:16px;background:#fff">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <span style="font-size:1.4rem">🎯</span>
+            <div>
+              <div style="font-size:.9rem;font-weight:700;color:#0e3d6b"><?= $is_nl_wind ? 'Anonieme gift' : 'Don anonyme' ?></div>
+              <div style="font-size:.72rem;color:#666"><?= $is_nl_wind ? 'Eenvoudige overschrijving' : 'Virement simple, sans compte' ?></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px">
+            <?php foreach ([20,50,100,250,500,''] as $v): ?>
+              <button class="don-mbtn-wind <?= $v===50?'actif':'' ?>"
+                      data-v="<?= $v ?>"
+                      onclick="selectMontantWind(this)"
+                      style="padding:9px 4px;border:1.5px solid #bdd5f5;border-radius:8px;background:<?= $v===50?'#1673B2':'#eef5fc' ?>;color:<?= $v===50?'#fff':'#1673B2' ?>;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s">
+                <?= $v ? $v.' €' : ($is_nl_wind?'Vrij':'Libre') ?>
+              </button>
+            <?php endforeach; ?>
+          </div>
+          <div id="libre-wrap-wind" style="display:none;margin-bottom:10px">
+            <input type="number" id="montant-libre-wind" min="1" step="1"
+                   placeholder="<?= $is_nl_wind ? 'Vrij bedrag in €' : 'Montant libre en €' ?>"
+                   style="width:100%;padding:9px 12px;border:1.5px solid #bdd5f5;border-radius:8px;font-size:.95rem;font-family:inherit;outline:none"
+                   oninput="updateMontantLibreWind(this.value)">
+          </div>
+          <div style="background:#eef5fc;border:1px solid #bdd5f5;border-radius:8px;padding:14px;text-align:center;cursor:pointer;margin-bottom:10px"
+               onclick="openPayModalWind()">
+            <div id="qrcode-wind" style="display:inline-block;line-height:0;border:3px solid #1673B2;border-radius:6px;background:#fff"></div>
+            <div style="margin-top:8px;font-size:.75rem;color:#888">📷 <?= $is_nl_wind ? 'Scan · 📱 Tik voor gegevens' : 'Scannez · 📱 Appuyez pour les coordonnées' ?></div>
+          </div>
+          <div style="background:#eef5fc;border-radius:8px;padding:12px 14px;font-size:.8rem">
+            <div style="font-family:monospace;font-size:.95rem;font-weight:700;color:#0e3d6b;margin-bottom:3px"><?= htmlspecialchars($iban_don) ?></div>
+            <div style="color:#666;margin-bottom:3px">BIC : <?= htmlspecialchars($bic_don) ?> · <?= htmlspecialchars($benef_don) ?></div>
+            <div style="color:#555"><?= $is_nl_wind ? 'Mededeling' : 'Communication' ?> : <strong>DON CASUFFIT <?= date('Y') ?></strong></div>
+            <button id="copy-btn-wind" onclick="copyIBANWind()"
+                    style="display:block;width:100%;margin-top:10px;background:#1673B2;color:#fff;border:none;padding:9px;border-radius:7px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s">
+              📋 <?= $is_nl_wind ? 'IBAN kopiëren' : 'Copier l\'IBAN' ?>
+            </button>
+          </div>
+        </div>
+
+        <!-- Lien page dédiée -->
+        <a href="/don.php" style="display:block;text-align:center;padding:12px;background:#0e3d6b;color:#fff;border-radius:10px;text-decoration:none;font-size:.88rem;font-weight:700">
+          🔗 <?= $is_nl_wind ? 'Volledige donatiepagina' : 'Page de don complète' ?>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <!-- Navigation fixe en bas -->
 </main>
 
@@ -472,11 +583,14 @@ $api_token = $_SESSION['api_token'];
   <button class="app-nav-bar-btn" id="nav-vols" onclick="switchView('vols')">
     <span class="nav-icon">✈</span><?= t('wind.tab.flights') ?>
   </button>
+  <button class="app-nav-bar-btn" id="nav-don" onclick="switchView('don')">
+    <span class="nav-icon">💛</span><?= t('wind.tab.don') ?>
+  </button>
 </nav>
 
 <script>
 window._API_TOKEN = '<?= htmlspecialchars($api_token) ?>';function switchView(view) {
-  ['meteo','historique','rose','vols'].forEach(function(v) {
+  ['meteo','historique','rose','vols','don'].forEach(function(v) {
     var el = document.getElementById('view-' + v);
     if (v === view) {
       el.style.display = 'block';
@@ -500,6 +614,9 @@ window._API_TOKEN = '<?= htmlspecialchars($api_token) ?>';function switchView(vi
       if(typeof window.vbrInvalidate === 'function') window.vbrInvalidate();
       else if(typeof window.vbrLoad === 'function') window.vbrLoad();
     }, 150);
+  }
+  if (view === 'don') {
+    setTimeout(function(){ if(typeof genQRWind==='function') genQRWind(curMontantWind||50); }, 100);
   }
   // Forcer le repaint du widget historique
   if (view === 'historique') {
@@ -534,7 +651,96 @@ function dismissGuide() {
   // Auto-refresh toutes les 5 min
   setTimeout(function() { location.reload(); }, 300000);
 })();
+
+// ── Widget Don ──────────────────────────────────────────────────────────
+var curMontantWind = 50;
+function selectMontantWind(btn) {
+  document.querySelectorAll('.don-mbtn-wind').forEach(function(b) {
+    b.style.background='#eef5fc'; b.style.color='#1673B2'; b.style.borderColor='#bdd5f5';
+  });
+  btn.style.background='#1673B2'; btn.style.color='#fff'; btn.style.borderColor='#1673B2';
+  var v = btn.dataset.v;
+  if (v === '') {
+    document.getElementById('libre-wrap-wind').style.display = 'block';
+    curMontantWind = null;
+  } else {
+    document.getElementById('libre-wrap-wind').style.display = 'none';
+    curMontantWind = parseInt(v);
+    genQRWind(curMontantWind);
+  }
+}
+function updateMontantLibreWind(val) {
+  var v = parseInt(val);
+  if (v > 0) { curMontantWind = v; genQRWind(v); }
+}
+function genQRWind(montant) {
+  var el = document.getElementById('qrcode-wind');
+  if (!el) return;
+  el.innerHTML = '';
+  var iban_raw = '<?= preg_replace('/\s+/', '', cfg('iban','BE41068901496910')) ?>';
+  var epc = ['BCD','002','1','SCT','<?= cfg('bic','GKCCBEBB') ?>','<?= addslashes(cfg('beneficiaire','ca suffit ! ASBL')) ?>',
+    iban_raw, montant ? 'EUR'+parseFloat(montant).toFixed(2) : '', '', 'DON CASUFFIT <?= date('Y') ?>', ''].join('\n');
+  var img = document.createElement('img');
+  img.width = 140; img.height = 140; img.alt = 'QR don';
+  img.src = 'https://quickchart.io/qr?text=' + encodeURIComponent(epc) + '&size=140&margin=1&ecLevel=M';
+  img.onerror = function() { this.src = 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=' + encodeURIComponent(epc); };
+  el.appendChild(img);
+}
+function copyIBANWind() {
+  var iban = '<?= htmlspecialchars(cfg('iban','BE41 0689 0149 6910'), ENT_QUOTES) ?>';
+  navigator.clipboard.writeText(iban).then(function() {
+    var btn = document.getElementById('copy-btn-wind');
+    var orig = btn.textContent;
+    btn.textContent = '✓ <?= LANG==='nl'?'Gekopieerd!':'Copié !' ?>'; btn.style.background = '#27ae60';
+    setTimeout(function(){ btn.textContent = orig; btn.style.background = '#1673B2'; }, 2500);
+  });
+}
+function openPayModalWind() {
+  var iban = '<?= htmlspecialchars(cfg('iban','BE41 0689 0149 6910'), ENT_QUOTES) ?>';
+  var comm = 'DON CASUFFIT <?= date('Y') ?>';
+  var html = _payRowWind('IBAN', iban, iban.replace(/\s/g,''), 'pm-iban-w', '#1673B2') +
+             _payRowWind('Communication', comm, comm, 'pm-comm-w', '#b85c00');
+  var m = document.getElementById('pay-modal-wind');
+  document.getElementById('pay-modal-content-wind').innerHTML = html;
+  m.style.display = 'flex';
+}
+function _payRowWind(lbl, display, copyVal, btnId, color) {
+  return '<div style="margin-bottom:14px"><div style="font-size:.6rem;color:#999;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">'+lbl+'</div>'+
+    '<div style="display:flex;align-items:center;gap:8px">'+
+    '<code style="flex:1;font-size:.95rem;font-weight:700;color:'+color+';word-break:break-all">'+display+'</code>'+
+    '<button id="'+btnId+'" onclick="cpW(\''+copyVal.replace(/'/g,"\\'")+'\',\''+btnId+'\')" '+
+    'style="padding:7px 13px;background:'+color+';color:#fff;border:none;border-radius:7px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">📋</button>'+
+    '</div></div>';
+}
+function cpW(val, btnId) {
+  navigator.clipboard.writeText(val).then(function(){
+    var b=document.getElementById(btnId); if(b){var t=b.textContent;b.textContent='✓';b.style.background='#27ae60';setTimeout(function(){b.textContent=t;b.style.background='';},2200);}
+  });
+}
+// Init QR au premier affichage de l'onglet
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('view-don').classList.contains('active')) genQRWind(50);
+});
 </script>
+
+<!-- Modal paiement don (wind.php) -->
+<style>@keyframes pmSlideUp2{from{transform:translateY(100%)}to{transform:translateY(0)}}</style>
+<div id="pay-modal-wind" onclick="if(event.target===this)this.style.display='none'"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:flex-end;justify-content:center;padding:0">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:26px 22px 38px;width:100%;max-width:520px;animation:pmSlideUp2 .22s ease">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <strong style="font-size:1rem;color:#0e3d6b">💳 <?= LANG==='nl'?'Rekeninggegevens':'Coordonnées de paiement' ?></strong>
+      <button onclick="document.getElementById('pay-modal-wind').style.display='none'" style="border:none;background:none;font-size:1.5rem;cursor:pointer;color:#bbb;line-height:1;padding:0 4px">&times;</button>
+    </div>
+    <div id="pay-modal-content-wind"></div>
+    <div style="background:#f0f7ff;border-radius:8px;padding:12px 14px;font-size:.72rem;color:#2c5282;line-height:1.9;margin-top:4px">
+      <strong><?= LANG==='nl'?'Hoe betalen':'Comment payer' ?> :</strong><br>
+      <?= LANG==='nl'
+        ? "1. Kopieer IBAN → bank-app<br>2. Nieuw virement → plak IBAN<br>3. Bedrag + mededeling<br>4. Valideren"
+        : "1. Copiez IBAN → app bancaire<br>2. Nouveau virement → collez IBAN<br>3. Montant + communication<br>4. Validez" ?>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

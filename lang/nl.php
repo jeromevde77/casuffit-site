@@ -56,6 +56,7 @@ return [
     'wind.tab.history'     => 'Historiek',
     'wind.tab.rose'        => 'Windroos',
     'wind.tab.flights'     => 'Vluchten',
+    'wind.tab.don'         => 'Steunen',
     'wind.refresh'         => 'Vernieuwen',
 
     // ── Header / Aankondigingsbanner ────────────────────────────────────
