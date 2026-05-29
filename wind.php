@@ -719,10 +719,8 @@ function cpW(val, btnId) {
     var b=document.getElementById(btnId); if(b){var t=b.textContent;b.textContent='✓';b.style.background='#27ae60';setTimeout(function(){b.textContent=t;b.style.background='';},2200);}
   });
 }
-// Init QR au premier affichage de l'onglet
-document.addEventListener('DOMContentLoaded', function() {
-  if (document.getElementById('view-don').classList.contains('active')) genQRWind(50);
-});
+// Init QR si onglet don actif au chargement
+if (document.getElementById('view-don') && document.getElementById('view-don').classList.contains('active')) genQRWind(50);
 </script>
 
 <!-- Modal paiement don (wind.php) -->

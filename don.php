@@ -291,7 +291,8 @@ function copyPayField(val, btnId) {
 }
 function closePayModal() { document.getElementById('pay-modal').style.display='none'; }
 
-document.addEventListener('DOMContentLoaded', function() { genQRAnon(50); });
+// Générer le QR au chargement (script en fin de body, DOM déjà prêt)
+genQRAnon(50);
 </script>
 
 </body>
