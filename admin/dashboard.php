@@ -44,17 +44,19 @@ if (($_GET['action'] ?? '') === 'insert_actu_norme') {
     try {
         $chk = $db->prepare("SELECT id FROM news WHERE titre=? LIMIT 1");
         $chk->execute([$titre]);
-        if ($chk->fetch()) {
-            $flash = '⚠ Actualité déjà présente — va dans Actualités pour la modifier.';
+        $row = $chk->fetch();
+        if ($row) {
+            $flash = 'ℹ️ Cette actualité existe déjà (ID '.$row['id'].'). Ouvrez-la dans Actualités pour la relire et la publier.';
+            $flash_id = $row['id'];
         } else {
             $created_by = defined('ADMIN_USER') ? ADMIN_USER : ($_SESSION['admin_id'] ?? 1);
             $db->prepare("INSERT INTO news (titre,accroche,contenu,image_url,statut,epingle,date_publication,created_by) VALUES (?,?,?,'',?,0,NOW(),?)")
                ->execute([$titre,$accroche,$contenu,'brouillon',$created_by]);
-            header('Location: news.php?msg='.urlencode('✅ Actualité créée en brouillon — relisez et publiez !'));
-            exit;
+            $flash = '✅ Actualité créée en brouillon (ID '.$db->lastInsertId().') ! Ouvrez Actualités pour la relire et la publier.';
+            $flash_ok = true;
         }
     } catch(Exception $e) {
-        $flash = 'Erreur insertion : '.$e->getMessage();
+        $flash = '❌ Erreur insertion : '.$e->getMessage();
         error_log('insert_actu_norme: '.$e->getMessage());
     }
 }
@@ -280,7 +282,10 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
   <div class="dash-header">
     <h1>📊 Tableau de bord <span style="font-size:.62rem;font-weight:600;color:#aaa;vertical-align:middle;background:#eef2f7;padding:2px 8px;border-radius:10px;margin-left:6px">v<?= date('y.m.d-Hi', filemtime(__FILE__)) ?></span></h1>
 <?php if (!empty($flash)): ?>
-    <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin:10px 0;font-size:.9rem;color:#664d03"><?= htmlspecialchars($flash) ?></div>
+    <div style="background:<?= !empty($flash_ok)?'#e8f8f0':'#fff3cd' ?>;border:1px solid <?= !empty($flash_ok)?'#27ae60':'#ffc107' ?>;border-radius:8px;padding:14px 18px;margin:10px 0;font-size:.92rem;color:#333;width:100%">
+      <?= htmlspecialchars($flash) ?>
+      <a href="news.php" style="display:inline-block;margin-left:8px;background:#1673B2;color:#fff;padding:6px 14px;border-radius:6px;text-decoration:none;font-weight:700;font-size:.85rem">→ Ouvrir Actualités</a>
+    </div>
 <?php endif; ?>
     <span class="date"><?= strftime('%A %d %B %Y') ?: date('d/m/Y') ?></span>
   </div>
