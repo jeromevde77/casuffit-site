@@ -667,6 +667,13 @@ function autoTranslateNews(newsId) {
         <?php else: ?>
           <a href="news.php?unpublish=<?= $n['id'] ?>" class="act-btn" title="Dépublier" style="color:#999;border-color:#e2e8f0;background:#f7f8fa"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></a>
         <?php endif; ?>
+        <?php if ($n['statut'] === 'publie'): ?>
+          <button type="button" class="act-btn" title="Post Facebook" style="color:#1877f2;border-color:#dbeafe;background:#eff6ff;cursor:pointer"
+            data-fb-id="<?= (int)$n['id'] ?>"
+            data-fb-titre="<?= htmlspecialchars($n['titre'], ENT_QUOTES) ?>"
+            data-fb-accroche="<?= htmlspecialchars($n['accroche'] ?? '', ENT_QUOTES) ?>"
+            onclick="showFbPost(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg></button>
+        <?php endif; ?>
         <a href="news.php?delete=<?= $n['id'] ?>&_csrf=<?= htmlspecialchars(csrf_token()) ?>" class="act-btn del" title="Supprimer" onclick="return confirm('Supprimer cette actualité ?')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></a>
       </div>
     </div>
@@ -676,6 +683,50 @@ function autoTranslateNews(newsId) {
 
 <?php endif; ?>
 </div><!-- /wrap -->
+
+<!-- Modal Post Facebook -->
+<div id="fbModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:14px;max-width:540px;width:100%;max-height:90vh;overflow:auto;padding:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="margin:0;color:#1877f2;font-size:1.1rem">📘 Post Facebook prêt à publier</h3>
+      <button onclick="document.getElementById('fbModal').style.display='none'" style="border:none;background:#f0f0f0;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1.1rem">✕</button>
+    </div>
+    <p style="font-size:.82rem;color:#666;margin-bottom:6px">Aperçu de l'image (générée automatiquement) :</p>
+    <img id="fbImg" src="" alt="" style="width:100%;border-radius:10px;border:1px solid #e0e8f0;margin-bottom:16px">
+    <p style="font-size:.82rem;color:#666;margin-bottom:6px">Texte du post (copie-le) :</p>
+    <textarea id="fbText" readonly style="width:100%;min-height:140px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;font-size:.9rem;font-family:inherit;line-height:1.5;resize:vertical;box-sizing:border-box"></textarea>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+      <button onclick="copyFbText(this)" style="flex:1;min-width:140px;background:#1877f2;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:700;cursor:pointer;font-size:.92rem">📋 Copier le texte</button>
+      <a id="fbOpenLink" href="#" target="_blank" style="flex:1;min-width:140px;text-align:center;background:#0e3d6b;color:#fff;padding:12px;border-radius:8px;font-weight:700;text-decoration:none;font-size:.92rem">👁 Voir la page</a>
+    </div>
+    <p style="font-size:.75rem;color:#999;margin-top:12px;line-height:1.4">💡 Astuce : après ton 1er partage, si l'aperçu Facebook n'est pas à jour, passe le lien dans le <a href="https://developers.facebook.com/tools/debug/" target="_blank" style="color:#1877f2">Facebook Debugger</a> et clique "Scrape Again".</p>
+  </div>
+</div>
+
+<script>
+function showFbPost(btn) {
+  var id = btn.getAttribute('data-fb-id');
+  var titre = btn.getAttribute('data-fb-titre') || '';
+  var accroche = btn.getAttribute('data-fb-accroche') || '';
+  var url = 'https://www.casuffit.be/?news=' + id;
+  var txt = titre + '\n\n' + (accroche ? accroche + '\n\n' : '') + '👉 À lire ici : ' + url;
+  document.getElementById('fbText').value = txt;
+  document.getElementById('fbImg').src = 'https://www.casuffit.be/og-news.php?id=' + id + '&t=' + Date.now();
+  document.getElementById('fbOpenLink').href = url;
+  document.getElementById('fbModal').style.display = 'flex';
+}
+function copyFbText(b) {
+  var ta = document.getElementById('fbText');
+  ta.select();
+  navigator.clipboard.writeText(ta.value).then(function(){
+    var o = b.textContent; b.textContent = '✓ Copié !';
+    setTimeout(function(){ b.textContent = o; }, 1800);
+  }).catch(function(){ document.execCommand('copy'); });
+}
+document.getElementById('fbModal').addEventListener('click', function(e){
+  if (e.target === this) this.style.display = 'none';
+});
+</script>
 
 <script>
 function setView(mode) {
