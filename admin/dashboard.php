@@ -1,4 +1,5 @@
 <?php
+// v5 — force redeploy 2026-05-30
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 $db = getDB();
