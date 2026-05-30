@@ -3,6 +3,19 @@ require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 $db = getDB();
 
+// ── Hook reconfiguration widgets onglet actualités ────────────────────────
+if (($_GET['action'] ?? '') === 'fix_actu_widgets') {
+    try {
+        $db->prepare("DELETE FROM page_widgets WHERE page_slug='actualites'")->execute();
+        $db->prepare("INSERT INTO page_widgets (page_slug, widget_slug, ordre, position) VALUES ('actualites','news',1,'droite')")->execute();
+        $db->prepare("INSERT INTO page_widgets (page_slug, widget_slug, ordre, position) VALUES ('actualites','donation_card',2,'droite')")->execute();
+        $flash = '✅ Widgets de l\'onglet Actualités reconfigurés : news + donation_card. Vide le cache (navigation privée) pour voir le changement.';
+        $flash_ok = true;
+    } catch(Exception $e) {
+        $flash = '❌ Erreur : '.$e->getMessage();
+    }
+}
+
 // ── Hook insertion actualité norme vent ───────────────────────────────────
 if (($_GET['action'] ?? '') === 'insert_actu_norme') {
     $titre    = "La norme de vent : nœud du problème aérien bruxellois";
