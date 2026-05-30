@@ -3,6 +3,61 @@ require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 $db = getDB();
 
+// ── Hook insertion actualité norme vent ───────────────────────────────────
+if (($_GET['action'] ?? '') === 'insert_actu_norme') {
+    $titre    = "La norme de vent : nœud du problème aérien bruxellois";
+    $accroche = "Comment la manipulation des seuils de vent arrière depuis 2004 a bouleversé l'organisation des pistes à Brussels Airport — et pourquoi le retour au PRS 25/25 est la seule solution viable.";
+    $contenu  = '<p style="font-size:1.05rem;font-weight:500;color:#1673B2;border-left:4px solid #FF9900;padding-left:14px;margin-bottom:24px">La stabilisation des normes de vent est le nœud de tout le problème. Tant que cette question ne sera pas résolue, l\'organisation du trafic aérien autour de Bruxelles restera source de conflits, de nuisances injustes et d\'incertitude pour les riverains.</p>
+
+<h3>Un aéroport qui fonctionnait bien — avant 2004</h3>
+<p>Jusqu\'en 2003, Brussels Airport fonctionnait avec une norme stable et sécurisée : <strong>8 nœuds de composante de vent arrière, sans rafales</strong>, appliquée pendant 30 ans sans la moindre contestation.</p>
+<p>En 2004, Bert Anciaux a compris qu\'en abaissant artificiellement cette valeur, il pourrait reporter une partie du trafic vers d\'autres pistes — dans le but de préserver le Noordrand, qu\'il estimait trop survolé par les décollages 25R effectuant le virage à droite.</p>
+
+<h3>Les pistes 25R/25L : construites pour absorber tout le trafic</h3>
+<p>Depuis 1958, les pistes parallèles et indépendantes 25R/25L ont été spécifiquement conçues pour absorber le maximum du trafic aérien :</p>
+<ul>
+<li>Les <strong>pistes les plus longues et les mieux équipées</strong> de l\'aéroport</li>
+<li><strong>Parallèles sans croisement au sol</strong> — aucun conflit entre arrivées et départs</li>
+<li>À l\'est, une <strong>zone non constructible</strong> (<em>non aedificandi</em>) réservée pour un corridor aérien ne survolant que champs et prairies</li>
+</ul>
+
+<h3>Le jeu des vases communicants</h3>
+<p>Pour éviter d\'utiliser la 25R, on fait appel à d\'autres configurations — et chaque piste alternative à l\'atterrissage entraîne mécaniquement des décollages vers d\'autres directions. Pour ne pas survoler le Noordrand au décollage, on fait atterrir sur Bruxelles Ouest, Bruxelles Sud, la périphérie Est et le Brabant Wallon — et les décollages repartent vers Kampenhout, Tildonk ou Louvain.</p>
+<p>Pourtant le Noordrand ne devrait pas se plaindre : les décollages 25R virant à droite sont répartis sur 4 trajectoires distinctes, et le week-end l\'une d\'elles est déplacée vers le Canal.</p>
+
+<h3>Pourquoi la norme est déterminante</h3>
+<p><strong>Plus la norme est basse, instable ou mal appliquée, plus on changera de pistes en permanence</strong> — réduisant la capacité opérationnelle et générant des conflits liés aux pistes qui se croisent au sol. À l\'inverse, une norme élevée et stable maintient le système préférentiel 25R/25L — le système en fonction duquel tout le monde est venu s\'installer autour de l\'aéroport.</p>
+
+<h3>Notre position légale et technique</h3>
+<p>Légalement, la composante de vent arrière peut être portée à <strong>10 nœuds</strong> (normes ICAO et FAA). La norme historique de 8 nœuds sans rafales ne prête à aucune contestation puisqu\'appliquée 30 ans sans incident.</p>
+<p><strong>Nous ne réclamons pas un transfert aléatoire du trafic de la 01 vers la 07.</strong> Nous défendons le retour aux conditions historiques :</p>
+<ul>
+<li><strong>25R/25L en préférentiel</strong> — chaque fois que le vent le permet</li>
+<li><strong>01</strong> par vent de Nord · <strong>07</strong> par vent d\'Est · <strong>19</strong> par vent de Sud</li>
+</ul>
+<p>L\'évolution climatique apporte de plus en plus de vent d\'Est et de moins en moins de vent de Nord — les roses des vents le confirment, sans qu\'aucun facteur humain en soit responsable.</p>
+
+<h3>Conclusion : le retour au PRS 25/25</h3>
+<p>Le retour au PRS 25/25 est la meilleure façon de ramener la sérénité — <strong>à condition que des mesures opérationnelles soient prises</strong> : mur antibruit, décollage depuis le seuil de piste, respect des procédures, poussée maximale sur la piste, élimination des cargos anciens et bruyants, nouvelles procédures de réduction des nuisances.</p>
+<p>Le trafic de Bruxelles doit être remis au maximum sur les pistes 25 pour des motifs de <strong>sécurité, de capacité et de respect des décisions de justice</strong>. Si et seulement si les mesures de vent indiquent un dépassement réel sur les 25R/L, d\'autres pistes seront activées.</p>';
+
+    try {
+        $chk = $db->prepare("SELECT id FROM news WHERE titre=? LIMIT 1");
+        $chk->execute([$titre]);
+        if ($chk->fetch()) {
+            $flash = '⚠ Actualité déjà présente — va dans Actualités pour la modifier.';
+        } else {
+            $db->prepare("INSERT INTO news (titre,accroche,contenu,statut,epingle,date_publication,date_creation) VALUES (?,?,?,'brouillon',0,NOW(),NOW())")
+               ->execute([$titre,$accroche,$contenu]);
+            header('Location: news.php?msg='.urlencode('✅ Actualité créée en brouillon — relisez et publiez !'));
+            exit;
+        }
+    } catch(Exception $e) {
+        $flash = 'Erreur : '.$e->getMessage();
+    }
+}
+// ── Fin hook ──────────────────────────────────────────────────────────────
+
 $nb_pages    = $db->query("SELECT COUNT(*) FROM pages")->fetchColumn();
 $nb_news     = $db->query("SELECT COUNT(*) FROM news WHERE statut='publie'")->fetchColumn();
 $nb_news_brf = $db->query("SELECT COUNT(*) FROM news WHERE statut='brouillon'")->fetchColumn();
