@@ -1,128 +1,8 @@
 <?php
-// v6 — force redeploy 2026-05-30 (diagnostic widgets actu)
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 $db = getDB();
 
-// ── Hook reconfiguration widgets onglet actualités (DIAGNOSTIC) ───────────
-if (($_GET['action'] ?? '') === 'fix_actu_widgets') {
-    header('Content-Type: text/html; charset=utf-8');
-    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fix widgets actu</title>';
-    echo '<style>body{font-family:sans-serif;max-width:800px;margin:30px auto;padding:0 20px;line-height:1.6}';
-    echo 'table{border-collapse:collapse;width:100%;margin:10px 0}td,th{border:1px solid #ccc;padding:6px 10px;text-align:left;font-size:.9rem}';
-    echo '.ok{color:#27ae60;font-weight:700}.err{color:#c0392b;font-weight:700}code{background:#eef2f7;padding:2px 6px;border-radius:4px}</style></head><body>';
-    echo '<h2>🔧 Diagnostic widgets — onglet Actualités</h2>';
-
-    try {
-        // 1. État AVANT
-        echo '<h3>1. État actuel de page_widgets</h3>';
-        $all = $db->query("SELECT page_slug, widget_slug, ordre, position FROM page_widgets ORDER BY page_slug, ordre")->fetchAll(PDO::FETCH_ASSOC);
-        echo '<table><tr><th>page_slug</th><th>widget_slug</th><th>ordre</th><th>position</th></tr>';
-        $slugs_actu = [];
-        foreach ($all as $r) {
-            $hl = (stripos($r['page_slug'],'actu') !== false) ? ' style="background:#fff3cd"' : '';
-            if (stripos($r['page_slug'],'actu') !== false) $slugs_actu[] = $r['page_slug'];
-            echo "<tr$hl><td><code>{$r['page_slug']}</code></td><td>{$r['widget_slug']}</td><td>{$r['ordre']}</td><td>{$r['position']}</td></tr>";
-        }
-        echo '</table>';
-        echo '<p>Slugs contenant "actu" : <code>' . (count($slugs_actu) ? implode(', ', array_unique($slugs_actu)) : 'AUCUN') . '</code></p>';
-
-        // 2. Liste des widgets actifs
-        echo '<h3>2. Widgets disponibles (actif=1 ?)</h3>';
-        $widgets = $db->query("SELECT slug, actif FROM widgets ORDER BY slug")->fetchAll(PDO::FETCH_ASSOC);
-        echo '<table><tr><th>slug</th><th>actif</th></tr>';
-        foreach ($widgets as $w) {
-            echo "<tr><td>{$w['slug']}</td><td>" . ($w['actif'] ? '<span class=ok>oui</span>' : '<span class=err>NON</span>') . "</td></tr>";
-        }
-        echo '</table>';
-
-        // 3. Appliquer le changement sur TOUS les slugs actu trouvés (+ 'actualites' par défaut)
-        echo '<h3>3. Application du changement</h3>';
-        $targets = array_unique(array_merge($slugs_actu, ['actualites']));
-        foreach ($targets as $tslug) {
-            $db->prepare("DELETE FROM page_widgets WHERE page_slug=?")->execute([$tslug]);
-            $db->prepare("INSERT INTO page_widgets (page_slug, widget_slug, ordre, position) VALUES (?,'news',1,'droite')")->execute([$tslug]);
-            $db->prepare("INSERT INTO page_widgets (page_slug, widget_slug, ordre, position) VALUES (?,'donation_card',2,'droite')")->execute([$tslug]);
-            echo "<p class=ok>✅ <code>$tslug</code> → news + donation_card</p>";
-        }
-
-        // 4. S'assurer que donation_card est actif
-        $db->prepare("UPDATE widgets SET actif=1 WHERE slug='donation_card'")->execute();
-        echo '<p class=ok>✅ donation_card forcé actif=1</p>';
-
-        // 5. État APRÈS
-        echo '<h3>4. État après changement</h3>';
-        $after = $db->query("SELECT page_slug, widget_slug, ordre, position FROM page_widgets WHERE page_slug LIKE '%actu%' ORDER BY ordre")->fetchAll(PDO::FETCH_ASSOC);
-        echo '<table><tr><th>page_slug</th><th>widget_slug</th><th>ordre</th><th>position</th></tr>';
-        foreach ($after as $r) echo "<tr><td>{$r['page_slug']}</td><td>{$r['widget_slug']}</td><td>{$r['ordre']}</td><td>{$r['position']}</td></tr>";
-        echo '</table>';
-
-        echo '<p style="margin-top:20px"><a href="/?news=4" style="background:#1673B2;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">→ Tester /?news=4</a></p>';
-    } catch (Exception $e) {
-        echo '<p class=err>❌ Erreur : ' . htmlspecialchars($e->getMessage()) . '</p>';
-    }
-    echo '</body></html>';
-    exit;
-}
-
-// ── Hook insertion actualité norme vent ───────────────────────────────────
-if (($_GET['action'] ?? '') === 'insert_actu_norme') {
-    $titre    = "La norme de vent : nœud du problème aérien bruxellois";
-    $accroche = "Comment la manipulation des seuils de vent arrière depuis 2004 a bouleversé l'organisation des pistes à Brussels Airport — et pourquoi le retour au PRS 25/25 est la seule solution viable.";
-    $contenu  = '<p style="font-size:1.05rem;font-weight:500;color:#1673B2;border-left:4px solid #FF9900;padding-left:14px;margin-bottom:24px">La stabilisation des normes de vent est le nœud de tout le problème. Tant que cette question ne sera pas résolue, l\'organisation du trafic aérien autour de Bruxelles restera source de conflits, de nuisances injustes et d\'incertitude pour les riverains.</p>
-
-<h3>Un aéroport qui fonctionnait bien — avant 2004</h3>
-<p>Jusqu\'en 2003, Brussels Airport fonctionnait avec une norme stable et sécurisée : <strong>8 nœuds de composante de vent arrière, sans rafales</strong>, appliquée pendant 30 ans sans la moindre contestation.</p>
-<p>En 2004, Bert Anciaux a compris qu\'en abaissant artificiellement cette valeur, il pourrait reporter une partie du trafic vers d\'autres pistes — dans le but de préserver le Noordrand, qu\'il estimait trop survolé par les décollages 25R effectuant le virage à droite.</p>
-
-<h3>Les pistes 25R/25L : construites pour absorber tout le trafic</h3>
-<p>Depuis 1958, les pistes parallèles et indépendantes 25R/25L ont été spécifiquement conçues pour absorber le maximum du trafic aérien :</p>
-<ul>
-<li>Les <strong>pistes les plus longues et les mieux équipées</strong> de l\'aéroport</li>
-<li><strong>Parallèles sans croisement au sol</strong> — aucun conflit entre arrivées et départs</li>
-<li>À l\'est, une <strong>zone non constructible</strong> (<em>non aedificandi</em>) réservée pour un corridor aérien ne survolant que champs et prairies</li>
-</ul>
-
-<h3>Le jeu des vases communicants</h3>
-<p>Pour éviter d\'utiliser la 25R, on fait appel à d\'autres configurations — et chaque piste alternative à l\'atterrissage entraîne mécaniquement des décollages vers d\'autres directions. Pour ne pas survoler le Noordrand au décollage, on fait atterrir sur Bruxelles Ouest, Bruxelles Sud, la périphérie Est et le Brabant Wallon — et les décollages repartent vers Kampenhout, Tildonk ou Louvain.</p>
-<p>Pourtant le Noordrand ne devrait pas se plaindre : les décollages 25R virant à droite sont répartis sur 4 trajectoires distinctes, et le week-end l\'une d\'elles est déplacée vers le Canal.</p>
-
-<h3>Pourquoi la norme est déterminante</h3>
-<p><strong>Plus la norme est basse, instable ou mal appliquée, plus on changera de pistes en permanence</strong> — réduisant la capacité opérationnelle et générant des conflits liés aux pistes qui se croisent au sol. À l\'inverse, une norme élevée et stable maintient le système préférentiel 25R/25L — le système en fonction duquel tout le monde est venu s\'installer autour de l\'aéroport.</p>
-
-<h3>Notre position légale et technique</h3>
-<p>Légalement, la composante de vent arrière peut être portée à <strong>10 nœuds</strong> (normes ICAO et FAA). La norme historique de 8 nœuds sans rafales ne prête à aucune contestation puisqu\'appliquée 30 ans sans incident.</p>
-<p><strong>Nous ne réclamons pas un transfert aléatoire du trafic de la 01 vers la 07.</strong> Nous défendons le retour aux conditions historiques :</p>
-<ul>
-<li><strong>25R/25L en préférentiel</strong> — chaque fois que le vent le permet</li>
-<li><strong>01</strong> par vent de Nord · <strong>07</strong> par vent d\'Est · <strong>19</strong> par vent de Sud</li>
-</ul>
-<p>L\'évolution climatique apporte de plus en plus de vent d\'Est et de moins en moins de vent de Nord — les roses des vents le confirment, sans qu\'aucun facteur humain en soit responsable.</p>
-
-<h3>Conclusion : le retour au PRS 25/25</h3>
-<p>Le retour au PRS 25/25 est la meilleure façon de ramener la sérénité — <strong>à condition que des mesures opérationnelles soient prises</strong> : mur antibruit, décollage depuis le seuil de piste, respect des procédures, poussée maximale sur la piste, élimination des cargos anciens et bruyants, nouvelles procédures de réduction des nuisances.</p>
-<p>Le trafic de Bruxelles doit être remis au maximum sur les pistes 25 pour des motifs de <strong>sécurité, de capacité et de respect des décisions de justice</strong>. Si et seulement si les mesures de vent indiquent un dépassement réel sur les 25R/L, d\'autres pistes seront activées.</p>';
-
-    try {
-        $chk = $db->prepare("SELECT id FROM news WHERE titre=? LIMIT 1");
-        $chk->execute([$titre]);
-        $row = $chk->fetch();
-        if ($row) {
-            $flash = 'ℹ️ Cette actualité existe déjà (ID '.$row['id'].'). Ouvrez-la dans Actualités pour la relire et la publier.';
-            $flash_id = $row['id'];
-        } else {
-            $created_by = defined('ADMIN_USER') ? ADMIN_USER : ($_SESSION['admin_id'] ?? 1);
-            $db->prepare("INSERT INTO news (titre,accroche,contenu,image_url,statut,epingle,date_publication,created_by) VALUES (?,?,?,'',?,0,NOW(),?)")
-               ->execute([$titre,$accroche,$contenu,'brouillon',$created_by]);
-            $flash = '✅ Actualité créée en brouillon (ID '.$db->lastInsertId().') ! Ouvrez Actualités pour la relire et la publier.';
-            $flash_ok = true;
-        }
-    } catch(Exception $e) {
-        $flash = '❌ Erreur insertion : '.$e->getMessage();
-        error_log('insert_actu_norme: '.$e->getMessage());
-    }
-}
-// ── Fin hook ──────────────────────────────────────────────────────────────
 
 $nb_pages    = $db->query("SELECT COUNT(*) FROM pages")->fetchColumn();
 $nb_news     = $db->query("SELECT COUNT(*) FROM news WHERE statut='publie'")->fetchColumn();
@@ -343,12 +223,6 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
   <!-- Header -->
   <div class="dash-header">
     <h1>📊 Tableau de bord <span style="font-size:.62rem;font-weight:600;color:#aaa;vertical-align:middle;background:#eef2f7;padding:2px 8px;border-radius:10px;margin-left:6px">v<?= date('y.m.d-Hi', filemtime(__FILE__)) ?></span></h1>
-<?php if (!empty($flash)): ?>
-    <div style="background:<?= !empty($flash_ok)?'#e8f8f0':'#fff3cd' ?>;border:1px solid <?= !empty($flash_ok)?'#27ae60':'#ffc107' ?>;border-radius:8px;padding:14px 18px;margin:10px 0;font-size:.92rem;color:#333;width:100%">
-      <?= htmlspecialchars($flash) ?>
-      <a href="news.php" style="display:inline-block;margin-left:8px;background:#1673B2;color:#fff;padding:6px 14px;border-radius:6px;text-decoration:none;font-weight:700;font-size:.85rem">→ Ouvrir Actualités</a>
-    </div>
-<?php endif; ?>
     <span class="date"><?= strftime('%A %d %B %Y') ?: date('d/m/Y') ?></span>
   </div>
 
