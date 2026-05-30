@@ -100,7 +100,7 @@ function getDefaultEmailTemplates(): array {
 
         'magic_link' => [
             'label'     => 'Lien magique — Connexion espace membre',
-            'sujet_fr'  => 'Votre accès espace membre — Ça suffit ! ASBL',
+            'sujet_fr'  => 'Votre accès espace membre — Piste01 Ça Suffit ASBL',
             'sujet_nl'  => 'Uw toegang ledenruimte — Ça suffit ! VZW',
             'variables' => ['{{prenom}}','{{code_membre}}','{{magic_url}}','{{email}}','{{expiry}}'],
             'contenu_fr' => $header('Connexion à votre espace membre', 'ASBL — Piste 01 · UBCNA · Espace membre')
@@ -129,7 +129,7 @@ function getDefaultEmailTemplates(): array {
 
         'invite_membre' => [
             'label'     => 'Invitation abonné → Espace membre',
-            'sujet_fr'  => 'Votre espace membre vous attend — Ça suffit ! ASBL',
+            'sujet_fr'  => 'Votre espace membre vous attend — Piste01 Ça Suffit ASBL',
             'sujet_nl'  => 'Uw ledenruimte wacht op u — Ça suffit ! VZW',
             'variables' => ['{{prenom}}','{{url}}','{{email}}'],
             'contenu_fr' => $header('Invitation — Espace membre', 'ASBL — Stop aux nuisances aériennes de Brussels Airport')
@@ -207,13 +207,13 @@ function getDefaultEmailTemplates(): array {
 
         'confirm_newsletter' => [
             'label'     => 'Confirmation d\'abonnement newsletter',
-            'sujet_fr'  => 'Confirmez votre abonnement — Ça suffit ! ASBL',
+            'sujet_fr'  => 'Confirmez votre abonnement — Piste01 Ça Suffit ASBL',
             'sujet_nl'  => 'Bevestig uw abonnement — Ça suffit ! VZW',
             'variables' => ['{{prenom}}','{{confirm_url}}','{{email}}'],
             'contenu_fr' => $header('Confirmation d\'abonnement', 'ASBL — Stop aux nuisances aériennes')
 . '<p style="font-size:15px;font-weight:700;color:#0e3d6b;margin:0 0 16px">Bonjour {{prenom}},</p>
 <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 20px">
-  Merci de votre intérêt pour Ça suffit ! ASBL.<br>
+  Merci de votre intérêt pour Piste01 Ça Suffit ASBL.<br>
   Veuillez confirmer votre abonnement en cliquant sur le bouton ci-dessous.
 </p>
 <table cellpadding="0" cellspacing="0" width="100%">
@@ -227,7 +227,7 @@ function getDefaultEmailTemplates(): array {
 
         'confirm_email' => [
             'label'     => 'Confirmation changement d\'email (espace membre)',
-            'sujet_fr'  => 'Confirmez votre nouvel email — Ça suffit ! ASBL',
+            'sujet_fr'  => 'Confirmez votre nouvel email — Piste01 Ça Suffit ASBL',
             'sujet_nl'  => 'Bevestig uw nieuw e-mailadres — Ça suffit ! VZW',
             'variables' => ['{{prenom}}','{{lien}}','{{email_nouveau}}','{{email}}'],
             'contenu_fr' => $header('Changement d\'email', 'ASBL — Espace membre')

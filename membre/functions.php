@@ -86,13 +86,13 @@ function envoyerLienMagique($db, $membre) {
     include __DIR__ . '/../templates/email_magic.php';
     $html = ob_get_clean();
 
-    $text = "Bonjour $prenom,\n\nVoici votre lien de connexion (valable 24h) :\n$magic_url\n\nVotre code membre : $code_membre\n\nL'équipe Ça suffit ! ASBL";
+    $text = "Bonjour $prenom,\n\nVoici votre lien de connexion (valable 24h) :\n$magic_url\n\nVotre code membre : $code_membre\n\nL'équipe Piste01 Ça Suffit ASBL";
 
     // Envoi
     if (!empty(BREVO_API_KEY)) {
-        return envoyerViaBrevo($membre['email'], trim($membre['prenom'].' '.$membre['nom']), "Votre accès espace membre — Ça suffit ! ASBL", $html, $text);
+        return envoyerViaBrevo($membre['email'], trim($membre['prenom'].' '.$membre['nom']), "Votre accès espace membre — Piste01 Ça Suffit ASBL", $html, $text);
     }
-    return envoyerViaSMTP($membre['email'], trim($membre['prenom'].' '.$membre['nom']), "Votre accès espace membre — Ça suffit ! ASBL", $html, $text);
+    return envoyerViaSMTP($membre['email'], trim($membre['prenom'].' '.$membre['nom']), "Votre accès espace membre — Piste01 Ça Suffit ASBL", $html, $text);
 }
 
 // ── Envoi Brevo ──────────────────────────────────────────────────────────

@@ -18,7 +18,7 @@ try {
 $pct = $objectif > 0 ? min(100, round($recolte / $objectif * 100)) : 0;
 $iban = cfg('iban', 'BE41 0689 0149 6910');
 $bic  = cfg('bic', 'GKCCBEBB');
-$benef = cfg('beneficiaire', 'Ça suffit ! ASBL');
+$benef = cfg('beneficiaire', 'Piste01 Ça Suffit ASBL');
 $don_texte = cfgLang('don_texte', 'Combat juridique — Frais et procédures');
 ?><!DOCTYPE html>
 <html lang="<?= $is_nl ? 'nl' : 'fr' ?>">
@@ -210,7 +210,7 @@ footer{text-align:center;padding:20px 16px;font-size:.72rem;color:#aaa}
   </div>
 </div>
 
-<footer>© <?= date('Y') ?> Ça suffit ! ASBL</footer>
+<footer>© <?= date('Y') ?> Piste01 Ça Suffit ASBL</footer>
 
 <script>
 var curMontant = 50;
@@ -242,7 +242,7 @@ function genQRAnon(montant) {
   var iban_raw = '<?= preg_replace('/\s+/', '', cfg('iban','BE41068901496910')) ?>';
   var epc = ['BCD','002','1','SCT',
     '<?= cfg('bic','GKCCBEBB') ?>',
-    '<?= addslashes(cfg('beneficiaire','ca suffit ! ASBL')) ?>',
+    '<?= addslashes(cfg('beneficiaire','Piste01 Ça Suffit ASBL')) ?>',
     iban_raw,
     montant ? 'EUR' + parseFloat(montant).toFixed(2) : '',
     '', 'DON CASUFFIT <?= date('Y') ?>', ''].join('\n');

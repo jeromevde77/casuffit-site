@@ -75,7 +75,7 @@ function menuLink($p, $page_active, $extra_class='') {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?= isset($page_titre) ? htmlspecialchars($page_titre).' — ' : '' ?><?= htmlspecialchars(cfg('site_nom', 'Ça suffit ! ASBL')) ?></title>
+  <title><?= isset($page_titre) ? htmlspecialchars($page_titre).' — ' : '' ?><?= htmlspecialchars(cfg('site_nom', 'Piste01 Ça Suffit ASBL')) ?></title>
   <meta name="description" content="<?= isset($page_meta) ? htmlspecialchars($page_meta) : htmlspecialchars(cfg('site_slogan', '')) ?>">
   <meta name="theme-color" content="#1673B2">
   <style>

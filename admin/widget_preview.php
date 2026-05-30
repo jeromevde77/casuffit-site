@@ -17,7 +17,7 @@ $recolte      = floatval(cfg('montant_initial', 0)) + floatval(cfg('montant_reco
 $pct          = $objectif > 0 ? round($recolte / $objectif * 100) : 0;
 $iban         = cfg('iban', 'BE41 0689 0149 6910');
 $bic          = cfg('bic', 'GKCCBEBB');
-$beneficiaire = cfg('beneficiaire', 'Ça suffit ! ASBL');
+$beneficiaire = cfg('beneficiaire', 'Piste01 Ça Suffit ASBL');
 $don_texte    = cfg('don_texte', 'Frais judiciaires');
 
 try {

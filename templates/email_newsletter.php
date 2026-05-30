@@ -49,7 +49,7 @@
       <tr>
         <td style="background:#f8f9fa;padding:20px 40px;border-top:1px solid #eee;text-align:center;">
           <p style="color:#aaa;font-size:11px;margin:0 0 8px;line-height:1.8;">
-            <strong style="color:#1673B2;">Piste 01 Ça suffit ! ASBL</strong><br>
+            <strong style="color:#1673B2;">Piste 01 Piste01 Ça Suffit ASBL</strong><br>
             <a href="mailto:<?= ADMIN_EMAIL ?>" style="color:#1673B2;text-decoration:none;"><?= ADMIN_EMAIL ?></a>
             · <a href="<?= SITE_URL ?>" style="color:#1673B2;text-decoration:none;"><?= SITE_URL ?></a>
           </p>

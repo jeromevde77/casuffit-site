@@ -45,7 +45,7 @@
       <tr>
         <td style="background:#f8f9fa;padding:20px 40px;text-align:center;border-top:1px solid #eee;">
           <p style="color:#aaa;font-size:11px;margin:0;line-height:1.8;">
-            <strong style="color:#1673B2;">Piste 01 Ça suffit ! ASBL</strong><br>
+            <strong style="color:#1673B2;">Piste 01 Piste01 Ça Suffit ASBL</strong><br>
             <?= ADMIN_EMAIL ?> · <?= SITE_URL ?><br>
             IBAN : BE41 0689 0149 6910 (Belfius)
           </p>

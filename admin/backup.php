@@ -10,7 +10,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'sql') {
     header('Cache-Control: no-cache');
 
     echo "-- ================================================================\n";
-    echo "-- Backup BDD ca suffit ! ASBL\n";
+    echo "-- Backup BDD Piste01 Ça Suffit ASBL\n";
     echo "-- Date : " . date('Y-m-d H:i:s') . "\n";
     echo "-- ================================================================\n\n";
     echo "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS = 0;\n\n";
