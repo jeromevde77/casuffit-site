@@ -317,7 +317,7 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
 <body>
 <header class="site-header">
   <img src="<?= SITE_URL ?>/medias/logo.png" style="width:36px;height:36px;object-fit:contain" alt="" onerror="this.style.display='none'">
-  <h1>Ça suffit ! <span>ASBL</span></h1>
+  <h1>Ça suffit !</h1>
   <a href="<?= SITE_URL ?>" class="back"><?= tm('back_site') ?></a>
     <div style="font-size:.72rem;margin-left:auto">
       <a href="?lang=fr" style="<?= $LANG==='fr'?'font-weight:700;color:#fff':'color:rgba(255,255,255,.5)' ?>">FR</a> |

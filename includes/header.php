@@ -158,7 +158,7 @@ function menuLink($p, $page_active, $extra_class='') {
       <?php endif; ?>
     </div>
     <div class="header-brand">
-      <h1><span class="orange">Ça suffit !</span> ASBL</h1>
+      <h1><span class="orange">Ça suffit !</span></h1>
       <div class="tagline"><?= htmlspecialchars(cfg('site_slogan', 'Piste 01 · UBCNA')) ?></div>
     </div>
     <nav class="header-nav">

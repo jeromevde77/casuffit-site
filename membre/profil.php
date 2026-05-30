@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="card">
 
   <div class="logo">
-    <h1>Ça suffit ! <span>ASBL</span></h1>
+    <h1>Ça suffit !</h1>
     <p><?= tm('profil_titre') ?></p>
   </div>
 

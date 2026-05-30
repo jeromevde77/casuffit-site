@@ -89,7 +89,7 @@ if (!$token || !$email) {
 <body>
 <div class="card">
   <img src="medias/logo.png" class="logo" alt="logo" onerror="this.style.display='none'">
-  <div class="brand">Ça suffit ! <span>ASBL</span></div>
+  <div class="brand">Ça suffit !</div>
 
   <?php if ($error): ?>
     <div style="margin-top:20px" class="error-box"><?= $error ?></div>
