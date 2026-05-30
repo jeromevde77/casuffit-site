@@ -169,6 +169,8 @@ $don_texte   = cfgLang('don_texte', 'Combat juridique — Suite de nos actions')
   <link rel="alternate" hreflang="fr"        href="https://www.casuffit.be<?= htmlspecialchars($_currentPath . $_pageParam) ?>">
   <link rel="alternate" hreflang="nl"        href="https://www.casuffit.be/nl<?= htmlspecialchars(rtrim($_currentPath,'/') . $_pageParam) ?>">
   <link rel="alternate" hreflang="x-default" href="https://www.casuffit.be/">
+  <link rel="alternate" type="application/rss+xml" title="Ça suffit ! — Actualités" href="https://www.casuffit.be/rss.php">
+  <link rel="alternate" type="application/rss+xml" title="Ça suffit ! — Nieuws (NL)" href="https://www.casuffit.be/rss.php?lang=nl">
 
   <!-- ── RGPD : consentement cookies ── -->
   <script>
