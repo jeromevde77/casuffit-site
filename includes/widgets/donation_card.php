@@ -60,7 +60,7 @@
         </div>
         <div class="iban-box">
           <div class="iban-val"><?= htmlspecialchars(cfg('iban','BE41 0689 0149 6910')) ?></div>
-          <div class="iban-bic">BIC : <?= htmlspecialchars(cfg('bic','GKCCBEBB')) ?> · <?= htmlspecialchars(cfg('beneficiaire','Ça suffit ! ASBL')) ?></div>
+          <div class="iban-bic">BIC : <?= htmlspecialchars(cfg('bic','GKCCBEBB')) ?> · <?= htmlspecialchars(cfg('beneficiaire','Ça suffit !')) ?></div>
           <div class="iban-comm">Communication : <strong>DON CASUFFIT <?= date('Y') ?></strong></div>
           <button class="btn-copy" id="copy-btn" onclick="copyIBAN()">📋 Copier l'IBAN</button>
         </div>

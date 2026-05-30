@@ -1514,7 +1514,7 @@ window.pmwOpenPlainte = function(pisteObservee) {
       'Je vous remercie de l\'attention portée à ce message et reste disponible pour tout' +
       ' complément d\'information.\n\n' +
       'Cordialement,\n\n' +
-      '— Via Ça suffit ! ASBL — casuffit.be';
+      '— Via Ça suffit ! — casuffit.be';
 
   } else {
     // ── Texte technique BATC (flux existant, inchangé) ─────────────
@@ -1546,7 +1546,7 @@ window.pmwOpenPlainte = function(pisteObservee) {
       'Une capture d\'écran du tableau de bord est jointe à ce message.\n\n' +
       'Dans l\'attente de votre réponse,\n' +
       'Veuillez agréer mes salutations distinguées.\n\n' +
-      '— Via Ça suffit ! ASBL — casuffit.be';
+      '— Via Ça suffit ! — casuffit.be';
   }
 
   var mailEl = document.getElementById('pmw-plainte-mail');

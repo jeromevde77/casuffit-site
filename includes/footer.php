@@ -13,7 +13,7 @@
       <div style="font-size:0.78rem;color:rgba(255,255,255,0.75);line-height:1.8;font-family:monospace">
         <?= htmlspecialchars(cfg('iban', 'BE41 0689 0149 6910')) ?><br>
         BIC : <?= htmlspecialchars(cfg('bic', 'GKCCBEBB')) ?><br>
-        <?= htmlspecialchars(cfg('beneficiaire', 'Ça suffit ! ASBL')) ?>
+        <?= htmlspecialchars(cfg('beneficiaire', 'Ça suffit !')) ?>
       </div>
     </div>
     <div>
@@ -28,7 +28,7 @@
     </div>
   </div>
   <div style="max-width:1000px;margin:20px auto 0;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);font-size:0.7rem;color:rgba(255,255,255,0.3);text-align:center">
-    © <?= date('Y') ?> <?= htmlspecialchars(cfg('site_nom', 'Ça suffit ! ASBL')) ?> · Tous droits réservés
+    © <?= date('Y') ?> <?= htmlspecialchars(cfg('site_nom', 'Ça suffit !')) ?> · Tous droits réservés
   </div>
 </footer>
 <script>

@@ -178,7 +178,7 @@ try {
     <div class="card">
       <h3>🌐 Paramètres généraux</h3>
       <label>Nom du site</label>
-      <input type="text" name="site_nom" value="<?= htmlspecialchars($c['site_nom'] ?? 'Ça suffit ! ASBL') ?>">
+      <input type="text" name="site_nom" value="<?= htmlspecialchars($c['site_nom'] ?? 'Ça suffit !') ?>">
       <label>Slogan</label>
       <input type="text" name="site_slogan" value="<?= htmlspecialchars($c['site_slogan'] ?? '') ?>">
       <div class="form-row">
@@ -296,7 +296,7 @@ try {
         </div>
       </div>
       <label>Bénéficiaire</label>
-      <input type="text" name="beneficiaire" value="<?= htmlspecialchars($c['beneficiaire'] ?? 'Ça suffit ! ASBL') ?>">
+      <input type="text" name="beneficiaire" value="<?= htmlspecialchars($c['beneficiaire'] ?? 'Ça suffit !') ?>">
 
       <label>Texte sous la barre de progression</label>
       <input type="text" name="don_texte" value="<?= htmlspecialchars($c['don_texte'] ?? '') ?>" placeholder="Combat juridique — Suite de nos actions">

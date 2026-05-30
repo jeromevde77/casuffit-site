@@ -78,6 +78,6 @@ $msg   = $pdo->query("SELECT valeur FROM site_config WHERE cle='maintenance_mess
     </form>
   </div>
 
-  <div class="footer">Ça suffit ! ASBL — Piste 01</div>
+  <div class="footer">Ça suffit ! — Piste 01</div>
 </body>
 </html>

@@ -51,7 +51,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 $msg = $_GET['msg'] ?? $msg;
 
 // Infos site pour les templates
-$site_nom = cfg('site_nom', 'Ça suffit ! ASBL');
+$site_nom = cfg('site_nom', 'Ça suffit !');
 $iban     = cfg('iban', 'BE41 0689 0149 6910');
 $annee    = date('Y');
 
@@ -306,7 +306,7 @@ function buildEmailPreview($sujet, $contenu, $site_nom, $iban, $annee) {
     return '
     <!-- En-tête email -->
     <div style="background:#0e3d6b;padding:20px 28px;text-align:center">
-      <div style="color:#fff;font-size:1.3rem;font-weight:800"><span style="color:#FF9900">Ça suffit !</span> ASBL</div>
+      <div style="color:#fff;font-size:1.3rem;font-weight:800"><span style="color:#FF9900">Ça suffit !</span></div>
       <div style="color:rgba(255,255,255,.55);font-size:.72rem;margin-top:3px">Piste 01 · UBCNA · Union citoyenne</div>
     </div>
     <!-- Sujet mis en valeur -->
@@ -319,7 +319,7 @@ function buildEmailPreview($sujet, $contenu, $site_nom, $iban, $annee) {
     </div>
     <!-- Pied de page -->
     <div style="background:#f5f8fc;padding:16px 28px;border-top:2px solid #e0e8f0;font-size:.72rem;color:#888;text-align:center">
-      <p style="margin-bottom:4px"><strong style="color:#0e3d6b">Ça suffit ! ASBL</strong> · ' . htmlspecialchars($iban) . '</p>
+      <p style="margin-bottom:4px"><strong style="color:#0e3d6b">Ça suffit !</strong> · ' . htmlspecialchars($iban) . '</p>
       <p>Pour vous désabonner : <a href="#" style="color:#1673B2">cliquez ici</a></p>
       <p style="margin-top:4px;color:#bbb">© ' . $annee . ' ' . htmlspecialchars($site_nom) . '</p>
     </div>';
@@ -358,7 +358,7 @@ var T = {
     alerte: '<div style="padding:14px 18px;border:2px solid #FF9900;border-left:5px solid #FF9900;background:#fff8ee;margin:14px 0">\n  <strong style="color:#a05000;font-size:.8rem;text-transform:uppercase">⚠ Attention</strong><br>\n  <span style="color:#7a4500">Message d\'alerte ici.</span>\n</div>\n',
     bouton: '<div style="text-align:center;margin:20px 0">\n  <a href="<?= SITE_URL ?>" style="display:inline-block;padding:12px 28px;background:#1673B2;color:#fff;text-decoration:none;font-weight:700;border-radius:6px">Voir le site →</a>\n</div>\n',
     sep:    '<hr style="border:none;border-top:2px solid #e0e8f0;margin:20px 0">\n',
-    sign:   '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e0e8f0;font-size:.82rem;color:#555">\n  <strong style="color:#0e3d6b">L\'équipe Ça suffit ! ASBL</strong><br>\n  Piste 01 · UBCNA · Union citoyenne<br>\n  <a href="<?= SITE_URL ?>" style="color:#1673B2"><?= str_replace("https://","",SITE_URL) ?></a>\n</div>\n',
+    sign:   '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e0e8f0;font-size:.82rem;color:#555">\n  <strong style="color:#0e3d6b">L\'équipe Ça suffit !</strong><br>\n  Piste 01 · UBCNA · Union citoyenne<br>\n  <a href="<?= SITE_URL ?>" style="color:#1673B2"><?= str_replace("https://","",SITE_URL) ?></a>\n</div>\n',
 };
 
 function ins(k) {
@@ -487,7 +487,7 @@ var BLOCS = {
   lettre:    '<div class="lettre-intro"><p>Chers membres,<br>votre message ici.</p></div>',
   citation:  '<div class="citation-box"><p>« Votre citation »</p><a href="#">— Source</a></div>',
   bq:        '<blockquote>Citation mise en valeur.</blockquote>',
-  signature: '<div class="signature">Cordialement,<strong>L\'équipe Ça suffit ! ASBL</strong></div>',
+  signature: '<div class="signature">Cordialement,<strong>L\'équipe Ça suffit !</strong></div>',
   grid:      '<div class="actions-grid"><div class="action-card"><div class="ac-num">01</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div><div class="action-card"><div class="ac-num">02</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div><div class="action-card"><div class="ac-num">03</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div></div>',
   liste:     '<ul><li>Élément 1</li><li>Élément 2</li><li>Élément 3</li></ul>',
   chiffre:   '<div style="display:inline-block;text-align:center;margin:8px 16px 8px 0"><span class="chiffre-val">320</span><span class="chiffre-label">avions/jour</span></div>',

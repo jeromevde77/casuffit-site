@@ -49,7 +49,7 @@
 
       <label style="display:flex;align-items:flex-start;gap:10px;font-size:.82rem;color:#555;cursor:pointer;margin-bottom:16px">
         <input type="checkbox" id="nl-rgpd-w" required style="margin-top:3px;flex-shrink:0">
-        J'accepte que mes données soient utilisées pour recevoir la newsletter de Ça suffit ! ASBL
+        J'accepte que mes données soient utilisées pour recevoir la newsletter de Ça suffit !
       </label>
 
       <div id="form-msg-w" class="form-msg"></div>

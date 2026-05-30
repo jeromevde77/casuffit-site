@@ -2,7 +2,7 @@
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
-// index.php — Site Ça suffit ! ASBL (v2 - look ancien site)
+// index.php — Site Ça suffit ! (v2 - look ancien site)
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/lang.php';
 
@@ -90,7 +90,7 @@ $pct       = $objectif > 0 ? min(100, round($recolte / $objectif * 100)) : 0;
 $don_texte = cfgLang('don_texte', 'Combat juridique — Frais et procédures');
 $iban      = cfg('iban', 'BE41 0689 0149 6910');
 $bic       = cfg('bic', 'GKCCBEBB');
-$beneficiaire = cfg('beneficiaire', 'ca suffit ! ASBL');
+$beneficiaire = cfg('beneficiaire', 'ca suffit !');
 
 // Charger le contenu des tabs depuis la BDD
 // Charger pages + contenu
@@ -161,7 +161,7 @@ $urgence_active = cfg('urgence_active', '1') === '1';
 // Config don
 $iban        = cfg('iban', 'BE41 0689 0149 6910');
 $bic         = cfg('bic', 'GKCCBEBB');
-$beneficiaire = cfg('beneficiaire', 'Ça suffit ! ASBL');
+$beneficiaire = cfg('beneficiaire', 'Ça suffit !');
 $don_texte   = cfgLang('don_texte', 'Combat juridique — Suite de nos actions');
 
 // Logo chargé depuis medias/logo.png
@@ -284,13 +284,13 @@ $don_texte   = cfgLang('don_texte', 'Combat juridique — Suite de nos actions')
   <meta name="app-version" content="2.2.0">
   <link rel="stylesheet" href="/assets/css/content.css">
   <meta name="first-tab" content="<?= htmlspecialchars($first_tab_slug) ?>">
-  <title>Ça suffit ! ASBL — Piste 01 · UBCNA</title>
+  <title>Ça suffit ! — Piste 01 · UBCNA</title>
   <meta name="description" content="<?= t('seo.description') ?>">
   <link rel="canonical" href="https://www.casuffit.be<?= isset($_GET['page']) ? '/?page=' . htmlspecialchars($_GET['page']) : '/' ?>">
 
   <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Ça suffit ! ASBL">
+  <meta property="og:site_name" content="Ça suffit !">
   <meta property="og:title" content="<?= $news_single ? htmlspecialchars((tdb($news_single,'titre') ?? $news_single['titre']) . ' — Ça suffit !', ENT_QUOTES) : t('seo.og_title') ?>">
   <meta property="og:description" content="<?= $news_single ? htmlspecialchars(mb_strimwidth(strip_tags(tdb($news_single,'accroche') ?? $news_single['accroche'] ?? tdb($news_single,'contenu') ?? $news_single['contenu'] ?? ''), 0, 200, '…'), ENT_QUOTES) : t('seo.description') ?>">
   <meta property="og:url" content="https://www.casuffit.be<?= $_SERVER['REQUEST_URI'] ?>">
@@ -1550,7 +1550,7 @@ function navBtnClass($p) {
 <header class="site-header">
   <div class="header-inner">
     <div class="logo-wrap">
-      <img src="medias/logo.png" alt="Ça suffit ! ASBL" onerror="this.style.display='none'">
+      <img src="medias/logo.png" alt="Ça suffit !" onerror="this.style.display='none'">
     </div>
     <div class="header-brand">
       <h1><span class="accent">Ça suffit !</span> <?= t('header.brand_suffix') ?></h1>
@@ -1924,7 +1924,7 @@ $site_email = cfg('site_email', 'info@casuffit.be');
   </div><!-- /pied-grid -->
 
   <div class="pied-bottom">
-    <span id="copyright-trigger" onclick="handleAdminClick()" style="cursor:default;user-select:none">© <?= date('Y') ?> Piste 01, Ça suffit ! ASBL &nbsp;·&nbsp; Tous droits réservés</span>
+    <span id="copyright-trigger" onclick="handleAdminClick()" style="cursor:default;user-select:none">© <?= date('Y') ?> Piste 01, Ça suffit ! &nbsp;·&nbsp; Tous droits réservés</span>
     <span style="margin-left:16px">
       <a href="/politique-confidentialite" style="color:#aaa;font-size:.75rem;text-decoration:none">Politique de confidentialité</a>
       &nbsp;·&nbsp;
@@ -2235,7 +2235,7 @@ function genQRAnon(montant) {
   var iban_raw = '<?= preg_replace('/\s+/', '', cfg('iban','BE41068901496910')) ?>';
   var epc = ['BCD','002','1','SCT',
     '<?= cfg('bic','GKCCBEBB') ?>',
-    '<?= addslashes(cfg('beneficiaire','ca suffit ! ASBL')) ?>',
+    '<?= addslashes(cfg('beneficiaire','ca suffit !')) ?>',
     iban_raw,
     montant ? 'EUR' + parseFloat(montant).toFixed(2) : '',
     '', 'DON CASUFFIT <?= date('Y') ?>', ''].join('\n');

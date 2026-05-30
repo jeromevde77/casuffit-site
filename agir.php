@@ -226,7 +226,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
         Email
       </a>
     </div>
-    <div style="font-size:.72rem;color:rgba(255,255,255,.5)">© <?= date('Y') ?> Ça suffit ! ASBL</div>
+    <div style="font-size:.72rem;color:rgba(255,255,255,.5)">© <?= date('Y') ?> Ça suffit !</div>
   </div>
 
 </div>

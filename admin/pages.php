@@ -2379,7 +2379,7 @@ var BLOCS = {
   lettre:    '<div class="lettre-intro"><p>Chers membres,<br>votre message ici.</p></div>',
   citation:  '<div class="citation-box"><p>« Votre citation »</p><a href="#">— Source</a></div>',
   bq:        '<blockquote>Citation mise en valeur.</blockquote>',
-  signature: '<div class="signature">Cordialement,<strong>L\'équipe Ça suffit ! ASBL</strong></div>',
+  signature: '<div class="signature">Cordialement,<strong>L\'équipe Ça suffit !</strong></div>',
   grid:      '<div class="actions-grid"><div class="action-card"><div class="ac-num">01</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div><div class="action-card"><div class="ac-num">02</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div><div class="action-card"><div class="ac-num">03</div><div class="ac-titre">Titre</div><div class="ac-text">Description courte.</div></div></div>',
   liste:     '<ul><li>Élément 1</li><li>Élément 2</li><li>Élément 3</li></ul>',
   chiffre:   '<div style="display:inline-block;text-align:center;margin:8px 16px 8px 0"><span class="chiffre-val">320</span><span class="chiffre-label">avions/jour</span></div>',

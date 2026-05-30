@@ -679,7 +679,7 @@ window.pmhExport = function(){
     +'<div class="header">'
     +'<div><h1>Analyse conditions de vent — Brussels Airport (EBBR)</h1>'
     +'<p>Période : <b>'+dateStr+'</b> → <b>'+dateFin+'</b> UTC · Source : IRM Station 6451 Zaventem/EBBR (mesures officielles)</p></div>'
-    +'<div class="logo">Ça suffit ! ASBL</div>'
+    +'<div class="logo">Ça suffit !</div>'
     +'</div>'
     +'<div class="meta">'
     +'<div class="meta-col"><b>⚖ AIP sept. 2013 — Instruction ministérielle 17/07/2013 (base légale)</b>'
@@ -704,7 +704,7 @@ window.pmhExport = function(){
     +'<th>Note / Analyse</th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table>'
     +'<div class="footer">'
-    +'<span>Document généré le '+new Date().toLocaleString('fr-BE',{timeZone:'Europe/Brussels',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' · Ça suffit ! ASBL — casuffit.be</span>'
+    +'<span>Document généré le '+new Date().toLocaleString('fr-BE',{timeZone:'Europe/Brussels',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' · Ça suffit ! — casuffit.be</span>'
     +'<span>Données : IRM Institut Royal Météorologique de Belgique — Station synoptique 6451 Zaventem/EBBR (mesures officielles)</span>'
     +'</div>'
     +'</body></html>';

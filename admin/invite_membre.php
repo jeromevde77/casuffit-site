@@ -77,7 +77,7 @@ foreach ($abonnes as $ab) {
         $text = $tpl['text'] ?: buildWixInviteText($prenom, $url, $ab['email']);
     } else {
         $tpl  = renderEmailTemplate($db, 'invite_membre', $vars, 'fr');
-        $subj = $tpl['sujet'] ?: 'Votre espace membre vous attend — Ça suffit ! ASBL';
+        $subj = $tpl['sujet'] ?: 'Votre espace membre vous attend — Ça suffit !';
         $html = $tpl['html'] ?: buildInviteHtml($prenom, $url, $ab['email'], $site_url);
         $text = $tpl['text'] ?: buildInviteText($prenom, $url, $ab['email']);
     }
@@ -131,7 +131,7 @@ function buildInviteHtml(string $prenom, string $url, string $email, string $sit
     <p style="font-size:11px;color:#bbb;text-align:center;margin:0 0 6px">Lien valable 30 jours · Vous pouvez ignorer cet email et rester simplement abonné à la newsletter.</p>
   </td></tr>
   <tr><td style="background:#f5f7fa;padding:16px 32px;text-align:center;border-top:1px solid #e0e8f0">
-    <p style="font-size:11px;color:#aaa;margin:0">Ça suffit ! ASBL · <a href="$site_url" style="color:#1673B2">casuffit.be</a><br>Vous recevez cet email car vous êtes abonné(e) avec <strong>$email</strong></p>
+    <p style="font-size:11px;color:#aaa;margin:0">Ça suffit ! · <a href="$site_url" style="color:#1673B2">casuffit.be</a><br>Vous recevez cet email car vous êtes abonné(e) avec <strong>$email</strong></p>
   </td></tr>
 </table>
 </td></tr>
@@ -142,7 +142,7 @@ HTML;
 
 function buildInviteText(string $prenom, string $url, string $email): string {
     $salut = $prenom ? "Bonjour $prenom," : "Bonjour,";
-    return "$salut\n\nNous vous invitons à créer votre espace membre gratuit sur casuffit.be.\n\nAvantages :\n- QR code de paiement personnel\n- Historique de vos dons\n- Accès sans mot de passe\n\nCréer mon espace membre (30 jours) :\n$url\n\nVous pouvez ignorer cet email et rester abonné à la newsletter.\n\nL'équipe Ça suffit ! ASBL";
+    return "$salut\n\nNous vous invitons à créer votre espace membre gratuit sur casuffit.be.\n\nAvantages :\n- QR code de paiement personnel\n- Historique de vos dons\n- Accès sans mot de passe\n\nCréer mon espace membre (30 jours) :\n$url\n\nVous pouvez ignorer cet email et rester abonné à la newsletter.\n\nL'équipe Ça suffit !";
 }
 
 // ── Templates "relance Wix" (anciens membres Piste 01 — Ça Suffit) ──────────────
