@@ -53,7 +53,7 @@
       <tr>
         <td style="background:#f8f9fa;padding:18px 40px;border-top:1px solid #eee;text-align:center;">
           <p style="color:#aaa;font-size:11px;margin:0;line-height:1.8;">
-            <strong style="color:#1673B2;">Piste01 Ça Suffit ASBL</strong> · Piste 01 · UBCNA<br>
+            <strong style="color:#1673B2;">Ça suffit ! ASBL</strong> · Piste 01 · UBCNA<br>
             <?= ADMIN_EMAIL ?> · <?= SITE_URL ?>
           </p>
         </td>

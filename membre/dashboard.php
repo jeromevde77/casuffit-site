@@ -61,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changer_email'])) {
        ->execute([$email_nouveau, $token, $membre['id']]);
     // Envoyer email de confirmation
     $lien = SITE_URL . '/membre/confirm_email.php?token=' . $token;
-    $sujet = 'Confirmation changement d\'email — Piste01 Ça Suffit ASBL';
-    $corps = "Bonjour {$membre['prenom']},\n\nVous avez demandé à changer votre email vers : $email_nouveau\n\nCliquez sur ce lien pour confirmer :\n$lien\n\nCe lien expire dans 24h. Si vous n'avez pas fait cette demande, ignorez ce message.\n\nL'équipe Piste01 Ça Suffit ASBL";
+    $sujet = 'Confirmation changement d\'email — Ça suffit ! ASBL';
+    $corps = "Bonjour {$membre['prenom']},\n\nVous avez demandé à changer votre email vers : $email_nouveau\n\nCliquez sur ce lien pour confirmer :\n$lien\n\nCe lien expire dans 24h. Si vous n'avez pas fait cette demande, ignorez ce message.\n\nL'équipe Ça suffit ! ASBL";
     @mail($email_nouveau, $sujet, $corps, "From: " . cfg('site_email', 'info@casuffit.be') . "\r\nContent-Type: text/plain; charset=UTF-8");
     header('Location: dashboard.php?tab=profil&msg=email_confirm_envoye'); exit;
 }
@@ -412,7 +412,7 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
                style="cursor:pointer;border-radius:6px">
           <div style="font-size:.68rem;color:#aaa;margin-top:4px">📷 Scannez · 📱 <span style="color:#1673B2;font-weight:600">Appuyez pour copier</span></div>
           <div class="ogm-display"><?= htmlspecialchars($don_actif['ogm_don']?:$membre['ogm']) ?></div>
-          <div class="iban-mini"><strong><?= htmlspecialchars($iban) ?></strong><br>BIC : <?= htmlspecialchars($bic) ?><br><?= htmlspecialchars(cfg('beneficiaire','Piste01 Ça Suffit ASBL')) ?></div>
+          <div class="iban-mini"><strong><?= htmlspecialchars($iban) ?></strong><br>BIC : <?= htmlspecialchars($bic) ?><br><?= htmlspecialchars(cfg('beneficiaire','Ça suffit ! ASBL')) ?></div>
           <div style="font-size:.7rem;color:#aaa;margin-top:4px">Réf. don #<?= $don_actif['id'] ?></div>
           <button class="btn-green" onclick="genererQR(ogm_actif,montant_actif)"><?= tm('actualiser_qr') ?></button>
           <button class="btn-gray" onclick="telechargerQR()"><?= tm('telecharger_qr') ?></button>
@@ -616,7 +616,7 @@ function selectM(btn, val) {
 
 function getEPC(ogm, montant) {
   return ['BCD','002','1','SCT',bic,
-    '<?= addslashes(cfg('beneficiaire','Piste01 Ça Suffit ASBL')) ?>',
+    '<?= addslashes(cfg('beneficiaire','ca suffit ! ASBL')) ?>',
     iban_raw, 'EUR'+parseFloat(montant).toFixed(2), '', ogm, ''].join('\n');
 }
 function genererQR(ogm, montant) {

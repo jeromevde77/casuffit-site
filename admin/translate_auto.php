@@ -105,7 +105,7 @@ Glossaire FR → NL (vocabulaire à utiliser systématiquement) :
 TXT;
 
 $prompt = <<<TXT
-Tu traduis le contenu d'une association militante belge (Piste01 Ça Suffit ASBL) du français vers le néerlandais belge.
+Tu traduis le contenu d'une association militante belge (Ça suffit ! ASBL) du français vers le néerlandais belge.
 
 CONTEXTE : Association citoyenne qui s'oppose à l'usage abusif de la piste 01 à l'aéroport de Bruxelles. Public visé : habitants flamands et bruxellois.
 

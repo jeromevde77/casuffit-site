@@ -438,7 +438,7 @@ $api_token = $_SESSION['api_token'];
   <div class="app-view active" id="view-meteo">
     <?php include __DIR__ . '/includes/widgets/piste_meteo.php'; ?>
     <div class="app-footer-links">
-      <a href="/">← Piste01 Ça Suffit ASBL</a> &nbsp;·&nbsp; METAR + IRM station 6451
+      <a href="/">← Ça suffit ! ASBL</a> &nbsp;·&nbsp; METAR + IRM station 6451
     </div>
   </div>
 
@@ -472,7 +472,7 @@ $api_token = $_SESSION['api_token'];
       $pct_don = $objectif_don > 0 ? min(100, round($recolte_don / $objectif_don * 100)) : 0;
       $iban_don  = cfg('iban', 'BE41 0689 0149 6910');
       $bic_don   = cfg('bic', 'GKCCBEBB');
-      $benef_don = cfg('beneficiaire', 'Piste01 Ça Suffit ASBL');
+      $benef_don = cfg('beneficiaire', 'Ça suffit ! ASBL');
       $is_logged_don = !empty($_SESSION['membre_id']);
       $is_nl_wind = (LANG === 'nl');
     ?>
@@ -680,7 +680,7 @@ function genQRWind(montant) {
   if (!el) return;
   el.innerHTML = '';
   var iban_raw = '<?= preg_replace('/\s+/', '', cfg('iban','BE41068901496910')) ?>';
-  var epc = ['BCD','002','1','SCT','<?= cfg('bic','GKCCBEBB') ?>','<?= addslashes(cfg('beneficiaire','Piste01 Ça Suffit ASBL')) ?>',
+  var epc = ['BCD','002','1','SCT','<?= cfg('bic','GKCCBEBB') ?>','<?= addslashes(cfg('beneficiaire','ca suffit ! ASBL')) ?>',
     iban_raw, montant ? 'EUR'+parseFloat(montant).toFixed(2) : '', '', 'DON CASUFFIT <?= date('Y') ?>', ''].join('\n');
   var img = document.createElement('img');
   img.width = 140; img.height = 140; img.alt = 'QR don';

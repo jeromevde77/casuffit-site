@@ -94,7 +94,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
       <link><?= rss_esc($item_url) ?></link>
       <guid isPermaLink="false"><?= rss_esc($guid) ?></guid>
       <pubDate><?= $pub_date ?></pubDate>
-      <dc:creator><?= rss_esc('Piste01 Ça Suffit ASBL') ?></dc:creator>
+      <dc:creator><?= rss_esc('Ça suffit ! ASBL') ?></dc:creator>
       <description><?= rss_esc($desc) ?></description>
 <?php if ($contenu): ?>
       <content:encoded><![CDATA[<?= $contenu ?>]]></content:encoded>

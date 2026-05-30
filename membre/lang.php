@@ -202,13 +202,13 @@ $T = $LANG === 'nl' ? [
 ] : [
 
   // Titres & nav
-  'site_title'          => 'Piste01 Ça Suffit ASBL',
+  'site_title'          => 'Ça suffit ! ASBL',
   'retour_site'         => '← Retour au site',
   'retour_espace'       => '← Retour à mon espace',
 
   // Inscription
   'inscription_titre'   => 'Créer votre espace membre',
-  'inscription_page'    => 'Devenir membre — Piste01 Ça Suffit ASBL',
+  'inscription_page'    => 'Devenir membre — Ça suffit ! ASBL',
   'avantages_intro'     => 'En devenant membre vous obtenez :',
   'avantage_qr'         => 'Un QR code personnel avec communication structurée (+++)',
   'avantage_dons'       => 'L\'historique de vos dons dans votre espace privé',
@@ -241,7 +241,7 @@ $T = $LANG === 'nl' ? [
 
   // Login
   'login_titre'         => 'Accès espace membre',
-  'login_page'          => 'Connexion membre — Piste01 Ça Suffit ASBL',
+  'login_page'          => 'Connexion membre — Ça suffit ! ASBL',
   'login_explain'       => 'Entrez votre email et nous vous enverrons un <strong>lien de connexion sécurisé</strong> valable 24h. Pas de mot de passe à retenir !',
   'votre_email'         => 'Votre adresse email',
   'btn_recevoir_lien'   => '✉ Recevoir mon lien de connexion',
@@ -252,7 +252,7 @@ $T = $LANG === 'nl' ? [
   'err_email_invalide'  => 'Adresse email invalide.',
 
   // Magic link
-  'magic_page'          => 'Connexion — Piste01 Ça Suffit ASBL',
+  'magic_page'          => 'Connexion — Ça suffit ! ASBL',
   'lien_invalide_titre' => 'Lien invalide ou expiré',
   'lien_invalide_msg'   => 'Ce lien est invalide ou a expiré. <a href="login.php">Demandez un nouveau lien</a>.',
   'btn_new_lien'        => 'Demander un nouveau lien',
@@ -265,7 +265,7 @@ $T = $LANG === 'nl' ? [
   'retour_espace_btn'   => '← Mon espace membre',
 
   // Profil
-  'profil_page'         => 'Mon profil — Piste01 Ça Suffit ASBL',
+  'profil_page'         => 'Mon profil — Ça suffit ! ASBL',
   'profil_titre'        => 'Mon profil',
   'identite'            => 'Identité',
   'contact'             => 'Contact',
@@ -282,7 +282,7 @@ $T = $LANG === 'nl' ? [
   'cree_le'             => 'Créé le %s',
 
   // Dashboard
-  'dashboard_page'      => 'Mon espace — Piste01 Ça Suffit ASBL',
+  'dashboard_page'      => 'Mon espace — Ça suffit ! ASBL',
   'back_site'           => '← Site principal',
   'bonjour'             => 'Bonjour',
   'membre_depuis'       => 'Membre',
@@ -341,7 +341,7 @@ $T = $LANG === 'nl' ? [
   'label_iban'          => 'IBAN',
   'iban_titre'          => '🏦 Numéro de compte (optionnel — sur base volontaire)',
   'iban_txt'            => 'Si vous avez effectué des dons antérieurs par virement simple, vous pouvez indiquer votre IBAN ici. Cela nous permet de relier ces versements à votre compte membre. Cette information est strictement confidentielle et ne sera jamais transmise à des tiers.',
-  'rgpd_dash_label'     => 'J\'autorise <strong>Piste01 Ça Suffit ASBL</strong> à enregistrer et traiter mes données personnelles (nom, adresse, email, téléphone, IBAN si fourni) dans le cadre de la gestion des membres et de la newsletter. Ces données ne sont pas transmises à des tiers. Je peux en demander la suppression à tout moment.',
+  'rgpd_dash_label'     => 'J\'autorise <strong>Ça suffit ! ASBL</strong> à enregistrer et traiter mes données personnelles (nom, adresse, email, téléphone, IBAN si fourni) dans le cadre de la gestion des membres et de la newsletter. Ces données ne sont pas transmises à des tiers. Je peux en demander la suppression à tout moment.',
   'rgpd_accepte_le'     => '✓ Accepté le %s',
   'derniere_verif'      => 'Dernière vérification : %s',
   'btn_enregistrer_donnees' => '💾 Enregistrer mes données',

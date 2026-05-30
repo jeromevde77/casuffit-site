@@ -30,7 +30,7 @@ if (!$contenu) {
 
 // ── Prompt ────────────────────────────────────────────────────────────────
 $prompt = <<<TXT
-Tu traduis un widget PHP/HTML d'une association militante belge (Piste01 Ça Suffit ASBL) du français vers le néerlandais belge.
+Tu traduis un widget PHP/HTML d'une association militante belge (Ça suffit ! ASBL) du français vers le néerlandais belge.
 
 CONTEXTE : Widget affiché sur le site casuffit.be. Public visé : habitants flamands et bruxellois.
 

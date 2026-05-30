@@ -63,7 +63,7 @@ if ($campagne === 'invite_membre' || $campagne === 'invite_wix') {
             $html = $tpl['html']; $text = $tpl['text'];
         } else {
             $tpl  = renderEmailTemplate($db, 'invite_membre', $vars, 'fr');
-            $subj = $tpl['sujet'] ?: 'Votre espace membre vous attend — Piste01 Ça Suffit ASBL';
+            $subj = $tpl['sujet'] ?: 'Votre espace membre vous attend — Ça suffit ! ASBL';
             $html = $tpl['html']; $text = $tpl['text'];
         }
 

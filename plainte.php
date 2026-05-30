@@ -468,7 +468,7 @@ function buildComplaint(d) {
     'Je vous remercie de l\'attention portée à ce message et reste disponible pour tout'+
     ' complément d\'information.\n\n'+
     'Cordialement,\n\n'+
-    '— Via Piste01 Ça Suffit ASBL — casuffit.be';
+    '— Via Ça suffit ! ASBL — casuffit.be';
 
   document.getElementById('complaint-text').textContent = _plainText;
 }
@@ -641,7 +641,7 @@ function buildHtmlBody() {
     '<p>Je vous remercie de l\'attention portée à ce message et reste disponible pour tout complément d\'information.</p>'+
     '<p>Cordialement,</p>'+
     (_captureDataUrl ? '<p><img src="'+_captureDataUrl+'" style="max-width:100%;border:1px solid #ddd;border-radius:8px;margin-top:12px" alt="Capture conditions EBBR"></p>' : '')+
-    '<p style="font-size:.8em;color:#888">— Via Piste01 Ça Suffit ASBL — casuffit.be</p>'+
+    '<p style="font-size:.8em;color:#888">— Via Ça suffit ! ASBL — casuffit.be</p>'+
     '</div>';
 }
 
