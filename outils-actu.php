@@ -41,19 +41,22 @@ try {
 
     if (($_GET['apply'] ?? '') === '1') {
         echo '<h3>3. Application</h3>';
-        $targets = array_unique(array_merge($slugs_actu, ['actualites']));
-        foreach ($targets as $t) {
-            $db->prepare("DELETE FROM page_widgets WHERE page_slug=?")->execute([$t]);
-            $db->prepare("INSERT INTO page_widgets (page_slug,widget_slug,ordre,position) VALUES (?,'news',1,'droite')")->execute([$t]);
-            $db->prepare("INSERT INTO page_widgets (page_slug,widget_slug,ordre,position) VALUES (?,'donation_card',2,'droite')")->execute([$t]);
-            echo "<p class=ok>✅ <code>$t</code> → news + donation_card</p>";
-        }
+        // Supprimer le slug fautif "acutalites" (typo, jamais utilisé)
+        $db->prepare("DELETE FROM page_widgets WHERE page_slug='acutalites'")->execute();
+        echo '<p class=ok>✅ Slug fautif <code>acutalites</code> supprimé</p>';
+        // Reconfigurer 'actualites' : news (gauche) + donation_card (droite)
+        $db->prepare("DELETE FROM page_widgets WHERE page_slug='actualites'")->execute();
+        $db->prepare("INSERT INTO page_widgets (page_slug,widget_slug,ordre,position) VALUES ('actualites','news',1,'gauche')")->execute();
+        $db->prepare("INSERT INTO page_widgets (page_slug,widget_slug,ordre,position) VALUES ('actualites','donation_card',2,'droite')")->execute();
+        echo '<p class=ok>✅ <code>actualites</code> → news (gauche) + donation_card (droite)</p>';
+        // S'assurer que donation_card est actif
         $db->prepare("UPDATE widgets SET actif=1 WHERE slug='donation_card'")->execute();
         echo '<p class=ok>✅ donation_card actif=1</p>';
-        echo '<p><a href="/?news=4" style="background:#1673B2;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">→ Tester /?news=4</a></p>';
+        echo '<p style="margin-top:16px"><a href="/?news=4" style="background:#1673B2;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">→ Tester /?news=4</a></p>';
     } else {
         echo '<h3>3. Appliquer le changement</h3>';
-        echo '<p><a href="/outils-actu.php?apply=1" style="background:#FF9900;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">⚙ Appliquer : news + donation_card</a></p>';
+        echo '<p>Va : supprimer le slug fautif <code>acutalites</code>, et mettre <code>actualites</code> = news (gauche) + donation_card (droite).</p>';
+        echo '<p><a href="/outils-actu.php?apply=1" style="background:#FF9900;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">⚙ Appliquer</a></p>';
     }
 } catch (Exception $e) {
     echo '<p class=err>❌ '.htmlspecialchars($e->getMessage()).'</p>';
