@@ -47,13 +47,15 @@ if (($_GET['action'] ?? '') === 'insert_actu_norme') {
         if ($chk->fetch()) {
             $flash = '⚠ Actualité déjà présente — va dans Actualités pour la modifier.';
         } else {
-            $db->prepare("INSERT INTO news (titre,accroche,contenu,statut,epingle,date_publication,date_creation) VALUES (?,?,?,'brouillon',0,NOW(),NOW())")
-               ->execute([$titre,$accroche,$contenu]);
+            $created_by = defined('ADMIN_USER') ? ADMIN_USER : ($_SESSION['admin_id'] ?? 1);
+            $db->prepare("INSERT INTO news (titre,accroche,contenu,image_url,statut,epingle,date_publication,created_by) VALUES (?,?,?,'',?,0,NOW(),?)")
+               ->execute([$titre,$accroche,$contenu,'brouillon',$created_by]);
             header('Location: news.php?msg='.urlencode('✅ Actualité créée en brouillon — relisez et publiez !'));
             exit;
         }
     } catch(Exception $e) {
-        $flash = 'Erreur : '.$e->getMessage();
+        $flash = 'Erreur insertion : '.$e->getMessage();
+        error_log('insert_actu_norme: '.$e->getMessage());
     }
 }
 // ── Fin hook ──────────────────────────────────────────────────────────────
@@ -277,6 +279,9 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
   <!-- Header -->
   <div class="dash-header">
     <h1>📊 Tableau de bord</h1>
+<?php if (!empty($flash)): ?>
+    <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin:10px 0;font-size:.9rem;color:#664d03"><?= htmlspecialchars($flash) ?></div>
+<?php endif; ?>
     <span class="date"><?= strftime('%A %d %B %Y') ?: date('d/m/Y') ?></span>
   </div>
 
