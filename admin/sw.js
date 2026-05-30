@@ -1,10 +1,10 @@
 // admin/sw.js — Service Worker ça suffit ! Admin PWA
-// v3 — 2026-05-30 (bump cache pour forcer rafraichissement)
-const CACHE = 'csa-admin-v3';
+// v4 — 2026-05-30 (dashboard hors precache + skip query strings)
+const CACHE = 'csa-admin-v4';
 
 // Ressources à mettre en cache au premier chargement
+// (dashboard.php retiré : doit toujours être frais pour les hooks ?action=)
 const PRECACHE = [
-  '/admin/dashboard.php',
   '/admin/login.php',
   '/favicon-192.png',
   '/favicon-32.png',
@@ -32,6 +32,9 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   if (!url.pathname.startsWith('/admin/')) return;
+  // Ne JAMAIS intercepter les URLs avec paramètres (?action=, ?edit=, etc.)
+  // → toujours frais depuis le serveur, indispensable pour les hooks admin
+  if (url.search) return;
 
   e.respondWith(
     fetch(e.request)
