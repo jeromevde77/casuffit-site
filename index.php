@@ -119,6 +119,17 @@ try {
     $news_list = $db->query("SELECT * FROM news WHERE statut='publie' ORDER BY epingle DESC, date_creation DESC LIMIT 10")->fetchAll();
 } catch (Exception $e) {}
 
+// News ciblée via ?news=ID (pour partage Facebook + ouverture directe)
+$news_single = null;
+$news_single_id = isset($_GET['news']) ? (int)$_GET['news'] : 0;
+if ($news_single_id > 0) {
+    try {
+        $st = $db->prepare("SELECT * FROM news WHERE id=? AND statut='publie' LIMIT 1");
+        $st->execute([$news_single_id]);
+        $news_single = $st->fetch();
+    } catch (Exception $e) {}
+}
+
 // Calculer le premier tab visible (pour synchroniser PHP et JS)
 $first_tab_slug = 'mobilisation'; // défaut
 foreach ($menu_pages as $p) {
@@ -280,12 +291,13 @@ $don_texte   = cfgLang('don_texte', 'Combat juridique — Suite de nos actions')
   <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Ça suffit ! ASBL">
-  <meta property="og:title" content="<?= t('seo.og_title') ?>">
-  <meta property="og:description" content="<?= t('seo.description') ?>">
+  <meta property="og:title" content="<?= $news_single ? htmlspecialchars((tdb($news_single,'titre') ?? $news_single['titre']) . ' — Ça suffit !', ENT_QUOTES) : t('seo.og_title') ?>">
+  <meta property="og:description" content="<?= $news_single ? htmlspecialchars(mb_strimwidth(strip_tags(tdb($news_single,'accroche') ?? $news_single['accroche'] ?? tdb($news_single,'contenu') ?? $news_single['contenu'] ?? ''), 0, 200, '…'), ENT_QUOTES) : t('seo.description') ?>">
   <meta property="og:url" content="https://www.casuffit.be<?= $_SERVER['REQUEST_URI'] ?>">
-  <meta property="og:image" content="https://www.casuffit.be/assets/img/og-image.jpg">
+  <meta property="og:image" content="<?= ($news_single && !empty($news_single['image_url'])) ? htmlspecialchars($news_single['image_url'], ENT_QUOTES) : 'https://www.casuffit.be/assets/img/og-image.jpg' ?>">
   <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+  <meta property="og:image:height" content="630"><?= $news_single ? '
+  <meta property="og:type" content="article">' : '' ?>
   <meta property="og:locale" content="<?= LANG === 'nl' ? 'nl_BE' : 'fr_BE' ?>">
   <meta property="og:locale:alternate" content="<?= LANG === 'nl' ? 'fr_BE' : 'nl_BE' ?>">
 

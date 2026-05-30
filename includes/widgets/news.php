@@ -3,7 +3,7 @@
   <?php if (!empty($news_list)): ?>
     <?php foreach ($news_list as $ni => $n): ?>
     <?php $is_open = !empty($n['deploye_defaut']) || !empty($n['epingle']); ?>
-    <div class="news-item <?= $n['epingle'] ? 'news-epingle' : '' ?>" style="border:1px solid var(--bleu-ciel);border-radius:8px;margin-bottom:10px;background:#fff;overflow:hidden">
+    <div class="news-item <?= $n['epingle'] ? 'news-epingle' : '' ?>" id="news-item-<?= (int)$n['id'] ?>" data-news-id="<?= (int)$n['id'] ?>" style="border:1px solid var(--bleu-ciel);border-radius:8px;margin-bottom:10px;background:#fff;overflow:hidden">
 
       <!-- Résumé cliquable -->
       <div class="news-summary" onclick="toggleNews(<?= $ni ?>)" style="padding:12px;cursor:pointer">
@@ -50,4 +50,30 @@ function toggleNews(i) {
   full.style.display = open ? 'none' : 'block';
   if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
 }
+
+// Ouverture directe d'un article via ?news=ID (partage Facebook/lien direct)
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var newsId = params.get('news');
+  if (!newsId) return;
+  function openTarget() {
+    var item = document.getElementById('news-item-' + newsId);
+    if (!item) return;
+    // Ouvrir l'onglet Actualités si fonction dispo
+    if (typeof showTab === 'function') { try { showTab('actualites'); } catch(e){} }
+    // Déplier l'article
+    var full = item.querySelector('.news-full');
+    var chev = item.querySelector('.news-chevron');
+    if (full) full.style.display = 'block';
+    if (chev) chev.style.transform = 'rotate(180deg)';
+    // Mettre en évidence + scroller
+    item.style.boxShadow = '0 0 0 3px var(--orange-hex)';
+    setTimeout(function(){ item.scrollIntoView({behavior:'smooth', block:'center'}); }, 300);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(openTarget, 400); });
+  } else {
+    setTimeout(openTarget, 400);
+  }
+})();
 </script>
