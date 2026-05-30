@@ -294,7 +294,7 @@ $don_texte   = cfgLang('don_texte', 'Combat juridique — Suite de nos actions')
   <meta property="og:title" content="<?= $news_single ? htmlspecialchars((tdb($news_single,'titre') ?? $news_single['titre']) . ' — Ça suffit !', ENT_QUOTES) : t('seo.og_title') ?>">
   <meta property="og:description" content="<?= $news_single ? htmlspecialchars(mb_strimwidth(strip_tags(tdb($news_single,'accroche') ?? $news_single['accroche'] ?? tdb($news_single,'contenu') ?? $news_single['contenu'] ?? ''), 0, 200, '…'), ENT_QUOTES) : t('seo.description') ?>">
   <meta property="og:url" content="https://www.casuffit.be<?= $_SERVER['REQUEST_URI'] ?>">
-  <meta property="og:image" content="<?= ($news_single && !empty($news_single['image_url'])) ? htmlspecialchars($news_single['image_url'], ENT_QUOTES) : 'https://www.casuffit.be/assets/img/og-image.jpg' ?>">
+  <meta property="og:image" content="<?= ($news_single && !empty($news_single['image_url'])) ? htmlspecialchars($news_single['image_url'], ENT_QUOTES) : ($news_single ? 'https://www.casuffit.be/og-news.php?id=' . (int)$news_single['id'] : 'https://www.casuffit.be/assets/img/og-image.jpg') ?>">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630"><?= $news_single ? '
   <meta property="og:type" content="article">' : '' ?>
