@@ -278,7 +278,7 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 
   <!-- Header -->
   <div class="dash-header">
-    <h1>📊 Tableau de bord</h1>
+    <h1>📊 Tableau de bord <span style="font-size:.62rem;font-weight:600;color:#aaa;vertical-align:middle;background:#eef2f7;padding:2px 8px;border-radius:10px;margin-left:6px">v<?= date('y.m.d-Hi', filemtime(__FILE__)) ?></span></h1>
 <?php if (!empty($flash)): ?>
     <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin:10px 0;font-size:.9rem;color:#664d03"><?= htmlspecialchars($flash) ?></div>
 <?php endif; ?>
