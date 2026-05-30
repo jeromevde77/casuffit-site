@@ -1,20 +1,68 @@
 <?php
-// v5 — force redeploy 2026-05-30
+// v6 — force redeploy 2026-05-30 (diagnostic widgets actu)
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 $db = getDB();
 
-// ── Hook reconfiguration widgets onglet actualités ────────────────────────
+// ── Hook reconfiguration widgets onglet actualités (DIAGNOSTIC) ───────────
 if (($_GET['action'] ?? '') === 'fix_actu_widgets') {
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fix widgets actu</title>';
+    echo '<style>body{font-family:sans-serif;max-width:800px;margin:30px auto;padding:0 20px;line-height:1.6}';
+    echo 'table{border-collapse:collapse;width:100%;margin:10px 0}td,th{border:1px solid #ccc;padding:6px 10px;text-align:left;font-size:.9rem}';
+    echo '.ok{color:#27ae60;font-weight:700}.err{color:#c0392b;font-weight:700}code{background:#eef2f7;padding:2px 6px;border-radius:4px}</style></head><body>';
+    echo '<h2>🔧 Diagnostic widgets — onglet Actualités</h2>';
+
     try {
-        $db->prepare("DELETE FROM page_widgets WHERE page_slug='actualites'")->execute();
-        $db->prepare("INSERT INTO page_widgets (page_slug, widget_slug, ordre, position) VALUES ('actualites','news',1,'droite')")->execute();
-        $db->prepare("INSERT INTO page_widgets (page_slug, widget_slug, ordre, position) VALUES ('actualites','donation_card',2,'droite')")->execute();
-        $flash = '✅ Widgets de l\'onglet Actualités reconfigurés : news + donation_card. Vide le cache (navigation privée) pour voir le changement.';
-        $flash_ok = true;
-    } catch(Exception $e) {
-        $flash = '❌ Erreur : '.$e->getMessage();
+        // 1. État AVANT
+        echo '<h3>1. État actuel de page_widgets</h3>';
+        $all = $db->query("SELECT page_slug, widget_slug, ordre, position FROM page_widgets ORDER BY page_slug, ordre")->fetchAll(PDO::FETCH_ASSOC);
+        echo '<table><tr><th>page_slug</th><th>widget_slug</th><th>ordre</th><th>position</th></tr>';
+        $slugs_actu = [];
+        foreach ($all as $r) {
+            $hl = (stripos($r['page_slug'],'actu') !== false) ? ' style="background:#fff3cd"' : '';
+            if (stripos($r['page_slug'],'actu') !== false) $slugs_actu[] = $r['page_slug'];
+            echo "<tr$hl><td><code>{$r['page_slug']}</code></td><td>{$r['widget_slug']}</td><td>{$r['ordre']}</td><td>{$r['position']}</td></tr>";
+        }
+        echo '</table>';
+        echo '<p>Slugs contenant "actu" : <code>' . (count($slugs_actu) ? implode(', ', array_unique($slugs_actu)) : 'AUCUN') . '</code></p>';
+
+        // 2. Liste des widgets actifs
+        echo '<h3>2. Widgets disponibles (actif=1 ?)</h3>';
+        $widgets = $db->query("SELECT slug, actif FROM widgets ORDER BY slug")->fetchAll(PDO::FETCH_ASSOC);
+        echo '<table><tr><th>slug</th><th>actif</th></tr>';
+        foreach ($widgets as $w) {
+            echo "<tr><td>{$w['slug']}</td><td>" . ($w['actif'] ? '<span class=ok>oui</span>' : '<span class=err>NON</span>') . "</td></tr>";
+        }
+        echo '</table>';
+
+        // 3. Appliquer le changement sur TOUS les slugs actu trouvés (+ 'actualites' par défaut)
+        echo '<h3>3. Application du changement</h3>';
+        $targets = array_unique(array_merge($slugs_actu, ['actualites']));
+        foreach ($targets as $tslug) {
+            $db->prepare("DELETE FROM page_widgets WHERE page_slug=?")->execute([$tslug]);
+            $db->prepare("INSERT INTO page_widgets (page_slug, widget_slug, ordre, position) VALUES (?,'news',1,'droite')")->execute([$tslug]);
+            $db->prepare("INSERT INTO page_widgets (page_slug, widget_slug, ordre, position) VALUES (?,'donation_card',2,'droite')")->execute([$tslug]);
+            echo "<p class=ok>✅ <code>$tslug</code> → news + donation_card</p>";
+        }
+
+        // 4. S'assurer que donation_card est actif
+        $db->prepare("UPDATE widgets SET actif=1 WHERE slug='donation_card'")->execute();
+        echo '<p class=ok>✅ donation_card forcé actif=1</p>';
+
+        // 5. État APRÈS
+        echo '<h3>4. État après changement</h3>';
+        $after = $db->query("SELECT page_slug, widget_slug, ordre, position FROM page_widgets WHERE page_slug LIKE '%actu%' ORDER BY ordre")->fetchAll(PDO::FETCH_ASSOC);
+        echo '<table><tr><th>page_slug</th><th>widget_slug</th><th>ordre</th><th>position</th></tr>';
+        foreach ($after as $r) echo "<tr><td>{$r['page_slug']}</td><td>{$r['widget_slug']}</td><td>{$r['ordre']}</td><td>{$r['position']}</td></tr>";
+        echo '</table>';
+
+        echo '<p style="margin-top:20px"><a href="/?news=4" style="background:#1673B2;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">→ Tester /?news=4</a></p>';
+    } catch (Exception $e) {
+        echo '<p class=err>❌ Erreur : ' . htmlspecialchars($e->getMessage()) . '</p>';
     }
+    echo '</body></html>';
+    exit;
 }
 
 // ── Hook insertion actualité norme vent ───────────────────────────────────
