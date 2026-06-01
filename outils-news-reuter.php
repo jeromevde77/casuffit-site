@@ -19,7 +19,9 @@ $contenu  = <<<'HTML'
 <h2>Le nœud : la norme de vent</h2>
 <p>L'article rappelle que les normes de vent — modifiées il y a vingt ans sous Bert Anciaux — constituent le cadre légal flou qui permet ces basculements. L'État fédéral a déjà été condamné pour ne pas avoir clarifié les règles d'utilisation des pistes. Ce constat confirme notre analyse : <strong>la norme de vent est le vrai levier</strong>, et c'est là que doit porter l'action juridique.</p>
 
-<p style="font-size:.85rem;color:#888;margin-top:20px"><em>Source : La Dernière Heure, 01/06/2026 · Photo : © Jean-Luc Flemal / DH</em></p>
+<hr style="margin:24px 0;border:none;border-top:1px solid #e0e0e0">
+<p style="font-size:.85rem;color:#888;margin-bottom:8px"><strong>Article complet — La Dernière Heure, 01/06/2026</strong> <em>© DH / Jean-Luc Flemal</em></p>
+<img src="/assets/img/dh-reuter-article-complet.jpg" alt="Article La Dernière Heure - Florence Reuter Piste 01" style="width:100%;border-radius:6px;border:1px solid #e0e0e0;display:block">
 HTML;
 
 $titre_nl    = "Reuter (Waterloo): « Uitgesloten om alles naar Baan 01 terug te sturen »";
