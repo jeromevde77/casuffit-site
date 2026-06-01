@@ -11,10 +11,13 @@
           <span style="font-size:.7rem;color:var(--orange-hex);font-weight:700;display:block;margin-bottom:4px">📌 Épinglé</span>
         <?php endif; ?>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <div>
+          <div style="flex:1">
             <div style="font-weight:700;color:var(--bleu-hex);font-size:.88rem;margin-bottom:3px"><?= htmlspecialchars(tdb($n,'titre') ?? $n['titre']) ?></div>
             <div style="font-size:.7rem;color:#999"><?= date('d/m/Y', strtotime($n['date_creation'])) ?></div>
           </div>
+          <?php if (!empty($n['image_url'])): ?>
+            <img src="<?= htmlspecialchars($n['image_url']) ?>" alt="" style="width:64px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0">
+          <?php endif; ?>
           <span class="news-chevron" id="chev-<?= $ni ?>" style="color:var(--bleu-hex);font-size:.8rem;flex-shrink:0;transition:transform .2s;transform:<?= $is_open ? 'rotate(180deg)' : 'none' ?>">▼</span>
         </div>
         <?php
@@ -30,6 +33,9 @@
 
       <!-- Contenu complet dépliable -->
       <div class="news-full" id="news-full-<?= $ni ?>" style="display:<?= $is_open ? 'block' : 'none' ?>;padding:0 12px 12px;border-top:1px solid var(--bleu-ciel)">
+        <?php if (!empty($n['image_url'])): ?>
+          <img src="<?= htmlspecialchars($n['image_url']) ?>" alt="<?= htmlspecialchars(tdb($n,'titre') ?? $n['titre']) ?>" style="width:100%;max-height:280px;object-fit:cover;display:block;margin-bottom:10px;border-radius:0 0 4px 4px">
+        <?php endif; ?>
         <div class="apanel-inner" style="padding:12px 0;box-shadow:none">
           <?= tdb($n,'contenu') ?? $n['contenu'] ?>
         </div>
