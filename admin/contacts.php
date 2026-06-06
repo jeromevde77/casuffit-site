@@ -1,5 +1,5 @@
 <?php
-// admin/contacts.php — Gestion des messages de contact
+// admin/contacts.php — v2 — Gestion des messages de contact
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/mail_helper.php';
 session_start(); requireAdmin();

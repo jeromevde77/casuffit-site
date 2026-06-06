@@ -1,4 +1,4 @@
-<?php /* includes/admin_sidebar.php — v2 : lien Import CSV */ ?>
+<?php /* includes/admin_sidebar.php — v3 : Messages contacts */ ?>
 <div class="sidebar" id="admin-sidebar">
   <div class="sidebar-brand">
     <div style="display:flex;align-items:center;justify-content:space-between">
