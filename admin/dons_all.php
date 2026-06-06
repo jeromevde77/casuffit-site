@@ -26,7 +26,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['annuler'])) {
     header('Location: dons_all.php?msg=annule'); exit;
 }
 
+// ── Rappel promesses de don ───────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rappel_dons'])) {
+    require_once __DIR__ . '/../includes/mail_helper.php';
+    $ids     = array_map('intval', (array)($_POST['don_ids'] ?? []));
+    $iban    = cfg('iban', 'BE41 0689 0149 6910');
+    $bic     = cfg('bic', 'GKCCBEBB');
+    $benef   = cfg('beneficiaire', 'Ça suffit !');
+    $envoyes = 0; $erreurs = 0;
+    foreach ($ids as $did) {
+        if (!$did) continue;
+        $stmt = $db->prepare("SELECT d.*, m.prenom, m.nom, m.email FROM member_dons d JOIN members m ON m.id=d.member_id WHERE d.id=? AND d.statut='en_attente' LIMIT 1");
+        $stmt->execute([$did]); $d = $stmt->fetch();
+        if (!$d || !$d['email']) continue;
+        $montant  = number_format($d['montant'], 2, ',', ' ').' €';
+        $date_don = date('d/m/Y', strtotime($d['date_don']));
+        $comm     = $d['ogm_don'] ?: ($d['communication'] ?: '—');
+        $prenom   = $d['prenom'];
+        $html = "
+<p>Bonjour ".htmlspecialchars($prenom).",</p>
+
+<p>Vous avez promis un don de <strong>".htmlspecialchars($montant)."</strong> à notre association <em>Ça suffit !</em> le ".htmlspecialchars($date_don).".</p>
+
+<p>Nous revenons vers vous pour savoir quelle suite vous souhaitez donner à cette promesse.</p>
+
+<div style='background:#f0f7ff;border-left:4px solid #1673B2;padding:14px 18px;border-radius:0 8px 8px 0;margin:18px 0'>
+  <p style='font-weight:700;color:#0e3d6b;margin-bottom:8px'>✅ Si vous souhaitez honorer votre promesse :</p>
+  <p style='margin:0;font-size:.9rem;line-height:1.8'>
+    Effectuez simplement un virement bancaire :<br>
+    <strong>IBAN :</strong> ".htmlspecialchars($iban)."<br>
+    <strong>BIC :</strong> ".htmlspecialchars($bic)."<br>
+    <strong>Bénéficiaire :</strong> ".htmlspecialchars($benef)."<br>
+    <strong>Communication :</strong> <code>".htmlspecialchars($comm)."</code><br>
+    <strong>Montant :</strong> ".htmlspecialchars($montant)."
+  </p>
+</div>
+
+<div style='background:#f9f9f9;border-left:4px solid #aaa;padding:14px 18px;border-radius:0 8px 8px 0;margin:18px 0'>
+  <p style='font-weight:700;color:#555;margin-bottom:6px'>❌ Si vous ne pouvez pas honorer votre promesse :</p>
+  <p style='margin:0;font-size:.9rem;color:#666'>Pas de problème — il suffit de nous le faire savoir par email à <a href='mailto:info@casuffit.be' style='color:#1673B2'>info@casuffit.be</a>, ou simplement d'ignorer ce message.</p>
+</div>
+
+<p>Merci pour votre engagement et votre soutien à notre cause !</p>
+<p><em>L'équipe Ça suffit !<br><a href='https://www.casuffit.be' style='color:#1673B2'>casuffit.be</a></em></p>";
+        $text = "Bonjour $prenom,\n\nVous avez promis un don de $montant le $date_don.\n\nSi vous souhaitez honorer votre promesse :\nIBAN : $iban | BIC : $bic | Bénéficiaire : $benef | Communication : $comm | Montant : $montant\n\nSi vous ne pouvez pas honorer votre promesse, contactez-nous : info@casuffit.be\n\nMerci,\nL'équipe Ça suffit !";
+        if (sendMail($d['email'], $prenom.' '.$d['nom'], 'Votre promesse de don — Ça suffit !', $html, $text))
+            $envoyes++;
+        else $erreurs++;
+    }
+    $msg_rappel = "rappel_ok:{$envoyes}:{$erreurs}";
+    header("Location: dons_all.php?statut=en_attente&msg=".urlencode($msg_rappel)); exit;
+}
+
 $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
+// Parser le résultat de rappel
+$msg_rappel_ok = '';
+if (strpos($msg, 'rappel_ok:') === 0) {
+    [$_x, $env, $err] = explode(':', $msg);
+    $msg_rappel_ok = "✅ $env rappel(s) envoyé(s)".($err>0?" · ⚠ $err échec(s)":"").".";
+    $msg = '';
+}
 
 // Stats globales
 $total_confirme  = $db->query("SELECT COALESCE(SUM(montant),0) FROM member_dons WHERE statut='confirme'")->fetchColumn();
@@ -203,11 +262,32 @@ $top_donateurs = $db->query("
         <a href="dons_all.php" class="btn btn-grey">Réinitialiser</a>
       </form>
 
+      <?php if ($msg_rappel_ok): ?>
+        <div style="background:#e8f8f0;border:1px solid #27ae60;border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:.9rem;color:#1a6e3c"><?= htmlspecialchars($msg_rappel_ok) ?></div>
+      <?php endif; ?>
+
       <?php if (empty($dons)): ?>
         <p style="color:#aaa;text-align:center;padding:20px;font-size:.85rem">Aucun don trouvé.</p>
       <?php else: ?>
+
+      <?php if ($filtre_statut === 'en_attente' && !empty($dons)): ?>
+      <form method="POST" id="form-rappel"><?= csrf_field() ?>
+      <input type="hidden" name="rappel_dons" value="1">
+      <div style="background:#fff8e6;border:1px solid #ffc107;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer;font-weight:600">
+          <input type="checkbox" id="cb-all" style="width:16px;height:16px" onclick="document.querySelectorAll('.cb-don').forEach(c=>c.checked=this.checked)">
+          Tout sélectionner
+        </label>
+        <button type="submit" id="btn-rappel" onclick="return confirmRappel()" class="btn btn-primary" style="background:#FF9900;border-color:#FF9900">
+          📧 Envoyer un rappel aux sélectionnés
+        </button>
+        <span id="rappel-count" style="font-size:.82rem;color:#888"></span>
+      </div>
+      <?php endif; ?>
+
       <table>
         <tr>
+          <?php if ($filtre_statut === 'en_attente'): ?><th style="width:32px"></th><?php endif; ?>
           <th>Date</th>
           <th>Membre</th>
           <th>Montant</th>
@@ -221,6 +301,9 @@ $top_donateurs = $db->query("
             $total_filtre += ($d['statut'] === 'confirme') ? $d['montant'] : 0;
         ?>
         <tr>
+          <?php if ($filtre_statut === 'en_attente'): ?>
+          <td style="width:32px;text-align:center"><input type="checkbox" name="don_ids[]" value="<?= $d['id'] ?>" class="cb-don" style="width:16px;height:16px;cursor:pointer"></td>
+          <?php endif; ?>
           <td style="white-space:nowrap;color:#888;font-size:.75rem"><?= date('d/m/Y', strtotime($d['date_don'])) ?></td>
           <td>
             <div class="member-info">
@@ -264,6 +347,7 @@ $top_donateurs = $db->query("
         </tr>
         <?php endif; ?>
       </table>
+      <?php if ($filtre_statut === 'en_attente' && !empty($dons)): ?></form><?php endif; ?>
       <?php endif; ?>
     </div>
 
@@ -328,5 +412,19 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     exit;
 }
 ?>
+<script>
+// Rappel promesses : compteur sélectionnés
+document.addEventListener('change', function(e) {
+  if (!e.target.classList.contains('cb-don') && e.target.id !== 'cb-all') return;
+  var n = document.querySelectorAll('.cb-don:checked').length;
+  var span = document.getElementById('rappel-count');
+  if (span) span.textContent = n > 0 ? n + ' sélectionné(s)' : '';
+});
+function confirmRappel() {
+  var n = document.querySelectorAll('.cb-don:checked').length;
+  if (n === 0) { alert('Sélectionnez au moins un don.'); return false; }
+  return confirm('Envoyer un email de rappel à ' + n + ' personne(s) ?');
+}
+</script>
 </body>
 </html>
