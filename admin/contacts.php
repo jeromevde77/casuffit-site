@@ -1,11 +1,13 @@
 <?php
-// admin/contacts.php — v3 — Gestion des messages de contact
+// admin/contacts.php — v4 — Gestion des messages de contact
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/mail_helper.php';
+require_once __DIR__ . '/../includes/csrf.php';
 session_start(); requireAdmin();
 $db = getDB();
 
 $msg = ''; $err = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
 
 // Répondre
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reply_id'])) {
@@ -87,7 +89,11 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 .alert.err{background:#fde8e8;border:1px solid #f5b7b1;color:#922b21}
 
 /* ── Layout deux colonnes ── */
-.contacts-layout{display:grid;grid-template-columns:340px 1fr;gap:0;margin:18px 28px 28px;background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden;min-height:500px}
+.contacts-layout{display:grid;grid-template-columns:340px 1fr;gap:0;margin:18px 28px 28px;background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden;height:calc(100vh - 170px);min-height:500px}
+.msg-list{border-right:1px solid #edf2f7;overflow-y:auto;height:100%}
+.msg-detail{display:flex;flex-direction:column;background:#fafbfc;height:100%;overflow:hidden}
+.detail-body{flex:1;overflow-y:auto;padding:20px 24px}
+.detail-reply{flex-shrink:0;padding:16px 24px 20px;border-top:1px solid #edf2f7;background:#fff}
 
 /* ── Liste messages ── */
 .msg-list{border-right:1px solid #edf2f7;overflow-y:auto;max-height:70vh}
@@ -216,6 +222,7 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 
     <div class="detail-reply">
       <form method="POST" action="contacts.php?id=<?= $detail['id'] ?>">
+        <?= csrf_field() ?>
         <input type="hidden" name="reply_id" value="<?= $detail['id'] ?>">
         <label><?= $detail['reponse'] ? '📝 Envoyer un autre message' : '📝 Répondre à '.$detail['nom'] ?></label>
         <textarea name="reponse" placeholder="Votre réponse..." required></textarea>
