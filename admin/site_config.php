@@ -40,6 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'facebook_url', 'instagram_url', 'whatsapp_url',
         // Dons
         'iban', 'bic', 'beneficiaire', 'don_texte',
+        // Email
+        'admin_bcc',
         // Montants
         'montant_initial', 'montant_recolte', 'montant_objectif',
         // Annonce
@@ -191,6 +193,9 @@ try {
           <input type="url" name="site_facebook" value="<?= htmlspecialchars($c['site_facebook'] ?? '') ?>">
         </div>
       </div>
+      <label>📬 BCC admin <span style="font-weight:400;color:#888;font-size:.8rem">— copie de tous les emails sortants du site</span></label>
+      <input type="email" name="admin_bcc" value="<?= htmlspecialchars($c['admin_bcc'] ?? '') ?>" placeholder="votre@gmail.com (laisser vide pour désactiver)">
+      <div class="hint">Si renseigné, chaque email envoyé par le site (contact, rappels, invitations…) vous envoie une copie en BCC.</div>
       <label>Texte du bandeau urgence (laisser vide pour masquer)</label>
       <input type="text" name="urgence_texte" value="<?= htmlspecialchars($c['urgence_texte'] ?? '') ?>" placeholder="Mobilisation nécessaire — ... (vide = masqué)">
       <div class="hint">Bandeau orange en haut du site. Laissez vide pour le masquer complètement.</div>
