@@ -1,7 +1,23 @@
 <?php
+// v7 — fix site_email hook
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 $db = getDB();
+
+// ── Hook fix site_email ───────────────────────────────────────────────────
+if (($_GET['action'] ?? '') === 'fix_email') {
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fix email</title></head><body style="font-family:sans-serif;max-width:500px;margin:40px auto;padding:0 20px">';
+    try {
+        $current = $db->query("SELECT valeur FROM site_config WHERE cle='site_email' LIMIT 1")->fetchColumn();
+        $db->prepare("INSERT INTO site_config (cle,valeur) VALUES ('site_email','info@casuffit.be') ON DUPLICATE KEY UPDATE valeur='info@casuffit.be'")->execute();
+        echo '<p style="color:#27ae60;font-weight:700">✅ site_email mis à jour : '.$current.' → info@casuffit.be</p>';
+    } catch(Exception $e) {
+        echo '<p style="color:#c0392b">❌ '.htmlspecialchars($e->getMessage()).'</p>';
+    }
+    echo '<p><a href="/admin/dashboard.php" style="color:#1673B2">→ Retour au dashboard</a></p></body></html>';
+    exit;
+}
 
 
 $nb_pages    = $db->query("SELECT COUNT(*) FROM pages")->fetchColumn();
