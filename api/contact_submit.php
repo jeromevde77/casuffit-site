@@ -36,7 +36,8 @@ $html = "<h2>Message via casuffit.be</h2>
 <hr><p>".nl2br(htmlspecialchars($message))."</p>";
 $text = "Nom: $nom\nEmail: $email\nSujet: $sujet\n\n$message";
 
-$sent = sendMail('info@casuffit.be', 'Ça suffit !',
+$admin_to = trim(cfg('alerte_contact_email', '')) ?: trim(cfg('site_email', 'info@casuffit.be'));
+$sent = sendMail($admin_to, 'Ça suffit !',
     '✉ Contact : '.($sujet ?: 'Message de '.$nom), $html, $text);
 
 if ($sent) {

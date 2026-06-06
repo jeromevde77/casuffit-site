@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Plainte
         'plainte_destinataires',
         // Alertes
-        'alerte_membre_email', 'alerte_don_email',
+        'alerte_membre_email', 'alerte_don_email', 'alerte_contact_email',
     );
     foreach ($fields as $cle) {
         $val = isset($_POST[$cle]) ? trim($_POST[$cle]) : '';
@@ -284,6 +284,14 @@ try {
       <p style="font-size:.72rem;color:#999;margin-top:6px">
         Quand un membre déclare un don depuis son espace, un email récapitulatif est envoyé ici.
         Laissez vide pour utiliser l'adresse d'alerte des membres ci-dessus (ou l'email du site).
+      </p>
+      <label style="margin-top:14px">Email qui reçoit une alerte à chaque message de contact</label>
+      <input type="email" name="alerte_contact_email"
+             value="<?= htmlspecialchars($c['alerte_contact_email'] ?? '') ?>"
+             placeholder="vous@exemple.be">
+      <p style="font-size:.72rem;color:#999;margin-top:6px">
+        Quand quelqu'un envoie un message via le formulaire de contact, un email est envoyé ici.
+        Laissez vide pour utiliser l'email du site (<?= htmlspecialchars($c['site_email'] ?? 'non défini') ?>).
       </p>
     </div>
 
