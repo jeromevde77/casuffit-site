@@ -1,4 +1,4 @@
-<?php // Widget contact — FR ?>
+<?php // Widget contact — NL ?>
 <div class="wct-wrap">
 <style>
 .wct-wrap{max-width:560px}.wct-links{display:flex;gap:12px;margin-bottom:22px;flex-wrap:wrap}
@@ -20,49 +20,49 @@
 </style>
 <div class="wct-links">
   <a class="wct-link wct-email" href="mailto:info@casuffit.be">
-    <span>✉</span><div><div>info@casuffit.be</div><div class="wct-sub">Par email</div></div>
+    <span>✉</span><div><div>info@casuffit.be</div><div class="wct-sub">Per e-mail</div></div>
   </a>
   <a class="wct-link wct-fb" href="http://www.facebook.com/piste01casuffit" target="_blank" rel="noopener">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
     <div><div>piste01casuffit</div><div class="wct-sub">Facebook</div></div>
   </a>
 </div>
-<div class="wct-form-title">📝 Envoyer un message</div>
+<div class="wct-form-title">📝 Stuur een bericht</div>
 <div id="wct-alert" style="display:none"></div>
 <form id="wct-form" onsubmit="wctSubmit(event)">
   <div class="wct-row">
-    <div class="wct-group"><label>Nom *</label><input type="text" name="nom" required placeholder="Votre nom"></div>
-    <div class="wct-group"><label>Email *</label><input type="email" name="email" required placeholder="votre@email.be"></div>
+    <div class="wct-group"><label>Naam *</label><input type="text" name="nom" required placeholder="Uw naam"></div>
+    <div class="wct-group"><label>E-mail *</label><input type="email" name="email" required placeholder="uw@email.be"></div>
   </div>
-  <div class="wct-group"><label>Sujet</label>
+  <div class="wct-group"><label>Onderwerp</label>
     <select name="sujet">
-      <option value="">— Choisir —</option>
-      <option value="Devenir membre">Devenir membre</option>
-      <option value="Signalement de nuisance">Signalement de nuisance</option>
-      <option value="Question juridique">Question juridique</option>
-      <option value="Presse / média">Presse / média</option>
-      <option value="Autre">Autre</option>
+      <option value="">— Selecteer —</option>
+      <option value="Devenir membre">Lid worden</option>
+      <option value="Signalement de nuisance">Hinder melden</option>
+      <option value="Question juridique">Juridische vraag</option>
+      <option value="Presse / média">Pers / media</option>
+      <option value="Autre">Andere</option>
     </select>
   </div>
-  <div class="wct-group"><label>Message *</label><textarea name="message" required placeholder="Votre message..."></textarea></div>
-  <button type="submit" class="wct-btn" id="wct-btn">📨 Envoyer</button>
+  <div class="wct-group"><label>Bericht *</label><textarea name="message" required placeholder="Uw bericht..."></textarea></div>
+  <button type="submit" class="wct-btn" id="wct-btn">📨 Bericht verzenden</button>
 </form>
 <script>
 function wctSubmit(e){
   e.preventDefault();
   var btn=document.getElementById('wct-btn'), alrt=document.getElementById('wct-alert');
-  btn.disabled=true; btn.textContent='Envoi...';
+  btn.disabled=true; btn.textContent='Verzenden...';
   var data=new FormData(document.getElementById('wct-form'));
-  data.append('lang','fr');
+  data.append('lang','nl');
   fetch('/api/contact_submit.php',{method:'POST',body:data})
     .then(function(r){return r.json();})
     .then(function(d){
       alrt.className='wct-alert '+(d.ok?'wct-ok':'wct-err');
       alrt.textContent=d.message; alrt.style.display='block';
-      if(d.ok){document.getElementById('wct-form').reset();btn.textContent='✅ Envoyé';}
-      else{btn.disabled=false;btn.textContent='📨 Envoyer';}
+      if(d.ok){document.getElementById('wct-form').reset();btn.textContent='✅ Verzonden';}
+      else{btn.disabled=false;btn.textContent='📨 Bericht verzenden';}
     })
-    .catch(function(){alrt.className='wct-alert wct-err';alrt.textContent='Erreur réseau. Réessayez.';alrt.style.display='block';btn.disabled=false;btn.textContent='📨 Envoyer';});
+    .catch(function(){alrt.className='wct-alert wct-err';alrt.textContent='Verbindingsfout. Probeer opnieuw.';alrt.style.display='block';btn.disabled=false;btn.textContent='📨 Bericht verzenden';});
 }
 </script>
 </div>
