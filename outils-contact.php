@@ -8,6 +8,22 @@ echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Ajouter page Conta
 echo '<style>body{font-family:sans-serif;max-width:600px;margin:30px auto;padding:0 20px}.ok{color:#27ae60;font-weight:700}a.btn{display:inline-block;background:#1673B2;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;margin-top:12px}</style></head><body>';
 echo '<h2>📬 Ajouter la page Contact dans la navigation</h2>';
 if (($_GET['apply'] ?? '') === '1') {
+    // Créer la table contacts
+    try {
+        $db->exec("CREATE TABLE IF NOT EXISTS contacts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nom VARCHAR(200) NOT NULL,
+            email VARCHAR(200) NOT NULL,
+            sujet VARCHAR(200) DEFAULT '',
+            message TEXT NOT NULL,
+            created_at DATETIME DEFAULT NOW(),
+            statut ENUM('nouveau','lu','repondu') DEFAULT 'nouveau',
+            reponse TEXT NULL,
+            repondu_at DATETIME NULL
+        ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+        echo '<p class=ok>✅ Table contacts créée</p>';
+    } catch(Exception $e) { echo '<p class=err>❌ '.htmlspecialchars($e->getMessage()).'</p>'; }
+
     try {
         $chk = $db->prepare("SELECT id FROM pages WHERE slug='contact' LIMIT 1");
         $chk->execute(); $ex = $chk->fetch();

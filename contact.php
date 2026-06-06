@@ -31,6 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <hr>
         <p>".nl2br(htmlspecialchars($message))."</p>";
         $text = "Nom: $nom\nEmail: $email\nSujet: $sujet\n\n$message";
+        // Sauvegarder en base de données
+        try {
+            $db = getDB();
+            $db->prepare("INSERT INTO contacts (nom,email,sujet,message,statut,created_at) VALUES (?,?,?,?,'nouveau',NOW())")
+               ->execute([$nom, $email, $sujet, $message]);
+        } catch (Exception $e) { /* table peut ne pas encore exister */ }
+
         $sent = sendMail(ADMIN_EMAIL, 'Ça suffit !', '✉ Contact casuffit.be : '.($sujet ?: 'Message'), $html, $text);
         if ($sent) {
             // Accusé de réception

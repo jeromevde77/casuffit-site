@@ -20,6 +20,11 @@
     <a href="widgets.php"     <?= basename($_SERVER['PHP_SELF'])==='widgets.php'     ?'class="active"':'' ?>>Widgets</a>
     <a href="translations.php" <?= basename($_SERVER['PHP_SELF'])==='translations.php' ?'class="active"':'' ?>>Traductions NL</a>
     <div class="nav-section">Membres & Dons</div>
+    <a href="contacts.php"   <?= basename($_SERVER['PHP_SELF'])==='contacts.php'   ?'class="active"':'' ?>>Messages <?php
+      try { $nb_new = getDB()->query("SELECT COUNT(*) FROM contacts WHERE statut='nouveau'")->fetchColumn();
+        if ($nb_new > 0) echo '<span style="background:#e74c3c;color:#fff;border-radius:10px;padding:1px 7px;font-size:.72rem;margin-left:4px">'.$nb_new.'</span>';
+      } catch(Exception $e){}
+    ?></a>
     <a href="members.php"     <?= basename($_SERVER['PHP_SELF'])==='members.php'     ?'class="active"':'' ?>>Membres</a>
     <a href="dons_all.php"    <?= basename($_SERVER['PHP_SELF'])==='dons_all.php'    ?'class="active"':'' ?>>Tous les dons</a>
     <a href="coda.php"        <?= basename($_SERVER['PHP_SELF'])==='coda.php'        ?'class="active"':'' ?>>Import CODA</a>
