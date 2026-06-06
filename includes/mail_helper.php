@@ -5,17 +5,22 @@
 if (function_exists('sendViaBrevo')) return; // déjà chargé
 
 function sendViaBrevo(string $to, string $to_name, string $html, string $subject, string $text): bool {
-    $payload = json_encode([
+    $payload = [
         'sender'      => ['name' => SMTP_FROM_NAME, 'email' => SMTP_FROM],
         'to'          => [['email' => $to, 'name' => $to_name]],
         'subject'     => $subject,
         'htmlContent' => $html,
         'textContent' => $text,
-    ]);
+    ];
+    // BCC admin si configuré (copie de tous les emails sortants)
+    $bcc = function_exists('cfg') ? cfg('admin_bcc', '') : '';
+    if ($bcc && filter_var($bcc, FILTER_VALIDATE_EMAIL)) {
+        $payload['bcc'] = [['email' => $bcc]];
+    }
     $ch = curl_init('https://api.brevo.com/v3/smtp/email');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS     => $payload,
+        CURLOPT_POSTFIELDS     => json_encode($payload),
         CURLOPT_HTTPHEADER     => ['accept: application/json','api-key: '.BREVO_API_KEY,'content-type: application/json'],
         CURLOPT_TIMEOUT        => 15,
     ]);
@@ -39,6 +44,11 @@ function sendViaSMTP(string $to, string $to_name, string $subject, string $html,
         $mail->Port = SMTP_PORT; $mail->CharSet = 'UTF-8';
         $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
         $mail->addAddress($to, $to_name);
+        // BCC admin si configuré
+        $bcc = function_exists('cfg') ? cfg('admin_bcc', '') : '';
+        if ($bcc && filter_var($bcc, FILTER_VALIDATE_EMAIL)) {
+            $mail->addBCC($bcc);
+        }
         $mail->Subject = $subject; $mail->isHTML(true);
         $mail->Body = $html; $mail->AltBody = $text;
         return $mail->send();
