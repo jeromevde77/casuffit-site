@@ -1,15 +1,31 @@
-<?php /* includes/admin_sidebar.php — v3 : Messages contacts */ ?>
+<?php /* includes/admin_sidebar.php — v4 : Messages contacts + rôle support */ ?>
+<?php
+// Rôle 'support' : accès limité à contacts.php uniquement
+$_admin_role = $_SESSION['admin_role'] ?? 'admin';
+$_is_support = ($_admin_role === 'support');
+if ($_is_support && basename($_SERVER['PHP_SELF']) !== 'contacts.php') {
+    header('Location: '.dirname($_SERVER['PHP_SELF'] ?? '').'/contacts.php'); exit;
+}
+?>
 <div class="sidebar" id="admin-sidebar">
   <div class="sidebar-brand">
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div>
         <h2>Ça suffit !</h2>
-        <p>Administration</p>
+        <p><?= $_is_support ? 'Support' : 'Administration' ?></p>
       </div>
       <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Fermer">✕</button>
     </div>
   </div>
   <nav>
+    <?php if ($_is_support): ?>
+    <div class="nav-section">Messages</div>
+    <a href="contacts.php" <?= basename($_SERVER['PHP_SELF'])==='contacts.php' ?'class="active"':'' ?>>📬 Messages <?php
+      try { $nb_new = getDB()->query("SELECT COUNT(*) FROM contacts WHERE statut='nouveau'")->fetchColumn();
+        if ($nb_new > 0) echo '<span style="background:#e74c3c;color:#fff;border-radius:10px;padding:1px 7px;font-size:.72rem;margin-left:4px">'.$nb_new.'</span>';
+      } catch(Exception $e){}
+    ?></a>
+    <?php else: ?>
     <div class="nav-section">Contenu</div>
     <a href="dashboard.php"   <?= basename($_SERVER['PHP_SELF'])==='dashboard.php'   ?'class="active"':'' ?>>Dashboard</a>
     <a href="pages.php"       <?= basename($_SERVER['PHP_SELF'])==='pages.php'       ?'class="active"':'' ?>>Pages</a>
@@ -48,6 +64,7 @@
     <a href="compose.php"     <?= basename($_SERVER['PHP_SELF'])==='compose.php'     ?'class="active"':'' ?>>Rédaction</a>
     <a href="newsletters.php" <?= basename($_SERVER['PHP_SELF'])==='newsletters.php' ?'class="active"':'' ?>>Envoyer / Historique</a>
   </nav>
+  <?php endif; ?>
   <div class="sidebar-footer">
     <a href="<?= SITE_URL ?>" target="_blank">Voir le site</a>
     <a href="logout.php">Déconnexion</a>

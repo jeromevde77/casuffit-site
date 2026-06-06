@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $uname = preg_replace('/[^a-z0-9_]/', '', strtolower(trim($_POST['username'] ?? '')));
         $email = trim($_POST['email'] ?? '');
         $pass  = $_POST['password'] ?? '';
-        $role  = ($me_role === 'superadmin' && ($_POST['role'] ?? '') === 'superadmin') ? 'superadmin' : 'admin';
+        $role  = ($me_role === 'superadmin' && ($_POST['role'] ?? '') === 'superadmin') ? 'superadmin' : (($_POST['role'] ?? '') === 'support' ? 'support' : 'admin');
         if (strlen($uname) < 3) $error = 'Nom d\'utilisateur trop court.';
         elseif (strlen($pass) < 10) $error = 'Mot de passe trop court (10 car. min).';
         elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $error = 'Email invalide.';
@@ -207,7 +207,7 @@ $users = $db->query("SELECT id,username,email,role,totp_enabled,totp_setup_at,la
         <div><label style="font-size:.7rem;color:#888;display:block;margin-bottom:3px">Mot de passe (10 car. min)</label>
           <input type="password" name="password" required minlength="10" style="width:180px"></div>
         <div><label style="font-size:.7rem;color:#888;display:block;margin-bottom:3px">Rôle</label>
-          <select name="role"><option value="admin">admin</option><option value="superadmin">superadmin</option></select></div>
+          <select name="role"><option value="admin">admin</option><option value="support">support (messages uniquement)</option><option value="superadmin">superadmin</option></select></div>
         <button type="submit" class="btn btn-p" style="padding:9px 16px">Créer</button>
       </div>
       <p style="font-size:.72rem;color:#aaa;margin-top:8px">Le nouveau compte devra configurer son 2FA à la première connexion.</p>

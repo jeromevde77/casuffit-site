@@ -70,7 +70,8 @@ if ($step === 'totp' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['admin_role'] = $admin['role']; $_SESSION['admin_last_activity'] = time();
         unset($_SESSION['admin_2fa_pending'], $_SESSION['admin_2fa_user']);
         $db->prepare("UPDATE admin_users SET last_login=NOW(), last_login_ip=? WHERE id=?")->execute([$_SERVER['REMOTE_ADDR']??'', $admin['id']]);
-        $redir = ($used_backup >= 0 && $used_backup <= 2) ? 'backup_codes.php?warn=1' : 'dashboard.php';
+        $is_support = ($admin['role'] === 'support');
+        $redir = $is_support ? 'contacts.php' : (($used_backup >= 0 && $used_backup <= 2) ? 'backup_codes.php?warn=1' : 'dashboard.php');
         session_write_close();
         header('Location: ' . $redir, true, 303);
         // Notification email envoyée après le redirect (non bloquant)
