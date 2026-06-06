@@ -93,7 +93,16 @@ AddDefaultCharset UTF-8
     # Content-Security-Policy
     Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.brevo.com https://api.open-meteo.com https://aviationweather.gov https://www.batc.be https://nominatim.openstreetmap.org; frame-src 'none'; object-src 'none'"
     # Cookies de session sécurisés
-    Header always edit Set-Cookie ^(.*)$ "$1; Secure; SameSite=Lax"
+    Header always edit Set-Cookie ^(.*)$ "$1; Secure; HttpOnly; SameSite=Lax"
+
+</IfModule>
+
+# ── Sessions PHP sécurisées ───────────────────────────────────────────
+<IfModule mod_php.c>
+    php_flag session.cookie_httponly On
+    php_flag session.cookie_secure   On
+    php_value session.cookie_samesite Lax
+    php_flag session.use_strict_mode  On
 </IfModule>
 
 # ── Cache ressources statiques ────────────────────────────────────────

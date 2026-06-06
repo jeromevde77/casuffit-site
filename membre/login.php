@@ -26,6 +26,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($_POST['_csrf']) || !hash_equals($csrf_token, $_POST['_csrf'])) {
         $error = tm('err_securite'); goto end_login;
     }
+    // ── Rate limiting : max 10 tentatives par IP par 15 minutes ──────────
+    $ip_rl  = 'login_rl_' . md5($_SERVER['REMOTE_ADDR'] ?? '');
+    $now_rl = time();
+    $_SESSION[$ip_rl] = array_filter($_SESSION[$ip_rl] ?? [], fn($t) => $now_rl - $t < 900);
+    if (count($_SESSION[$ip_rl]) >= 10) {
+        $error = 'Trop de tentatives. Réessayez dans 15 minutes.'; goto end_login;
+    }
+    $_SESSION[$ip_rl][] = $now_rl;
     $mode  = (($_POST['mode'] ?? 'magic') === 'password') ? 'password' : 'magic';
     $email = filter_var(trim(isset($_POST['email']) ? $_POST['email'] : ''), FILTER_VALIDATE_EMAIL);
 

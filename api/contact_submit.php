@@ -21,6 +21,12 @@ $_SESSION[$ip_key] = $rl;
 $is_nl = (($_POST['lang'] ?? 'fr') === 'nl');
 function tr(bool $nl, string $fr, string $nls): string { return $nl ? $nls : $fr; }
 
+// ── Honeypot ──────────────────────────────────────────────────────────
+if (!empty($_POST['website'])) {
+    echo json_encode(['ok' => true, 'message' => tr($is_nl, 'Votre message a bien été envoyé.', 'Uw bericht is goed verzonden.')]);
+    exit;
+}
+
 $nom     = trim($_POST['nom']     ?? '');
 $email   = trim($_POST['email']   ?? '');
 $sujet   = trim($_POST['sujet']   ?? '');

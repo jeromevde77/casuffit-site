@@ -6,6 +6,11 @@ $_is_support = ($_admin_role === 'support');
 if ($_is_support && basename($_SERVER['PHP_SELF']) !== 'contacts.php') {
     header('Location: '.dirname($_SERVER['PHP_SELF'] ?? '').'/contacts.php'); exit;
 }
+// 2FA obligatoire : si non configuré, forcer setup avant tout accès
+$_2fa_exempt = in_array(basename($_SERVER['PHP_SELF']), ['setup_totp.php','backup_codes.php','logout.php']);
+if (!empty($_SESSION['admin_2fa_required']) && !$_2fa_exempt) {
+    header('Location: setup_totp.php?first=1'); exit;
+}
 ?>
 <div class="sidebar" id="admin-sidebar">
   <div class="sidebar-brand">

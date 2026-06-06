@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_code'])) {
         $hashed_codes = array_map([TOTP::class, 'hashBackupCode'], $plain_codes);
         $db->prepare("UPDATE admin_users SET totp_secret=?, totp_enabled=1, totp_backup_codes=?, totp_setup_at=NOW() WHERE id=?")
            ->execute([$secret, json_encode($hashed_codes), $admin_id]);
+        unset($_SESSION['admin_2fa_required']);
         $_SESSION['totp_plain_codes']  = $plain_codes;
         $_SESSION['totp_setup_step']   = 'backup';
         unset($_SESSION['totp_pending_secret']);

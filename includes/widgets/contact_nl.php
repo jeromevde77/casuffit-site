@@ -39,6 +39,8 @@
     </select>
   </div>
   <div class="wct-group"><label>Bericht *</label><textarea name="message" required placeholder="Uw bericht..."></textarea></div>
+  <!-- Honeypot -->
+  <div style="display:none" aria-hidden="true"><input type="text" name="website" value="" tabindex="-1" autocomplete="off"></div>
   <button type="submit" class="wct-btn" id="wct-btn">📨 Bericht verzenden</button>
 </form>
 

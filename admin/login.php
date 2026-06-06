@@ -39,8 +39,11 @@ if ($step === 'password' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['admin_2fa_pending'] = $admin['id']; $_SESSION['admin_2fa_user'] = $admin['username'];
             session_regenerate_id(true);
             if (!$admin['totp_enabled']) {
-                $_SESSION['admin_logged_in'] = true; $_SESSION['admin_id'] = $admin['id'];
-                $_SESSION['admin_role'] = $admin['role']; $_SESSION['admin_last_activity'] = time();
+                $_SESSION['admin_logged_in']    = true;
+                $_SESSION['admin_id']           = $admin['id'];
+                $_SESSION['admin_role']         = $admin['role'];
+                $_SESSION['admin_last_activity'] = time();
+                $_SESSION['admin_2fa_required'] = ($admin['role'] !== 'support'); // 2FA obligatoire sauf support
                 unset($_SESSION['admin_2fa_pending'], $_SESSION['admin_2fa_user']);
                 $db->prepare("UPDATE admin_users SET last_login=NOW(), last_login_ip=? WHERE id=?")->execute([$_SERVER['REMOTE_ADDR']??'', $admin['id']]);
                 session_write_close();

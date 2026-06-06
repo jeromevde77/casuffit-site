@@ -39,6 +39,8 @@
     </select>
   </div>
   <div class="wct-group"><label>Message *</label><textarea name="message" required placeholder="Votre message..."></textarea></div>
+  <!-- Honeypot : doit rester vide -->
+  <div style="display:none" aria-hidden="true"><input type="text" name="website" value="" tabindex="-1" autocomplete="off"></div>
   <button type="submit" class="wct-btn" id="wct-btn">📨 Envoyer</button>
 </form>
 
