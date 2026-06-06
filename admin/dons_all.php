@@ -64,12 +64,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rappel_dons'])) {
 
 <div style='background:#f9f9f9;border-left:4px solid #aaa;padding:14px 18px;border-radius:0 8px 8px 0;margin:18px 0'>
   <p style='font-weight:700;color:#555;margin-bottom:6px'>❌ Si vous ne pouvez pas honorer votre promesse :</p>
-  <p style='margin:0;font-size:.9rem;color:#666'>Pas de problème — il suffit de nous le faire savoir par email à <a href='mailto:info@casuffit.be' style='color:#1673B2'>info@casuffit.be</a>, ou simplement d'ignorer ce message.</p>
+  <p style='margin:0;font-size:.9rem;color:#666;line-height:1.6'>Pas de problème ! Deux options :<br>
+  • Connectez-vous à votre <a href='https://www.casuffit.be/membre/dashboard.php' style='color:#1673B2'>espace membre</a> et supprimez la promesse de don directement depuis votre tableau de bord.<br>
+  • Ou contactez-nous simplement par email à <a href='mailto:info@casuffit.be' style='color:#1673B2'>info@casuffit.be</a>.</p>
 </div>
 
 <p>Merci pour votre engagement et votre soutien à notre cause !</p>
 <p><em>L'équipe Ça suffit !<br><a href='https://www.casuffit.be' style='color:#1673B2'>casuffit.be</a></em></p>";
-        $text = "Bonjour $prenom,\n\nVous avez promis un don de $montant le $date_don.\n\nSi vous souhaitez honorer votre promesse :\nIBAN : $iban | BIC : $bic | Bénéficiaire : $benef | Communication : $comm | Montant : $montant\n\nSi vous ne pouvez pas honorer votre promesse, contactez-nous : info@casuffit.be\n\nMerci,\nL'équipe Ça suffit !";
+        $text = "Bonjour $prenom,\n\nVous avez promis un don de $montant le $date_don.\n\nSi vous souhaitez honorer votre promesse :\nIBAN : $iban | BIC : $bic | Bénéficiaire : $benef | Communication : $comm | Montant : $montant\n\nSi vous ne pouvez pas honorer votre promesse :\n- Connectez-vous à votre espace membre : https://www.casuffit.be/membre/dashboard.php et supprimez la promesse de don depuis votre tableau de bord.\n- Ou contactez-nous : info@casuffit.be\n\nMerci,\nL'équipe Ça suffit !";
         if (sendMail($d['email'], $prenom.' '.$d['nom'], 'Votre promesse de don — Ça suffit !', $html, $text))
             $envoyes++;
         else $erreurs++;
