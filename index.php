@@ -83,6 +83,12 @@ try {
     $dons_confirmes = floatval($stmt_dons->fetchColumn());
 } catch (Exception $e) {}
 $recolte = $montant_initial + $dons_confirmes;
+// Date du dernier don confirmé (mise à jour affichée dans le widget)
+try {
+    $stmt_last = $db->query("SELECT MAX(date_don) FROM member_dons WHERE statut='confirme'");
+    $last_don_date = $stmt_last->fetchColumn();
+    $derniere_maj = $last_don_date ? date('d/m/Y', strtotime($last_don_date)) : date('d/m/Y');
+} catch (Exception $e) { $derniere_maj = date('d/m/Y'); }
 // Mettre à jour site_config pour afficher le total dans l'admin
 // (optionnel - on peut aussi juste le calculer à la volée)
 $objectif  = floatval(cfg('montant_objectif', 15000));

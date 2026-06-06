@@ -15,6 +15,18 @@ $widget_no_scale = true; // Ne pas agrandir la police sur mobile
     <div class="bar-wrap">
       <div class="bar-fill" style="width:<?= $pct ?>%"></div>
     </div>
+    <?php
+      $manque = max(0, $objectif - $recolte);
+      $manque_fmt = number_format($manque, 0, ',', ' ');
+    ?>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 10px;flex-wrap:wrap;gap:4px">
+      <?php if ($manque > 0): ?>
+      <span style="font-size:.8rem;color:#c0392b;font-weight:700">⚡ Il nous manque encore <?= $manque_fmt ?> € — chaque don compte !</span>
+      <?php else: ?>
+      <span style="font-size:.8rem;color:#27ae60;font-weight:700">✅ Objectif atteint — merci !</span>
+      <?php endif; ?>
+      <span style="font-size:.7rem;color:#aaa;white-space:nowrap">Mis à jour le <?= htmlspecialchars($derniere_maj ?? date('d/m/Y')) ?></span>
+    </div>
     <div class="prog-stats">
       <div class="stat">
         <span class="stat-val"><?= number_format($objectif, 0, ',', ' ') ?> €</span>
