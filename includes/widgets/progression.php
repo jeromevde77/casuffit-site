@@ -21,7 +21,7 @@ $widget_no_scale = true; // Ne pas agrandir la police sur mobile
     ?>
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 10px;flex-wrap:wrap;gap:4px">
       <?php if ($manque > 0): ?>
-      <span style="font-size:.8rem;color:#c0392b;font-weight:700">⚡ Il nous manque encore <?= $manque_fmt ?> € — chaque don compte !</span>
+      <span style="font-size:.75rem;color:#e08800;font-weight:600">Il nous manque encore <?= $manque_fmt ?> € — chaque don compte</span>
       <?php else: ?>
       <span style="font-size:.8rem;color:#27ae60;font-weight:700">✅ Objectif atteint — merci !</span>
       <?php endif; ?>
