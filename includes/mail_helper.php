@@ -12,13 +12,6 @@ function sendViaBrevo(string $to, string $to_name, string $html, string $subject
         'htmlContent' => $html,
         'textContent' => $text,
     ];
-    // BCC uniquement sur les emails envoyés À l'admin (pas aux membres)
-    $admin_email = function_exists('cfg') ? cfg('site_email', 'info@casuffit.be') : 'info@casuffit.be';
-    $bcc = function_exists('cfg') ? cfg('admin_bcc', '') : '';
-    if ($bcc && strtolower(trim($to)) === strtolower(trim($admin_email))) {
-        $bcc_list = array_filter(array_map('trim', explode(',', $bcc)), fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL));
-        if ($bcc_list) $payload['bcc'] = array_map(fn($e) => ['email' => $e], array_values($bcc_list));
-    }
     $ch = curl_init('https://api.brevo.com/v3/smtp/email');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
@@ -46,14 +39,6 @@ function sendViaSMTP(string $to, string $to_name, string $subject, string $html,
         $mail->Port = SMTP_PORT; $mail->CharSet = 'UTF-8';
         $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
         $mail->addAddress($to, $to_name);
-        // BCC uniquement sur les emails envoyés À l'admin (pas aux membres)
-        $admin_email = function_exists('cfg') ? cfg('site_email', 'info@casuffit.be') : 'info@casuffit.be';
-        $bcc = function_exists('cfg') ? cfg('admin_bcc', '') : '';
-        if ($bcc && strtolower(trim($to)) === strtolower(trim($admin_email))) {
-            foreach (array_filter(array_map('trim', explode(',', $bcc)), fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL)) as $bcc_email) {
-                $mail->addBCC($bcc_email);
-            }
-        }
         $mail->Subject = $subject; $mail->isHTML(true);
         $mail->Body = $html; $mail->AltBody = $text;
         return $mail->send();
