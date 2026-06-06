@@ -24,6 +24,7 @@
         <?php endif; ?>
         <a href="/membre/inscription.php" style="color:rgba(255,255,255,0.7);font-size:0.78rem">Devenir membre</a>
         <a href="/?page=soutenir#newsletter" style="color:rgba(255,255,255,0.7);font-size:0.78rem">Newsletter</a>
+        <a href="/?page=contact" style="color:rgba(255,255,255,0.7);font-size:0.78rem">Contact</a>
       </div>
     </div>
   </div>
