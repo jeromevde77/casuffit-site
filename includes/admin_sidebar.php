@@ -27,7 +27,6 @@
     ?></a>
     <a href="members.php"     <?= basename($_SERVER['PHP_SELF'])==='members.php'     ?'class="active"':'' ?>>Membres</a>
     <a href="dons_all.php"    <?= basename($_SERVER['PHP_SELF'])==='dons_all.php'    ?'class="active"':'' ?>>Tous les dons</a>
-    <a href="coda.php"        <?= basename($_SERVER['PHP_SELF'])==='coda.php'        ?'class="active"':'' ?>>Import CODA</a>
     <a href="import_csv.php"  <?= basename($_SERVER['PHP_SELF'])==='import_csv.php'  ?'class="active"':'' ?>>Import CSV</a>
     <div class="nav-section">Sécurité</div>
     <a href="admin_users.php" <?= basename($_SERVER['PHP_SELF'])==='admin_users.php' ?'class="active"':'' ?>>Comptes admin</a>
