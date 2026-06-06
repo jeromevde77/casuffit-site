@@ -65,8 +65,8 @@ if ($selected_id) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Messages — Admin Ça suffit !</title>
-<?php include __DIR__.'/../includes/admin_sidebar_css.php'; ?>
 <style>
+<?php include __DIR__.'/../includes/admin_sidebar_css.php'; ?>
 .stats-bar { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
 .stat-box { background:#fff; border-radius:10px; padding:12px 20px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08); min-width:90px; }
 .stat-box .val { font-size:1.6rem; font-weight:800; color:#0e3d6b; }
