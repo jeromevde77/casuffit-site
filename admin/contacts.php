@@ -67,6 +67,7 @@ if ($selected_id) {
 <title>Messages — Admin Ça suffit !</title>
 <style>
 <?php include __DIR__.'/../includes/admin_sidebar_css.php'; ?>
+body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333;margin:0}
 .stats-bar { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
 .stat-box { background:#fff; border-radius:10px; padding:12px 20px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08); min-width:90px; }
 .stat-box .val { font-size:1.6rem; font-weight:800; color:#0e3d6b; }
