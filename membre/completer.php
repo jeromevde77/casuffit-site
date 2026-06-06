@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 session_start();
+require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/lang.php';
 $db = getDB();
 
@@ -112,6 +113,7 @@ input:focus{outline:none;border-color:#1673B2}
     <p class="intro">Bonjour <?= htmlspecialchars($membre['prenom'] ?: '') ?>, il nous manque votre adresse complète. Elle nous permet de savoir quelles communes sont survolées — un argument essentiel dans nos démarches.</p>
     <?php if ($error): ?><div class="msg-err"><?= htmlspecialchars($error) ?></div><?php endif; ?>
     <form method="POST">
+      <?= csrf_field() ?>
       <input type="hidden" name="completer_adresse" value="1">
       <label>Rue *</label>
       <input type="text" name="rue" value="<?= htmlspecialchars($membre['rue'] ?? '') ?>" required>

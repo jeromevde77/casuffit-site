@@ -6,6 +6,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 
 session_start();
+require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/lang.php';
 $db     = getDB();
 $membre = requireMembre($db);
@@ -389,6 +390,7 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
       <div class="card">
         <h2><?= tm('generer_qr') ?></h2>
         <form method="POST">
+      <?= csrf_field() ?>
           <div class="montant-grid">
             <?php foreach ([20,50,100,250,500] as $m): ?>
             <button type="button" class="mbtn <?= $m===50?'active':'' ?>" onclick="selectM(this,'<?= $m ?>')"><?= $m ?> €</button>
@@ -441,6 +443,7 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
             <span class="badge <?= $d['statut']==='confirme'?'b-ok':'b-wait' ?>"><?= $d['statut']==='confirme'?'✓':'⏳' ?></span>
             <?php if ($d['statut']==='en_attente'): ?>
             <form method="POST" class="don-suppr-form" onsubmit="return confirmSupprDon(event)">
+      <?= csrf_field() ?>
               <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
               <button type="submit" name="supprimer_don" class="don-suppr-btn" title="<?= tm('suppr_don_titre') ?>" onclick="event.stopPropagation()">✕</button>
             </form>
@@ -486,6 +489,7 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
     <div class="card">
       <h2><?= tm('mes_donnees') ?></h2>
       <form method="POST">
+      <?= csrf_field() ?>
 
         <div class="section-title"><?= tm('section_identite') ?></div>
         <div class="form-row-2">
@@ -546,6 +550,7 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
           <?php endif; ?>
         </p>
         <form method="POST">
+      <?= csrf_field() ?>
           <input type="email" name="email_nouveau" placeholder="<?= tm('email_nouveau_ph') ?>" required>
           <button type="submit" name="changer_email" class="btn-blue" style="width:100%"><?= tm('btn_envoyer_confirm') ?></button>
         </form>
@@ -559,6 +564,7 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
           <?= !empty($membre['password_hash']) ? tm('pass_defini') : tm('pass_aucun') ?>
         </p>
         <form method="POST" autocomplete="off">
+      <?= csrf_field() ?>
           <input type="hidden" name="definir_password" value="1">
           <input type="password" name="password" placeholder="<?= tm('label_new_pass') ?>" required minlength="8" autocomplete="new-password">
           <input type="password" name="password_confirm" placeholder="<?= tm('label_confirm_pass') ?>" required minlength="8" autocomplete="new-password">
@@ -575,6 +581,7 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
       <button class="btn-gray" onclick="this.style.display='none';document.getElementById('suppression-form').style.display='block'"><?= tm('btn_demander_suppression') ?></button>
       <div id="suppression-form">
         <form method="POST" onsubmit="return confirm('Supprimer définitivement votre compte ?')">
+      <?= csrf_field() ?>
           <div style="font-size:.8rem;font-weight:700;color:#c53030;margin-bottom:6px"><?= tm('confirm_suppression_label') ?></div>
           <input type="text" name="confirm_suppression" placeholder="<?= tm('confirm_suppression_ph') ?>" autocomplete="off">
           <button type="submit" name="supprimer_compte" class="btn-red"><?= tm('btn_supprimer') ?></button>

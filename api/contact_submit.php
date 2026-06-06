@@ -4,6 +4,20 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/mail_helper.php';
 header('Content-Type: application/json; charset=utf-8');
 
+// ── Rate limiting : max 5 soumissions par IP par heure ────────────────
+$ip      = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+$ip_key  = 'contact_rl_' . md5($ip);
+if (session_status() === PHP_SESSION_NONE) session_start();
+$rl      = $_SESSION[$ip_key] ?? ['count' => 0, 'since' => time()];
+if (time() - $rl['since'] > 3600) { $rl = ['count' => 0, 'since' => time()]; }
+if ($rl['count'] >= 5) {
+    http_response_code(429);
+    echo json_encode(['ok' => false, 'message' => 'Trop de messages envoyés. Réessayez dans une heure.']);
+    exit;
+}
+$rl['count']++;
+$_SESSION[$ip_key] = $rl;
+
 $is_nl = (($_POST['lang'] ?? 'fr') === 'nl');
 function tr(bool $nl, string $fr, string $nls): string { return $nl ? $nls : $fr; }
 

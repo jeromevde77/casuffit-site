@@ -5,6 +5,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 
 session_start();
+require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/lang.php';
 $db     = getDB();
 $membre = requireMembre($db);
@@ -13,6 +14,7 @@ $success = '';
 $error   = '';
 
 // ── Traitement du formulaire ──────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify(); // CSRF
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $prenom  = trim($_POST['prenom']  ?? '');
@@ -132,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 
   <form method="POST">
+      <?= csrf_field() ?>
 
     <div class="section-title"><?= tm('identite') ?></div>
 
