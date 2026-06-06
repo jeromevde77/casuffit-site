@@ -5,7 +5,7 @@
       <div style="font-size:1rem;font-weight:800;margin-bottom:8px">Ça suffit !</div>
       <div style="font-size:0.75rem;color:rgba(255,255,255,0.6);line-height:1.8">
         Piste 01 Ça suffit ! · UBCNA<br>
-        <a href="mailto:<?= htmlspecialchars(cfg('site_email','info@casuffit.be')) ?>" style="color:rgba(255,255,255,0.7)"><?= htmlspecialchars(cfg('site_email','info@casuffit.be')) ?></a>
+        <a href="mailto:<?= function_exists('mailto_bcc') ? mailto_bcc() : htmlspecialchars(cfg('site_email','info@casuffit.be')) ?>" style="color:rgba(255,255,255,0.7)"><?= htmlspecialchars(cfg('site_email','info@casuffit.be')) ?></a>
       </div>
       <div style="margin-top:12px">
         <a href="/?page=contact" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-size:0.78rem;font-weight:600;border:1px solid rgba(255,255,255,0.2);transition:background .18s" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">

@@ -1,6 +1,17 @@
 <?php
 // ═══════════════════════════════════════════════════════════════════════
 //  includes/lang.php — Système multilingue FR / NL
+
+// Génère un mailto: avec BCC depuis cfg('admin_bcc')
+if (!function_exists('mailto_bcc')) {
+    function mailto_bcc(string $email = ''): string {
+        if (!$email && function_exists('cfg')) $email = cfg('site_email', 'info@casuffit.be');
+        $bcc = function_exists('cfg') ? cfg('admin_bcc', '') : '';
+        $bcc_list = array_filter(array_map('trim', explode(',', $bcc)), fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL));
+        if ($bcc_list) return htmlspecialchars($email . '?bcc=' . implode(',', $bcc_list));
+        return htmlspecialchars($email);
+    }
+}
 //  Inclus dans index.php avant tout traitement de routing
 // ═══════════════════════════════════════════════════════════════════════
 

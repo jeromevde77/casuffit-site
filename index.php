@@ -1898,7 +1898,7 @@ $site_email = cfg('site_email', 'info@casuffit.be');
       <h4>Nous contacter</h4>
       <p class="pied-iban">BELFIUS — <?= htmlspecialchars($iban) ?></p>
       <p class="pied-comm">Communication : <em>Nom - prénom - Action en justice ASBL</em></p>
-      <p><a href="mailto:<?= htmlspecialchars($site_email) ?>" class="pied-email">✉ <?= htmlspecialchars($site_email) ?></a></p>
+      <p><a href="mailto:<?= mailto_bcc($site_email) ?>" class="pied-email">✉ <?= htmlspecialchars($site_email) ?></a></p>
 
       <div style="display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap">
         <a href="/?page=contact" style="display:inline-flex;align-items:center;gap:5px;background:rgba(22,115,178,0.15);color:#1673B2;text-decoration:none;padding:6px 13px;border-radius:8px;font-size:0.78rem;font-weight:700;border:1px solid rgba(22,115,178,0.3)">
