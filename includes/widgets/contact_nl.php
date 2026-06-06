@@ -32,7 +32,7 @@
     <select name="sujet">
       <option value="">— Selecteer —</option>
       <option value="Devenir membre">Lid worden</option>
-      <option value="Signalement de nuisance">Hinder melden</option>
+      <option value="Question sur les nuisances">Vraag over hinder</option>
       <option value="Question juridique">Juridische vraag</option>
       <option value="Presse / média">Pers / media</option>
       <option value="Autre">Andere</option>

@@ -32,7 +32,7 @@
     <select name="sujet">
       <option value="">— Choisir —</option>
       <option>Devenir membre</option>
-      <option>Signalement de nuisance</option>
+      <option>Question sur les nuisances</option>
       <option>Question juridique</option>
       <option>Presse / média</option>
       <option>Autre</option>
