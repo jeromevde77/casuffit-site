@@ -95,9 +95,9 @@ a.del { color:#e74c3c; font-size:.8rem; text-decoration:none; }
 </style>
 </head>
 <body>
-<div class="admin-layout">
 <?php include __DIR__.'/../includes/admin_sidebar.php'; ?>
-<div class="main">
+<div class="wrap">
+<div style="padding:20px 24px 0">
 <div class="dash-header">
   <h1>📬 Messages de contact</h1>
   <span class="date"><?= date('d/m/Y') ?></span>
@@ -166,6 +166,5 @@ a.del { color:#e74c3c; font-size:.8rem; text-decoration:none; }
   <?php endforeach; ?>
   </tbody>
 </table>
-</div>
-</div>
+</div><!-- /wrap -->
 </body></html>
