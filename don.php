@@ -26,6 +26,14 @@ $don_texte = cfgLang('don_texte', 'Combat juridique — Frais et procédures');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title><?= $is_nl ? 'Steun ons — Ça suffit !' : 'Soutenir le combat — Ça suffit !' ?></title>
+<meta property="og:title" content="<?= $is_nl ? 'Steun ons juridisch fonds — Ça suffit !' : "Frais d'avocat &amp; fonds juridique — Ça suffit !" ?>">
+<meta property="og:description" content="<?= $is_nl ? 'Onze juridische acties hebben een kost. Steun ons om te kunnen handelen op 15 juni.' : "Nos actions passées ont un coût. Aidez-nous à défendre l'avenir — le 15 juin, nous devons être prêts." ?>">
+<meta property="og:image" content="https://www.casuffit.be/assets/img/og-don.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.casuffit.be/don">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ça suffit !">
 <meta name="theme-color" content="#0e3d6b">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
