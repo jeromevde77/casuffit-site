@@ -61,8 +61,11 @@ AddDefaultCharset UTF-8
     RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
     # ── Page d'atterrissage flyers (URL courte mémorable) ─────────────
-    RewriteRule ^agir/?$ agir.php [L,QSA]
-    RewriteRule ^doe-mee/?$ agir.php?lang=nl [L,QSA]
+    RewriteRule ^agir/?$      agir.php [L,QSA]
+    RewriteRule ^doe-mee/?$   agir.php?lang=nl [L,QSA]
+    RewriteRule ^don/?$       don.php [L,QSA]
+    RewriteRule ^soutenir/?$  don.php [L,QSA]
+    RewriteRule ^steunen/?$   don.php?lang=nl [L,QSA]
 
     # ── Multilingue : /nl/... → index.php?lang=nl&... ─────────────────
     # /nl/         → /index.php?lang=nl
