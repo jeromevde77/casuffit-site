@@ -163,6 +163,7 @@ $annonce_texte  = cfgLang('annonce_texte', '');
 // Urgence texte
 $urgence_texte = cfgLang('urgence_texte', 'Piste 01 & UBCNA unis — Ensemble pour faire cesser les nuisances !');
 $urgence_active = cfg('urgence_active', '1') === '1';
+$urgence_lien = trim(cfg('urgence_lien', ''));
 
 // Config don
 $iban        = cfg('iban', 'BE41 0689 0149 6910');
@@ -560,6 +561,8 @@ header.site-header {
   font-weight: 600;
   font-size: 95%;
 }
+a.urgence { display: block; text-decoration: none; cursor: pointer; transition: filter .15s; }
+a.urgence:hover { filter: brightness(1.08); text-decoration: underline; }
 
 /* ══ PROGRESS BAR ═════════════════════════════════════════════════════ */
 .progress-section {
@@ -1646,9 +1649,11 @@ function navBtnClass($p) {
 
 <!-- URGENCE -->
 <?php if ($urgence_active && trim($urgence_texte) !== ''): ?>
-<div class="urgence">
-  <?= htmlspecialchars($urgence_texte) ?>
-</div>
+  <?php if ($urgence_lien !== ''): ?>
+<a class="urgence" href="<?= htmlspecialchars($urgence_lien) ?>"><?= htmlspecialchars($urgence_texte) ?></a>
+  <?php else: ?>
+<div class="urgence"><?= htmlspecialchars($urgence_texte) ?></div>
+  <?php endif; ?>
 <?php endif; ?>
 
 <!-- ZONE HEADER — widgets globaux (affichés sur toutes les pages) -->

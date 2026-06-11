@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_header_widgets']
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fields = array(
         // Général
-        'site_nom', 'site_slogan', 'site_email', 'site_facebook', 'urgence_texte',
+        'site_nom', 'site_slogan', 'site_email', 'site_facebook', 'urgence_texte', 'urgence_lien',
         // Réseaux sociaux
         'facebook_url', 'instagram_url', 'whatsapp_url',
         // Dons
@@ -202,6 +202,9 @@ try {
       <label style="color:#1673B2">🇳🇱 Bandeau urgence (néerlandais)</label>
       <input type="text" name="urgence_texte_nl" value="<?= htmlspecialchars($c_nl['urgence_texte'] ?? '') ?>" placeholder="Vertaling NL...">
       <div class="hint">Affiché sur la version /nl du site. Si vide, le texte FR est utilisé.</div>
+      <label>Lien du bandeau urgence (optionnel)</label>
+      <input type="text" name="urgence_lien" value="<?= htmlspecialchars($c['urgence_lien'] ?? '') ?>" placeholder="/don.php (vide = bandeau non cliquable)">
+      <div class="hint">Si renseigné, le bandeau devient cliquable et renvoie vers ce lien (ex. <code>/don.php</code>). Laisser vide pour un bandeau simple.</div>
 
       <label>Logo du site</label>
       <img src="../medias/logo.png" class="logo-preview" alt="Logo actuel" onerror="this.style.display='none'">
