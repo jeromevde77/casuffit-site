@@ -9,7 +9,10 @@ $db = getDB();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmer_don'])) {
-    $db->prepare("UPDATE member_dons SET statut='confirme' WHERE id=?")->execute([intval($_POST['don_id'])]);
+    $don_id = intval($_POST['don_id']);
+    $db->prepare("UPDATE member_dons SET statut='confirme' WHERE id=?")->execute([$don_id]);
+    require_once __DIR__ . '/../includes/mail_helper.php';
+    sendDonMerci($db, $don_id);
     header('Location: members.php?msg=confirme'); exit;
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_don'])) {
@@ -20,6 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_don'])) {
     if ($montant > 0 && $member_id > 0) {
         $db->prepare("INSERT INTO member_dons (member_id,montant,communication,statut) VALUES (?,?,?,?)")
            ->execute([$member_id,$montant,$comm,$statut]);
+        if ($statut === 'confirme') {
+            require_once __DIR__ . '/../includes/mail_helper.php';
+            sendDonMerci($db, (int)$db->lastInsertId());
+        }
     }
     header('Location: members.php?msg=don_ajoute'); exit;
 }

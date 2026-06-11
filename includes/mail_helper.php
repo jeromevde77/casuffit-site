@@ -77,3 +77,89 @@ function sendMailTracked(string $to, string $to_name, string $subject, string $h
     }
     return sendMail($to, $to_name, $subject, $html, $text);
 }
+
+/**
+ * Envoie un e-mail de remerciement (bilingue FR/NL) au membre dont le don
+ * vient d'être confirmé. À appeler à chaque passage d'un don au statut
+ * « confirme » (confirmation manuelle ou import CODA).
+ *
+ * Idempotent : grâce aux colonnes merci_envoye / merci_date sur member_dons,
+ * un même don n'est jamais remercié deux fois. N'envoie que si le don est
+ * confirmé ET que l'email du membre est connu (« si on le connaît »).
+ *
+ * @return bool true si un e-mail a effectivement été envoyé
+ */
+function sendDonMerci(PDO $db, int $donId): bool {
+    if ($donId <= 0) return false;
+
+    // Colonnes de suivi présentes ? (migration migrate_don_merci.sql)
+    static $hasMerci = null;
+    if ($hasMerci === null) {
+        try { $hasMerci = (bool) $db->query("SHOW COLUMNS FROM member_dons LIKE 'merci_envoye'")->fetch(); }
+        catch (Throwable $e) { $hasMerci = false; }
+    }
+
+    $sql = "SELECT d.id, d.montant, d.communication, d.ogm_don, d.date_don, d.statut"
+         . ($hasMerci ? ", d.merci_envoye" : "")
+         . ", m.prenom, m.nom, m.email
+            FROM member_dons d JOIN members m ON m.id = d.member_id
+            WHERE d.id = ? LIMIT 1";
+    $st = $db->prepare($sql);
+    $st->execute([$donId]);
+    $d = $st->fetch(PDO::FETCH_ASSOC);
+
+    if (!$d)                                       return false; // don/membre introuvable
+    if ($d['statut'] !== 'confirme')               return false; // uniquement les dons confirmés
+    if (empty($d['email']))                        return false; // « si on le connaît »
+    if ($hasMerci && !empty($d['merci_envoye']))   return false; // déjà remercié
+
+    $prenom  = trim($d['prenom'] ?? '');
+    $helloFr = $prenom !== '' ? htmlspecialchars($prenom) : 'cher donateur';
+    $helloNl = $prenom !== '' ? htmlspecialchars($prenom) : 'beste schenker';
+    $montant = number_format((float) $d['montant'], 2, ',', ' ') . ' €';
+    $dateDon = date('d/m/Y', strtotime($d['date_don']));
+    $comm    = $d['ogm_don'] ?: ($d['communication'] ?: '—');
+    $url     = defined('SITE_URL') ? SITE_URL : 'https://www.casuffit.be';
+
+    $sujet = 'Merci pour votre don 🙏 — Bedankt voor uw gift — Ça suffit !';
+
+    $recap_fr = "<div style='background:#f0f7ff;border-left:4px solid #1673B2;padding:14px 18px;border-radius:0 8px 8px 0;margin:18px 0;font-size:.92rem;line-height:1.8'>"
+              . "<strong>Montant :</strong> ".htmlspecialchars($montant)."<br>"
+              . "<strong>Date :</strong> ".htmlspecialchars($dateDon)."<br>"
+              . "<strong>Communication :</strong> <code>".htmlspecialchars($comm)."</code></div>";
+    $recap_nl = "<div style='background:#f0f7ff;border-left:4px solid #1673B2;padding:14px 18px;border-radius:0 8px 8px 0;margin:18px 0;font-size:.92rem;line-height:1.8'>"
+              . "<strong>Bedrag:</strong> ".htmlspecialchars($montant)."<br>"
+              . "<strong>Datum:</strong> ".htmlspecialchars($dateDon)."<br>"
+              . "<strong>Mededeling:</strong> <code>".htmlspecialchars($comm)."</code></div>";
+
+    $html = "
+<p>Bonjour ".$helloFr.",</p>
+<p>Un grand <strong>merci</strong> ! Nous confirmons la bonne réception de votre don de <strong>".htmlspecialchars($montant)."</strong> en faveur de l'ASBL <em>Ça suffit !</em>.</p>
+<p>Grâce à vous, nous pouvons poursuivre le combat contre les nuisances aériennes de la piste 01 : expertise juridique, mesures de bruit et mobilisation citoyenne.</p>
+".$recap_fr."
+<p>Vous retrouvez l'historique de vos dons dans votre <a href='".$url."/membre/dashboard.php' style='color:#1673B2'>espace membre</a>.</p>
+<p>Encore merci pour votre engagement à nos côtés.</p>
+<p><em>L'équipe Ça suffit !<br><a href='".$url."' style='color:#1673B2'>casuffit.be</a></em></p>
+<hr style='border:none;border-top:1px solid #e0e0e0;margin:26px 0'>
+<p>Beste ".$helloNl.",</p>
+<p>Hartelijk <strong>dank</strong>! We bevestigen de goede ontvangst van uw gift van <strong>".htmlspecialchars($montant)."</strong> aan de vzw <em>Ça suffit !</em>.</p>
+<p>Dankzij u kunnen we de strijd tegen de geluidshinder van baan 01 voortzetten: juridische expertise, geluidsmetingen en burgermobilisatie.</p>
+".$recap_nl."
+<p>U vindt het overzicht van uw giften terug in uw <a href='".$url."/membre/dashboard.php' style='color:#1673B2'>ledenruimte</a>.</p>
+<p>Nogmaals bedankt voor uw engagement aan onze zijde.</p>
+<p><em>Het team van Ça suffit !<br><a href='".$url."' style='color:#1673B2'>casuffit.be</a></em></p>";
+
+    $text = "Bonjour $prenom,\n\nUn grand merci ! Nous confirmons la bonne reception de votre don de $montant en faveur de l'ASBL Ca suffit !.\n"
+          . "Montant : $montant | Date : $dateDon | Communication : $comm\n"
+          . "Historique de vos dons : $url/membre/dashboard.php\n\nMerci pour votre engagement,\nL'equipe Ca suffit !\n\n"
+          . "-----\n\nBeste $prenom,\n\nHartelijk dank! We bevestigen de goede ontvangst van uw gift van $montant aan de vzw Ca suffit !.\n"
+          . "Bedrag: $montant | Datum: $dateDon | Mededeling: $comm\nOverzicht van uw giften: $url/membre/dashboard.php\n\nBedankt voor uw engagement,\nHet team van Ca suffit !";
+
+    $ok = sendMail($d['email'], trim($prenom.' '.($d['nom'] ?? '')), $sujet, $html, $text);
+
+    if ($ok && $hasMerci) {
+        try { $db->prepare("UPDATE member_dons SET merci_envoye=1, merci_date=NOW() WHERE id=?")->execute([$donId]); }
+        catch (Throwable $e) { error_log('sendDonMerci flag: '.$e->getMessage()); }
+    }
+    return $ok;
+}

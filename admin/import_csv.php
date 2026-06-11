@@ -39,6 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
                            ->execute([$mid, $l['montant'], $comm, $note,
                                       ($l['date_virement'] ? $l['date_virement'].' 12:00:00' : date('Y-m-d').' 12:00:00'),
                                       $l['ref_import']]);
+                        require_once __DIR__ . '/../includes/mail_helper.php';
+                        sendDonMerci($db, (int)$db->lastInsertId());
                     }
                     $db->prepare("UPDATE import_csv_lignes SET statut='reconcilie',date_reconciliee=NOW() WHERE id=?")
                        ->execute([$lid]);
@@ -192,6 +194,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmer_import'])) 
                           WHERE id=? AND statut='en_attente'")
                ->execute([($tx['date'] ?: date('Y-m-d')) . ' 12:00:00', $tx['ref'], (int)$tx['don_id']]);
             $upd++;
+            require_once __DIR__ . '/../includes/mail_helper.php';
+            sendDonMerci($db, (int)$tx['don_id']);
         } else {
             $mid = (int)($members[$k] ?? 0);
             if ($mid <= 0) continue;
@@ -202,6 +206,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmer_import'])) 
                           VALUES (?, ?, ?, 'confirme', ?, ?, ?)")
                ->execute([$mid, $tx['montant'], $comm, $note, ($tx['date'] ?: date('Y-m-d')) . ' 12:00:00', $tx['ref']]);
             $ins++;
+            require_once __DIR__ . '/../includes/mail_helper.php';
+            sendDonMerci($db, (int)$db->lastInsertId());
         }
         // Si ce don était en staging, le marquer réconcilié
         if (!empty($tx['is_staging'])) {

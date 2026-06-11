@@ -16,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmer'])) {
     $id = intval($_POST['don_id']);
     $db->prepare("UPDATE member_dons SET statut='confirme' WHERE id=?")->execute(array($id));
+    require_once __DIR__ . '/../includes/mail_helper.php';
+    sendDonMerci($db, $id);
     header('Location: dons_all.php?msg=confirme'); exit;
 }
 

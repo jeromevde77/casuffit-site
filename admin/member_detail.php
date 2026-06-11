@@ -24,13 +24,20 @@ if (isset($_POST['ajouter_don'])) {
     if ($montant > 0) {
         $db->prepare("INSERT INTO member_dons (member_id,montant,communication,statut) VALUES (?,?,?,?)")
            ->execute([$id,$montant,$comm,$statut]);
+        if ($statut === 'confirme') {
+            require_once __DIR__ . '/../includes/mail_helper.php';
+            sendDonMerci($db, (int)$db->lastInsertId());
+        }
     }
     header("Location: member_detail.php?id=$id&back=".urlencode($_GET['back']??'members.php')."&msg=don_ajoute"); exit;
 }
 
 // Confirmer un don
 if (isset($_POST['confirmer_don'])) {
-    $db->prepare("UPDATE member_dons SET statut='confirme' WHERE id=? AND member_id=?")->execute([(int)$_POST['don_id'],$id]);
+    $don_id = (int)$_POST['don_id'];
+    $db->prepare("UPDATE member_dons SET statut='confirme' WHERE id=? AND member_id=?")->execute([$don_id,$id]);
+    require_once __DIR__ . '/../includes/mail_helper.php';
+    sendDonMerci($db, $don_id);
     header("Location: member_detail.php?id=$id&back=".urlencode($_GET['back']??'members.php')."&msg=confirme"); exit;
 }
 
