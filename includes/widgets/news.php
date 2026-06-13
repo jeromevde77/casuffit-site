@@ -34,7 +34,7 @@
       <!-- Contenu complet dépliable -->
       <div class="news-full" id="news-full-<?= $ni ?>" style="display:<?= $is_open ? 'block' : 'none' ?>;padding:0 12px 12px;border-top:1px solid var(--bleu-ciel)">
         <?php if (!empty($n['image_url'])): ?>
-          <img src="<?= htmlspecialchars($n['image_url']) ?>" alt="<?= htmlspecialchars(tdb($n,'titre') ?? $n['titre']) ?>" style="width:100%;max-height:280px;object-fit:cover;display:block;margin-bottom:10px;border-radius:0 0 4px 4px">
+          <img src="<?= htmlspecialchars($n['image_url']) ?>" alt="<?= htmlspecialchars(tdb($n,'titre') ?? $n['titre']) ?>" style="width:100%;height:auto;display:block;margin-bottom:10px;border-radius:0 0 4px 4px">
         <?php endif; ?>
         <div class="apanel-inner" style="padding:12px 0;box-shadow:none">
           <?= tdb($n,'contenu') ?? $n['contenu'] ?>
