@@ -9,7 +9,7 @@ session_start();
 requireAdmin();
 $db = getDB();
 
-$image = (defined('SITE_URL') ? SITE_URL : 'https://www.casuffit.be') . '/medias/news/dh-se-trompe-de-combat.jpg';
+$image = (defined('SITE_URL') ? SITE_URL : 'https://www.casuffit.be') . '/assets/img/dh-se-trompe-de-combat.jpg';
 
 // ── Contenu FR ──────────────────────────────────────────────────────────
 $titre    = "📰 La DH relate notre analyse : « La Région bruxelloise se trompe de combat »";
@@ -65,7 +65,9 @@ $existing = $st->fetch();
 
 if ($existing) {
     $newId = (int) $existing['id'];
-    $out[] = "⚠️ L'actualité existe déjà (id=$newId) — aucune insertion (idempotent).";
+    // Corrige l'image au cas où elle pointait vers un chemin non déployé (medias/ exclu du FTP)
+    $db->prepare("UPDATE news SET image_url = ? WHERE id = ?")->execute([$image, $newId]);
+    $out[] = "ℹ️ Actualité déjà présente (id=$newId) — image_url mise à jour : $image";
 } else {
     $cols = ['titre','accroche','contenu','image_url','statut','epingle','date_publication','created_by'];
     $vals = [$titre, $accroche, $contenu, $image, 'publie', 1, date('Y-m-d H:i:s'), ADMIN_USER];
