@@ -41,7 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['envoyer_email_membre'
         $mm = $db->prepare("SELECT * FROM members WHERE id=?"); $mm->execute([$mid]); $mm = $mm->fetch();
         if ($mm && !empty($mm['email'])) {
             require_once __DIR__ . '/../includes/mail_helper.php';
-            if (sendMemberEmail($db, $mm, $sujet, $message, $_SESSION['admin_user'] ?? null)) $res = 'email_ok';
+            $attachments = collectAttachments('pieces_jointes');
+            if (sendMemberEmail($db, $mm, $sujet, $message, $_SESSION['admin_user'] ?? null, $attachments)) $res = 'email_ok';
         }
     }
     $back = $_POST['back'] ?? 'members.php';
@@ -457,7 +458,7 @@ function sort_th($label, $col, $extra_style=''){
       <div style="font-weight:700;color:#0e3d6b;font-size:.95rem">✉️ Envoyer un email</div>
       <button type="button" onclick="closeEmailModal()" style="border:none;background:none;font-size:1.5rem;cursor:pointer;color:#bbb;line-height:1">×</button>
     </div>
-    <form method="POST" style="padding:18px 20px">
+    <form method="POST" enctype="multipart/form-data" style="padding:18px 20px">
       <?= csrf_field() ?>
       <input type="hidden" name="member_id" id="em-id">
       <input type="hidden" name="back" value="<?= htmlspecialchars(su(['page'=>$page])) ?>">
@@ -466,9 +467,14 @@ function sort_th($label, $col, $extra_style=''){
         <label style="font-size:.7rem;color:#888;display:block;margin-bottom:3px">Objet</label>
         <input type="text" name="email_sujet" id="em-sujet" required style="width:100%">
       </div>
-      <div style="margin-bottom:14px">
+      <div style="margin-bottom:12px">
         <label style="font-size:.7rem;color:#888;display:block;margin-bottom:3px">Message</label>
         <textarea name="email_message" id="em-msg" rows="6" required style="width:100%;resize:vertical;padding:7px 10px;border:1.5px solid #dde4ed;border-radius:6px;font-size:.8rem;font-family:inherit"></textarea>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:.7rem;color:#888;display:block;margin-bottom:3px">📎 Pièces jointes (optionnel)</label>
+        <input type="file" name="pieces_jointes[]" multiple style="font-size:.78rem">
+        <div style="font-size:.68rem;color:#aaa;margin-top:3px">PDF, images, Word/Excel, txt, zip — max 5 Mo/fichier, 10 Mo au total.</div>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
         <span style="font-size:.7rem;color:#aaa">Depuis <?= htmlspecialchars(defined('SMTP_FROM')?SMTP_FROM:'info@casuffit.be') ?> · sans BCC</span>

@@ -4,7 +4,7 @@
 
 if (function_exists('sendViaBrevo')) return; // déjà chargé
 
-function sendViaBrevo(string $to, string $to_name, string $html, string $subject, string $text): bool {
+function sendViaBrevo(string $to, string $to_name, string $html, string $subject, string $text, array $attachments = []): bool {
     $payload = [
         'sender'      => ['name' => SMTP_FROM_NAME, 'email' => SMTP_FROM],
         'to'          => [['email' => $to, 'name' => $to_name]],
@@ -12,6 +12,12 @@ function sendViaBrevo(string $to, string $to_name, string $html, string $subject
         'htmlContent' => $html,
         'textContent' => $text,
     ];
+    if (!empty($attachments)) {
+        $payload['attachment'] = [];
+        foreach ($attachments as $a) {
+            $payload['attachment'][] = ['name' => $a['name'], 'content' => base64_encode($a['content'])];
+        }
+    }
     $ch = curl_init('https://api.brevo.com/v3/smtp/email');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
@@ -25,7 +31,7 @@ function sendViaBrevo(string $to, string $to_name, string $html, string $subject
     return $code >= 200 && $code < 300;
 }
 
-function sendViaSMTP(string $to, string $to_name, string $subject, string $html, string $text): bool {
+function sendViaSMTP(string $to, string $to_name, string $subject, string $html, string $text, array $attachments = []): bool {
     $pm = __DIR__ . '/../vendor/PHPMailer/PHPMailer.php';
     if (!file_exists($pm)) { error_log('PHPMailer absent'); return false; }
     require_once $pm;
@@ -39,15 +45,16 @@ function sendViaSMTP(string $to, string $to_name, string $subject, string $html,
         $mail->Port = SMTP_PORT; $mail->CharSet = 'UTF-8';
         $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
         $mail->addAddress($to, $to_name);
+        foreach ($attachments as $a) { $mail->addStringAttachment($a['content'], $a['name']); }
         $mail->Subject = $subject; $mail->isHTML(true);
         $mail->Body = $html; $mail->AltBody = $text;
         return $mail->send();
     } catch (\Exception $e) { error_log('Mail: '.$e->getMessage()); return false; }
 }
 
-function sendMail(string $to, string $to_name, string $subject, string $html, string $text): bool {
-    if (!empty(BREVO_API_KEY)) return sendViaBrevo($to, $to_name, $html, $subject, $text);
-    return sendViaSMTP($to, $to_name, $subject, $html, $text);
+function sendMail(string $to, string $to_name, string $subject, string $html, string $text, array $attachments = []): bool {
+    if (!empty(BREVO_API_KEY)) return sendViaBrevo($to, $to_name, $html, $subject, $text, $attachments);
+    return sendViaSMTP($to, $to_name, $subject, $html, $text, $attachments);
 }
 
 /**
@@ -173,7 +180,7 @@ function sendDonMerci(PDO $db, int $donId): bool {
  * @param string|null $par     Identifiant de l'admin expéditeur (pour l'historique)
  * @return bool true si l'e-mail est parti
  */
-function sendMemberEmail(PDO $db, array $member, string $sujet, string $message, ?string $par = null): bool {
+function sendMemberEmail(PDO $db, array $member, string $sujet, string $message, ?string $par = null, array $attachments = []): bool {
     $email = trim($member['email'] ?? '');
     $sujet = trim($sujet); $message = trim($message);
     if ($email === '' || $sujet === '' || $message === '') return false;
@@ -184,13 +191,51 @@ function sendMemberEmail(PDO $db, array $member, string $sujet, string $message,
           . "<p style='font-size:13px;color:#777'>L'équipe Ça suffit !<br><a href='https://www.casuffit.be' style='color:#1673B2'>casuffit.be</a></p></div>";
     $text = $message . "\n\n-- \nL'equipe Ca suffit !\nhttps://www.casuffit.be";
 
-    $ok = sendMail($email, trim(($member['prenom'] ?? '').' '.($member['nom'] ?? '')), $sujet, $html, $text);
+    $ok = sendMail($email, trim(($member['prenom'] ?? '').' '.($member['nom'] ?? '')), $sujet, $html, $text, $attachments);
 
     // Journalisation (table optionnelle : migrate_member_emails.sql)
+    $pj = $attachments ? implode(', ', array_map(fn($a) => $a['name'], $attachments)) : null;
+    $st = $ok ? 'envoye' : 'echec';
+    $mid = (int)($member['id'] ?? 0);
     try {
-        $db->prepare("INSERT INTO member_emails (member_id, sujet, message, envoye_par, statut) VALUES (?,?,?,?,?)")
-           ->execute([(int)($member['id'] ?? 0), $sujet, $message, $par, $ok ? 'envoye' : 'echec']);
-    } catch (Throwable $e) { error_log('sendMemberEmail log: '.$e->getMessage()); }
+        $db->prepare("INSERT INTO member_emails (member_id, sujet, message, envoye_par, statut, pieces_jointes) VALUES (?,?,?,?,?,?)")
+           ->execute([$mid, $sujet, $message, $par, $st, $pj]);
+    } catch (Throwable $e) {
+        // Colonne pieces_jointes peut-être absente — repli sans elle
+        try {
+            $db->prepare("INSERT INTO member_emails (member_id, sujet, message, envoye_par, statut) VALUES (?,?,?,?,?)")
+               ->execute([$mid, $sujet, $message, $par, $st]);
+        } catch (Throwable $e2) { error_log('sendMemberEmail log: '.$e2->getMessage()); }
+    }
 
     return $ok;
+}
+
+/**
+ * Collecte les fichiers uploadés d'un champ <input type="file" name="$field[]">
+ * et les retourne sous forme [['name'=>..., 'content'=>bytes], ...] pour sendMail().
+ * Filtre par extension autorisée, taille max par fichier et taille totale.
+ */
+function collectAttachments(string $field, int $maxEach = 5242880, int $maxTotal = 10485760): array {
+    if (empty($_FILES[$field])) return [];
+    $allowed = ['pdf','doc','docx','odt','xls','xlsx','ppt','pptx','png','jpg','jpeg','gif','webp','txt','csv','zip'];
+    $f = $_FILES[$field];
+    $names = is_array($f['name'])     ? $f['name']     : [$f['name']];
+    $tmps  = is_array($f['tmp_name']) ? $f['tmp_name'] : [$f['tmp_name']];
+    $errs  = is_array($f['error'])    ? $f['error']    : [$f['error']];
+    $sizes = is_array($f['size'])     ? $f['size']     : [$f['size']];
+    $atts = []; $total = 0;
+    foreach ($names as $i => $nm) {
+        if (($errs[$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) continue;
+        if (!is_uploaded_file($tmps[$i])) continue;
+        $ext = strtolower(pathinfo($nm, PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowed, true)) continue;
+        if (($sizes[$i] ?? 0) > $maxEach) continue;
+        $total += (int)($sizes[$i] ?? 0);
+        if ($total > $maxTotal) break;
+        $content = @file_get_contents($tmps[$i]);
+        if ($content === false) continue;
+        $atts[] = ['name' => basename($nm), 'content' => $content];
+    }
+    return $atts;
 }

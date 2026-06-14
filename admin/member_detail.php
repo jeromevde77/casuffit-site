@@ -48,7 +48,8 @@ if (isset($_POST['envoyer_email'])) {
     $res = 'email_err';
     if ($sujet !== '' && $message !== '' && !empty($m['email'])) {
         require_once __DIR__ . '/../includes/mail_helper.php';
-        if (sendMemberEmail($db, $m, $sujet, $message, $_SESSION['admin_user'] ?? null)) $res = 'email_ok';
+        $attachments = collectAttachments('pieces_jointes');
+        if (sendMemberEmail($db, $m, $sujet, $message, $_SESSION['admin_user'] ?? null, $attachments)) $res = 'email_ok';
     }
     header("Location: member_detail.php?id=$id&back=".urlencode($_GET['back']??'members.php')."&msg=$res"); exit;
 }
@@ -204,7 +205,7 @@ $adresse_incomplete = (trim($m['adresse']??'')===''||trim($m['code_postal']??'')
     <?php if (empty($m['email'])): ?>
       <div style="color:#c53030;font-size:.82rem">Aucune adresse email enregistrée pour ce membre.</div>
     <?php else: ?>
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
       <?= csrf_field() ?>
       <div class="form-group" style="margin-bottom:10px">
         <label>Objet</label>
@@ -213,6 +214,11 @@ $adresse_incomplete = (trim($m['adresse']??'')===''||trim($m['code_postal']??'')
       <div class="form-group" style="margin-bottom:10px">
         <label>Message</label>
         <textarea name="email_message" rows="6" placeholder="Votre message à <?= htmlspecialchars($m['prenom']) ?>…" required></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label>📎 Pièces jointes (optionnel)</label>
+        <input type="file" name="pieces_jointes[]" multiple>
+        <span style="font-size:.68rem;color:#aaa">PDF, images, Word/Excel, txt, zip — max 5 Mo/fichier, 10 Mo au total.</span>
       </div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <button type="submit" name="envoyer_email" class="btn btn-p">📤 Envoyer l'email</button>
@@ -238,6 +244,9 @@ $adresse_incomplete = (trim($m['adresse']??'')===''||trim($m['code_postal']??'')
           <?php if (!empty($em['envoye_par'])): ?><span style="font-size:.68rem;color:#999">par <?= htmlspecialchars($em['envoye_par']) ?></span><?php endif; ?>
         </summary>
         <div style="white-space:pre-wrap;font-size:.8rem;color:#444;margin-top:8px;padding-top:8px;border-top:1px dashed #eee"><?= htmlspecialchars($em['message'] ?? '') ?></div>
+        <?php if (!empty($em['pieces_jointes'])): ?>
+          <div style="font-size:.72rem;color:#1673B2;margin-top:6px">📎 <?= htmlspecialchars($em['pieces_jointes']) ?></div>
+        <?php endif; ?>
       </details>
       <?php endforeach; ?>
     </div>
