@@ -163,3 +163,34 @@ function sendDonMerci(PDO $db, int $donId): bool {
     }
     return $ok;
 }
+
+/**
+ * Envoie un e-mail libre (objet + message) à un membre depuis l'admin, puis
+ * journalise l'envoi dans member_emails (table optionnelle). Met en forme le
+ * message (sauts de ligne conservés) + signature. Pas de copie BCC.
+ *
+ * @param array       $member  Ligne members (id, prenom, nom, email)
+ * @param string|null $par     Identifiant de l'admin expéditeur (pour l'historique)
+ * @return bool true si l'e-mail est parti
+ */
+function sendMemberEmail(PDO $db, array $member, string $sujet, string $message, ?string $par = null): bool {
+    $email = trim($member['email'] ?? '');
+    $sujet = trim($sujet); $message = trim($message);
+    if ($email === '' || $sujet === '' || $message === '') return false;
+
+    $html = "<div style='font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#333;line-height:1.6'>"
+          . nl2br(htmlspecialchars($message))
+          . "<hr style='border:none;border-top:1px solid #e0e0e0;margin:22px 0'>"
+          . "<p style='font-size:13px;color:#777'>L'équipe Ça suffit !<br><a href='https://www.casuffit.be' style='color:#1673B2'>casuffit.be</a></p></div>";
+    $text = $message . "\n\n-- \nL'equipe Ca suffit !\nhttps://www.casuffit.be";
+
+    $ok = sendMail($email, trim(($member['prenom'] ?? '').' '.($member['nom'] ?? '')), $sujet, $html, $text);
+
+    // Journalisation (table optionnelle : migrate_member_emails.sql)
+    try {
+        $db->prepare("INSERT INTO member_emails (member_id, sujet, message, envoye_par, statut) VALUES (?,?,?,?,?)")
+           ->execute([(int)($member['id'] ?? 0), $sujet, $message, $par, $ok ? 'envoye' : 'echec']);
+    } catch (Throwable $e) { error_log('sendMemberEmail log: '.$e->getMessage()); }
+
+    return $ok;
+}

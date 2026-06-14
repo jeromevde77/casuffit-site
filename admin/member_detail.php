@@ -48,12 +48,7 @@ if (isset($_POST['envoyer_email'])) {
     $res = 'email_err';
     if ($sujet !== '' && $message !== '' && !empty($m['email'])) {
         require_once __DIR__ . '/../includes/mail_helper.php';
-        $html = "<div style='font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#333;line-height:1.6'>"
-              . nl2br(htmlspecialchars($message))
-              . "<hr style='border:none;border-top:1px solid #e0e0e0;margin:22px 0'>"
-              . "<p style='font-size:13px;color:#777'>L'équipe Ça suffit !<br><a href='https://www.casuffit.be' style='color:#1673B2'>casuffit.be</a></p></div>";
-        $text = $message . "\n\n-- \nL'equipe Ca suffit !\nhttps://www.casuffit.be";
-        if (sendMail($m['email'], trim($m['prenom'].' '.$m['nom']), $sujet, $html, $text)) $res = 'email_ok';
+        if (sendMemberEmail($db, $m, $sujet, $message, $_SESSION['admin_user'] ?? null)) $res = 'email_ok';
     }
     header("Location: member_detail.php?id=$id&back=".urlencode($_GET['back']??'members.php')."&msg=$res"); exit;
 }
@@ -72,6 +67,13 @@ if (isset($_POST['sauver_membre'])) {
 $dons = $db->prepare("SELECT * FROM member_dons WHERE member_id=? ORDER BY date_don DESC");
 $dons->execute([$id]); $dons=$dons->fetchAll();
 $total_confirme = array_sum(array_column(array_filter($dons,fn($d)=>$d['statut']==='confirme'),'montant'));
+
+// Historique des e-mails envoyés (table optionnelle : migrate_member_emails.sql)
+$emails = [];
+try {
+    $e = $db->prepare("SELECT * FROM member_emails WHERE member_id=? ORDER BY created_at DESC LIMIT 50");
+    $e->execute([$id]); $emails = $e->fetchAll();
+} catch (Throwable $ex) { $emails = []; }
 
 $msg = $_GET['msg'] ?? '';
 $adresse_incomplete = (trim($m['adresse']??'')===''||trim($m['code_postal']??'')==='');
@@ -218,6 +220,27 @@ $adresse_incomplete = (trim($m['adresse']??'')===''||trim($m['code_postal']??'')
         <span style="font-size:.72rem;color:#999">Envoyé depuis <?= htmlspecialchars(defined('SMTP_FROM') ? SMTP_FROM : 'info@casuffit.be') ?> · sans copie BCC</span>
       </div>
     </form>
+    <?php endif; ?>
+
+    <?php if (!empty($emails)): ?>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid #eee">
+      <div style="font-size:.8rem;font-weight:700;color:#0e3d6b;margin-bottom:10px">📨 Emails envoyés (<?= count($emails) ?>)</div>
+      <?php foreach ($emails as $em): ?>
+      <details style="border:1px solid #eee;border-radius:8px;padding:8px 12px;margin-bottom:7px">
+        <summary style="cursor:pointer;font-size:.8rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span style="color:#aaa;font-size:.72rem;white-space:nowrap"><?= date('d/m/Y H:i', strtotime($em['created_at'])) ?></span>
+          <strong style="flex:1"><?= htmlspecialchars($em['sujet']) ?></strong>
+          <?php if (($em['statut'] ?? 'envoye') === 'echec'): ?>
+            <span class="badge b-off">échec</span>
+          <?php else: ?>
+            <span class="badge b-ok">envoyé</span>
+          <?php endif; ?>
+          <?php if (!empty($em['envoye_par'])): ?><span style="font-size:.68rem;color:#999">par <?= htmlspecialchars($em['envoye_par']) ?></span><?php endif; ?>
+        </summary>
+        <div style="white-space:pre-wrap;font-size:.8rem;color:#444;margin-top:8px;padding-top:8px;border-top:1px dashed #eee"><?= htmlspecialchars($em['message'] ?? '') ?></div>
+      </details>
+      <?php endforeach; ?>
+    </div>
     <?php endif; ?>
   </div>
 

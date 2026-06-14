@@ -31,6 +31,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajouter_don'])) {
     header('Location: members.php?msg=don_ajoute'); exit;
 }
 
+// Envoyer un email à un membre (depuis la liste, sans ouvrir la fiche)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['envoyer_email_membre'])) {
+    $mid     = (int)($_POST['member_id'] ?? 0);
+    $sujet   = trim($_POST['email_sujet'] ?? '');
+    $message = trim($_POST['email_message'] ?? '');
+    $res = 'email_err';
+    if ($mid > 0 && $sujet !== '' && $message !== '') {
+        $mm = $db->prepare("SELECT * FROM members WHERE id=?"); $mm->execute([$mid]); $mm = $mm->fetch();
+        if ($mm && !empty($mm['email'])) {
+            require_once __DIR__ . '/../includes/mail_helper.php';
+            if (sendMemberEmail($db, $mm, $sujet, $message, $_SESSION['admin_user'] ?? null)) $res = 'email_ok';
+        }
+    }
+    $back = $_POST['back'] ?? 'members.php';
+    if (strpos($back, 'members.php') !== 0) $back = 'members.php';
+    $sep = strpos($back, '?') !== false ? '&' : '?';
+    header('Location: ' . $back . $sep . 'msg=' . $res); exit;
+}
+
 // ── Recherche / filtres / pagination ─────────────────────────────────────
 $page    = max(1,(int)($_GET['page'] ?? 1));
 $q       = trim($_GET['q'] ?? '');
@@ -146,6 +165,7 @@ function sort_th($label, $col, $extra_style=''){
     /* Action buttons */
     .act{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;border:1.5px solid;cursor:pointer;text-decoration:none;font-size:.82rem;transition:all .15s;flex-shrink:0;background:none}
     .act.view{color:#38a169;border-color:#c6f6d5;background:#f0fff4}.act.view:hover{background:#dcfce7;text-decoration:none}
+    .act.mail{color:#1673B2;border-color:#cfe3f5;background:#f0f7ff}.act.mail:hover{background:#e0eefb}
     /* Mobile cards */
     .mobile-cards{display:none}
     .mb-card{background:#fff;border:1.5px solid #e8eef5;border-radius:10px;padding:14px;margin-bottom:10px;position:relative}
@@ -183,7 +203,9 @@ function sort_th($label, $col, $extra_style=''){
   <div class="page-title">👥 Gestion des membres</div>
 
   <?php if ($msg==='confirme'): ?><div class="flash-ok">Don confirmé.</div>
-  <?php elseif ($msg==='don_ajoute'): ?><div class="flash-ok">Don ajouté.</div><?php endif; ?>
+  <?php elseif ($msg==='don_ajoute'): ?><div class="flash-ok">Don ajouté.</div>
+  <?php elseif ($msg==='email_ok'): ?><div class="flash-ok">✉️ Email envoyé au membre.</div>
+  <?php elseif ($msg==='email_err'): ?><div class="flash-ok" style="background:#fde8e8;color:#c53030;border-left-color:#e53e3e">⚠ Échec de l'envoi de l'email.</div><?php endif; ?>
 
   <!-- Barre de recherche + filtres -->
   <form method="GET" class="search-bar">
@@ -283,7 +305,15 @@ function sort_th($label, $col, $extra_style=''){
           <span style="font-size:.7rem;color:#aaa;margin-left:3px">(<?=$m['nb_dons']?>)</span>
         <?php else:?><span style="color:#ccc">—</span><?php endif;?></td>
         <td style="font-size:.72rem;color:#aaa;white-space:nowrap"><?=date('d/m/Y',strtotime($m['date_inscription']))?></td>
-        <td><a href="member_detail.php?id=<?=$m['id']?>&back=<?=urlencode(su(['page'=>$page]))?>" class="act view" title="Voir la fiche">👁</a></td>
+        <td>
+          <div style="display:flex;gap:5px">
+            <?php if(!empty($m['email'])): ?>
+            <button type="button" class="act mail" title="Envoyer un email"
+              onclick='openEmailModal(<?= htmlspecialchars(json_encode(["id"=>(int)$m["id"],"nom"=>$m["prenom"]." ".$m["nom"],"email"=>$m["email"]]), ENT_QUOTES) ?>)'>✉️</button>
+            <?php endif; ?>
+            <a href="member_detail.php?id=<?=$m['id']?>&back=<?=urlencode(su(['page'=>$page]))?>" class="act view" title="Voir la fiche">👁</a>
+          </div>
+        </td>
       </tr>
       <?php endforeach; ?>
     </table>
@@ -326,6 +356,10 @@ function sort_th($label, $col, $extra_style=''){
         <span style="font-size:.7rem;color:#bbb"><?=date('d/m/Y',strtotime($m['date_inscription']))?></span>
       </div>
       <a href="member_detail.php?id=<?=$m['id']?>&back=<?=urlencode(su(['page'=>$page]))?>" class="mb-cta">Voir la fiche →</a>
+      <?php if(!empty($m['email'])): ?>
+      <button type="button" class="btn btn-g" style="width:100%;margin-top:6px;justify-content:center"
+        onclick='openEmailModal(<?= htmlspecialchars(json_encode(["id"=>(int)$m["id"],"nom"=>$m["prenom"]." ".$m["nom"],"email"=>$m["email"]]), ENT_QUOTES) ?>)'>✉️ Envoyer un email</button>
+      <?php endif; ?>
     </div>
     <?php endforeach; ?>
     </div><!-- /mobile-cards -->
@@ -415,8 +449,50 @@ function sort_th($label, $col, $extra_style=''){
   </div>
 </div>
 
+<!-- Modale envoi email membre -->
+<div id="email-modal" onclick="if(event.target===this)closeEmailModal()"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;width:560px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee">
+      <div style="font-weight:700;color:#0e3d6b;font-size:.95rem">✉️ Envoyer un email</div>
+      <button type="button" onclick="closeEmailModal()" style="border:none;background:none;font-size:1.5rem;cursor:pointer;color:#bbb;line-height:1">×</button>
+    </div>
+    <form method="POST" style="padding:18px 20px">
+      <?= csrf_field() ?>
+      <input type="hidden" name="member_id" id="em-id">
+      <input type="hidden" name="back" value="<?= htmlspecialchars(su(['page'=>$page])) ?>">
+      <div style="font-size:.8rem;color:#555;margin-bottom:10px">À : <strong id="em-to"></strong></div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:.7rem;color:#888;display:block;margin-bottom:3px">Objet</label>
+        <input type="text" name="email_sujet" id="em-sujet" required style="width:100%">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:.7rem;color:#888;display:block;margin-bottom:3px">Message</label>
+        <textarea name="email_message" id="em-msg" rows="6" required style="width:100%;resize:vertical;padding:7px 10px;border:1.5px solid #dde4ed;border-radius:6px;font-size:.8rem;font-family:inherit"></textarea>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:.7rem;color:#aaa">Depuis <?= htmlspecialchars(defined('SMTP_FROM')?SMTP_FROM:'info@casuffit.be') ?> · sans BCC</span>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn btn-g" onclick="closeEmailModal()">Annuler</button>
+          <button type="submit" name="envoyer_email_membre" class="btn btn-p">📤 Envoyer</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 new TomSelect('#sel-membre-don',{placeholder:'— rechercher un membre —',create:false,maxOptions:500});
+
+function openEmailModal(data){
+  document.getElementById('em-id').value = data.id;
+  document.getElementById('em-to').textContent = data.nom + ' <' + data.email + '>';
+  document.getElementById('em-sujet').value = '';
+  document.getElementById('em-msg').value = '';
+  document.getElementById('email-modal').style.display = 'flex';
+  setTimeout(function(){ document.getElementById('em-sujet').focus(); }, 50);
+}
+function closeEmailModal(){ document.getElementById('email-modal').style.display = 'none'; }
 
 var _leafMap = null;
 
