@@ -41,6 +41,23 @@ if (isset($_POST['confirmer_don'])) {
     header("Location: member_detail.php?id=$id&back=".urlencode($_GET['back']??'members.php')."&msg=confirme"); exit;
 }
 
+// Envoyer un email au membre (depuis l'outil admin)
+if (isset($_POST['envoyer_email'])) {
+    $sujet   = trim($_POST['email_sujet'] ?? '');
+    $message = trim($_POST['email_message'] ?? '');
+    $res = 'email_err';
+    if ($sujet !== '' && $message !== '' && !empty($m['email'])) {
+        require_once __DIR__ . '/../includes/mail_helper.php';
+        $html = "<div style='font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#333;line-height:1.6'>"
+              . nl2br(htmlspecialchars($message))
+              . "<hr style='border:none;border-top:1px solid #e0e0e0;margin:22px 0'>"
+              . "<p style='font-size:13px;color:#777'>L'équipe Ça suffit !<br><a href='https://www.casuffit.be' style='color:#1673B2'>casuffit.be</a></p></div>";
+        $text = $message . "\n\n-- \nL'equipe Ca suffit !\nhttps://www.casuffit.be";
+        if (sendMail($m['email'], trim($m['prenom'].' '.$m['nom']), $sujet, $html, $text)) $res = 'email_ok';
+    }
+    header("Location: member_detail.php?id=$id&back=".urlencode($_GET['back']??'members.php')."&msg=$res"); exit;
+}
+
 // Modifier le statut du membre
 if (isset($_POST['sauver_membre'])) {
     $new_statut = in_array($_POST['statut']??'',['actif','inactif']) ? $_POST['statut'] : $m['statut'];
@@ -118,7 +135,10 @@ $adresse_incomplete = (trim($m['adresse']??'')===''||trim($m['code_postal']??'')
 
   <?php if ($msg==='don_ajoute'): ?><div class="flash-ok">Don ajouté.</div>
   <?php elseif ($msg==='confirme'): ?><div class="flash-ok">Don confirmé.</div>
-  <?php elseif ($msg==='maj'): ?><div class="flash-ok">Fiche mise à jour.</div><?php endif; ?>
+  <?php elseif ($msg==='maj'): ?><div class="flash-ok">Fiche mise à jour.</div>
+  <?php elseif ($msg==='email_ok'): ?><div class="flash-ok">✉️ Email envoyé au membre.</div>
+  <?php elseif ($msg==='email_err'): ?><div class="flash-ok" style="background:#fde8e8;color:#c53030;border-left-color:#e53e3e">⚠ Échec de l'envoi (objet/message vide ou email manquant).</div>
+  <?php endif; ?>
 
   <?php if ($adresse_incomplete): ?>
   <div class="warn-banner">⚠ <strong>Adresse incomplète</strong> — ce membre n'a pas encore complété son adresse postale.</div>
@@ -174,6 +194,31 @@ $adresse_incomplete = (trim($m['adresse']??'')===''||trim($m['code_postal']??'')
       <div class="field-row"><span class="field-lbl">Note</span><span class="field-val" style="white-space:pre-wrap"><?= htmlspecialchars($m['note']) ?></span></div>
       <?php endif; ?>
     </div>
+  </div>
+
+  <!-- Contacter ce membre par email -->
+  <div class="card" style="margin-bottom:18px">
+    <h3>✉️ Contacter ce membre par email</h3>
+    <?php if (empty($m['email'])): ?>
+      <div style="color:#c53030;font-size:.82rem">Aucune adresse email enregistrée pour ce membre.</div>
+    <?php else: ?>
+    <form method="POST">
+      <?= csrf_field() ?>
+      <div class="form-group" style="margin-bottom:10px">
+        <label>Objet</label>
+        <input type="text" name="email_sujet" placeholder="Objet du message" required>
+      </div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label>Message</label>
+        <textarea name="email_message" rows="6" placeholder="Votre message à <?= htmlspecialchars($m['prenom']) ?>…" required></textarea>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button type="submit" name="envoyer_email" class="btn btn-p">📤 Envoyer l'email</button>
+        <a href="mailto:<?= htmlspecialchars($m['email']) ?>" class="btn btn-g">Ouvrir dans mon client mail</a>
+        <span style="font-size:.72rem;color:#999">Envoyé depuis <?= htmlspecialchars(defined('SMTP_FROM') ? SMTP_FROM : 'info@casuffit.be') ?> · sans copie BCC</span>
+      </div>
+    </form>
+    <?php endif; ?>
   </div>
 
   <!-- Modifier la fiche -->
