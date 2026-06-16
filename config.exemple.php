@@ -17,13 +17,6 @@ define('DB_CHARSET', 'utf8mb4');
 define('ANTHROPIC_API_KEY', 'sk-ant-api03-VOTRE_CLE_ANTHROPIC'); // Pour la traduction automatique
 define('BREVO_API_KEY', '');    // ex: xkeysib-abc123...
 
-// ── FACEBOOK (followers affichés dans le widget « barre de progression ») ──
-// Laisser vide pour désactiver l'affichage. Sinon créer une app Meta + un token
-// de page longue durée (à renouveler ~tous les 60 j) avec la permission de lire
-// le nombre d'abonnés de la page.
-define('FB_PAGE_ID',     '');   // id numérique ou username, ex: 'Piste01casuffit'
-define('FB_GRAPH_TOKEN', '');   // token de page longue durée (EAAB...)
-
 // ── CRON EXTERNE ─────────────────────────────────────────────────────────
 // Token secret pour déclencher /api/trigger_metar.php depuis cron-job.org
 // Générer avec : php -r "echo bin2hex(random_bytes(24));"

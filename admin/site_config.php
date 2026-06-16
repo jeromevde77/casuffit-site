@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Général
         'site_nom', 'site_slogan', 'site_email', 'site_facebook', 'urgence_texte', 'urgence_lien',
         // Réseaux sociaux
-        'facebook_url', 'instagram_url', 'whatsapp_url',
+        'facebook_url', 'instagram_url', 'whatsapp_url', 'facebook_followers',
         // Dons
         'iban', 'bic', 'beneficiaire', 'don_texte',
         // Email
@@ -58,6 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($cle === 'annonce_active') { $val = isset($_POST['annonce_active']) ? '1' : '0'; }
         if (in_array($cle, array('montant_recolte','montant_objectif'))) {
             $val = strval(floatval(str_replace(',','.',$val)));
+        }
+        if ($cle === 'facebook_followers') {
+            $val = preg_replace('/\D+/', '', $val);   // chiffres uniquement
         }
         $db->prepare("INSERT INTO site_config (cle,valeur) VALUES (?,?) ON DUPLICATE KEY UPDATE valeur=?")
            ->execute(array($cle, $val, $val));
@@ -241,6 +244,9 @@ try {
       <label>Lien WhatsApp</label>
       <input type="text" name="whatsapp_url" value="<?= htmlspecialchars($c['whatsapp_url'] ?? '') ?>" placeholder="https://wa.me/32XXXXXXXXX">
       <p style="font-size:.72rem;color:#999;margin-top:4px">Laisser vide pour masquer le bouton correspondant</p>
+      <label>Nombre de followers Facebook <span style="font-weight:400;color:#888;font-size:.8rem">— affiché dans la barre de progression</span></label>
+      <input type="number" name="facebook_followers" value="<?= htmlspecialchars($c['facebook_followers'] ?? '') ?>" min="0" step="1" inputmode="numeric" placeholder="ex. 1250">
+      <div class="hint">À mettre à jour manuellement de temps en temps (visible sur la page d'accueil). Laisser vide pour ne pas l'afficher.</div>
     </div>
 
     <!-- Analytics -->

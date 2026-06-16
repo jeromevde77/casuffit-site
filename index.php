@@ -99,10 +99,10 @@ $bic       = cfg('bic', 'GKCCBEBB');
 $beneficiaire = cfg('beneficiaire', 'ca suffit !');
 
 // Widget « barre de progression » : membres actifs + followers Facebook
-require_once __DIR__ . '/includes/facebook.php';
+// (followers = valeur manuelle saisie dans Admin → Paramètres → Réseaux sociaux)
 $membres_effectifs = 0;
 try { $membres_effectifs = (int)$db->query("SELECT COUNT(*) FROM members WHERE statut='actif'")->fetchColumn(); } catch (Exception $e) {}
-$fb_followers = fbFollowers($db);
+$fb_followers = (int) cfg('facebook_followers', 0);
 
 // Charger le contenu des tabs depuis la BDD
 // Charger pages + contenu
