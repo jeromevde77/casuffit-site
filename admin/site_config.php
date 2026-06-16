@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Général
         'site_nom', 'site_slogan', 'site_email', 'site_facebook', 'urgence_texte', 'urgence_lien',
         // Réseaux sociaux
-        'facebook_url', 'instagram_url', 'whatsapp_url', 'facebook_followers',
+        'facebook_url', 'instagram_url', 'whatsapp_url', 'facebook_page_id', 'facebook_graph_token',
         // Dons
         'iban', 'bic', 'beneficiaire', 'don_texte',
         // Email
@@ -58,9 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($cle === 'annonce_active') { $val = isset($_POST['annonce_active']) ? '1' : '0'; }
         if (in_array($cle, array('montant_recolte','montant_objectif'))) {
             $val = strval(floatval(str_replace(',','.',$val)));
-        }
-        if ($cle === 'facebook_followers') {
-            $val = preg_replace('/\D+/', '', $val);   // chiffres uniquement
         }
         $db->prepare("INSERT INTO site_config (cle,valeur) VALUES (?,?) ON DUPLICATE KEY UPDATE valeur=?")
            ->execute(array($cle, $val, $val));
@@ -96,7 +93,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             chmod($dest, 0644);
         }
     }
-    header('Location: site_config.php?msg='.urlencode('✅ Paramètres sauvegardés.')); exit;
+    // Rafraîchir tout de suite le nombre de followers Facebook (si page + token saisis)
+    $fb_msg = '';
+    require_once __DIR__ . '/../includes/facebook.php';
+    if (trim((string)($_POST['facebook_page_id'] ?? '')) !== '' && trim((string)($_POST['facebook_graph_token'] ?? '')) !== '') {
+        $n = fbFollowers($db, 21600, true);
+        $fb_msg = $n > 0 ? ' Facebook : '.$n.' followers récupérés.' : ' (⚠ followers Facebook non récupérés — vérifiez l\'id de page et le token.)';
+    }
+    header('Location: site_config.php?msg='.urlencode('✅ Paramètres sauvegardés.'.$fb_msg)); exit;
 }
 
 $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
@@ -244,9 +248,17 @@ try {
       <label>Lien WhatsApp</label>
       <input type="text" name="whatsapp_url" value="<?= htmlspecialchars($c['whatsapp_url'] ?? '') ?>" placeholder="https://wa.me/32XXXXXXXXX">
       <p style="font-size:.72rem;color:#999;margin-top:4px">Laisser vide pour masquer le bouton correspondant</p>
-      <label>Nombre de followers Facebook <span style="font-weight:400;color:#888;font-size:.8rem">— affiché dans la barre de progression</span></label>
-      <input type="number" name="facebook_followers" value="<?= htmlspecialchars($c['facebook_followers'] ?? '') ?>" min="0" step="1" inputmode="numeric" placeholder="ex. 1250">
-      <div class="hint">À mettre à jour manuellement de temps en temps (visible sur la page d'accueil). Laisser vide pour ne pas l'afficher.</div>
+
+      <h3 style="margin-top:22px">📘 Followers Facebook <span style="font-weight:400;color:#888;font-size:.8rem">— affichés dans la barre de progression</span></h3>
+      <div class="hint" style="margin-bottom:6px">Le nombre d'abonnés est récupéré automatiquement via l'API Meta (mis en cache, rafraîchi ~toutes les 6 h). Laissez l'id ou le token vide pour ne rien afficher.</div>
+      <label>ID ou nom de la page Facebook</label>
+      <input type="text" name="facebook_page_id" value="<?= htmlspecialchars($c['facebook_page_id'] ?? '') ?>" placeholder="Piste01casuffit (ou l'id numérique)">
+      <label>Token de page (Graph API)</label>
+      <input type="text" name="facebook_graph_token" value="<?= htmlspecialchars($c['facebook_graph_token'] ?? '') ?>" placeholder="EAAB..." style="font-family:monospace">
+      <div class="hint">⚠ Donnée sensible, stockée en clair. Token de <strong>page</strong> longue durée (permission <code>pages_read_engagement</code>), à renouveler ~tous les 60 j.
+        <?php $fbn = (int)($c['facebook_followers'] ?? 0); $fbs = $c['facebook_followers_synced_at'] ?? ''; ?>
+        <?php if ($fbn > 0): ?><br>Dernier comptage : <strong><?= number_format($fbn,0,',',' ') ?></strong> followers<?= $fbs ? ' (le '.htmlspecialchars($fbs).')' : '' ?>.<?php endif; ?>
+      </div>
     </div>
 
     <!-- Analytics -->
