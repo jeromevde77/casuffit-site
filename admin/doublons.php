@@ -47,9 +47,11 @@ foreach ($cands as $g) {
     $n = count($dons);
     for ($i = 0; $i < $n; $i++) {
         for ($j = $i + 1; $j < $n; $j++) {
+            $t0 = strtotime($dons[$i]['date_don']); $t1 = strtotime($dons[$j]['date_don']);
+            // Plus d'un mois d'écart => jamais un doublon (donateur récurrent, geste distinct).
+            if ($t0 && $t1 && abs($t1 - $t0) > 31 * 86400) continue;
             $ci = $normComm($dons[$i]); $cj = $normComm($dons[$j]);
             $sameComm  = ($ci !== '' && $ci === $cj);
-            $t0 = strtotime($dons[$i]['date_don']); $t1 = strtotime($dons[$j]['date_don']);
             $closeDate = ($t0 && $t1 && abs($t1 - $t0) <= $fenetre * 86400);
             if ($sameComm || $closeDate) {
                 $suspect = true;
@@ -105,7 +107,7 @@ foreach ($cands as $g) {
 <?php include __DIR__ . '/../includes/admin_sidebar.php'; ?>
 <div class="main">
   <div class="page-title">🔁 Doublons de dons potentiels</div>
-  <div class="sub">Doublon probable = même membre + même montant <em>et</em> (<strong>même communication</strong> ou <strong>dates proches</strong>, &lt; <?= $fenetre ?> j). Des communications <em>différentes</em> à des dates <em>différentes</em> ne sont pas signalées.</div>
+  <div class="sub">Doublon probable = même membre + même montant <em>et</em> (<strong>même communication</strong> ou <strong>dates proches</strong>, &lt; <?= $fenetre ?> j), à <strong>moins d'un mois</strong> d'écart. Au-delà d'un mois, ou communications <em>différentes</em> à des dates <em>différentes</em> : non signalé.</div>
 
   <?php if ($msg === 'supprime'): ?><div class="flash-ok">✅ Don supprimé.</div><?php endif; ?>
 

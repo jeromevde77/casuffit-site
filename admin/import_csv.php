@@ -133,20 +133,22 @@ function extract_ogm($s) {
 function findDuplicateDon(PDO $db, int $mid, float $montant, ?string $ogm, ?string $comm, ?string $date): ?int {
     if ($mid <= 0) return null;
     if (isAnonymousMember($db, $mid)) return null; // dons anonymes : donateurs distincts, jamais des doublons entre eux
-    // a) Même communication structurée (OGM) + même montant pour ce membre → quasi-certain
+    $d = $date ?: date('Y-m-d');
+    // Plus d'un mois d'écart => jamais un doublon (donateur récurrent, geste distinct).
+    // a) Même communication structurée (OGM) + même montant pour ce membre, à moins de 31 j → quasi-certain
     if (!empty($ogm)) {
         try {
             $q = $db->prepare("SELECT id FROM member_dons
                                WHERE member_id=? AND ABS(montant - ?) < 0.01
-                                 AND (ogm_don = ? OR communication LIKE ?) LIMIT 1");
-            $q->execute([$mid, $montant, $ogm, '%' . $ogm . '%']);
+                                 AND (ogm_don = ? OR communication LIKE ?)
+                                 AND ABS(DATEDIFF(date_don, ?)) <= 31 LIMIT 1");
+            $q->execute([$mid, $montant, $ogm, '%' . $ogm . '%', $d]);
             if ($id = $q->fetchColumn()) return (int)$id;
         } catch (Throwable $e) {}
     }
     // b) Don déjà saisi à la main (sans empreinte d'import) : même membre, même montant, MÊME date (±1 j).
     //    (Communication différente à une date différente => donateur/geste distinct, pas un doublon.)
     try {
-        $d = $date ?: date('Y-m-d');
         $q = $db->prepare("SELECT id FROM member_dons
                            WHERE member_id=? AND ABS(montant - ?) < 0.01
                              AND (ref_import IS NULL OR ref_import = '')
