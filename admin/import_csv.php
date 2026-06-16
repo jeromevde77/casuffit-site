@@ -143,13 +143,14 @@ function findDuplicateDon(PDO $db, int $mid, float $montant, ?string $ogm, ?stri
             if ($id = $q->fetchColumn()) return (int)$id;
         } catch (Throwable $e) {}
     }
-    // b) Don déjà saisi à la main (sans empreinte d'import) : même membre, même montant, date proche (±4 j)
+    // b) Don déjà saisi à la main (sans empreinte d'import) : même membre, même montant, MÊME date (±1 j).
+    //    (Communication différente à une date différente => donateur/geste distinct, pas un doublon.)
     try {
         $d = $date ?: date('Y-m-d');
         $q = $db->prepare("SELECT id FROM member_dons
                            WHERE member_id=? AND ABS(montant - ?) < 0.01
                              AND (ref_import IS NULL OR ref_import = '')
-                             AND ABS(DATEDIFF(date_don, ?)) <= 4 LIMIT 1");
+                             AND ABS(DATEDIFF(date_don, ?)) <= 1 LIMIT 1");
         $q->execute([$mid, $montant, $d]);
         if ($id = $q->fetchColumn()) return (int)$id;
     } catch (Throwable $e) {}

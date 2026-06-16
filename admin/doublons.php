@@ -32,23 +32,37 @@ $stCands->execute([$anonId]);
 $cands = $stCands->fetchAll();
 
 $groupes = [];
+$normComm = function($d) {
+    $c = trim((string)($d['ogm_don'] ?: ($d['communication'] ?? '')));
+    return mb_strtolower($c);
+};
 $stDons = $db->prepare("SELECT id, date_don, communication, ogm_don, statut, ref_import, note
                         FROM member_dons WHERE member_id=? AND ABS(montant-?)<0.01 ORDER BY date_don");
 foreach ($cands as $g) {
     $stDons->execute([$g['member_id'], $g['montant']]);
     $dons = $stDons->fetchAll();
-    // Paire proche dans le temps ?
-    $proche = false;
-    for ($i = 1; $i < count($dons); $i++) {
-        $d0 = strtotime($dons[$i-1]['date_don']); $d1 = strtotime($dons[$i]['date_don']);
-        if ($d0 && $d1 && abs($d1 - $d0) <= $fenetre * 86400) { $proche = true; break; }
+    // On compare chaque paire : doublon probable si MÊME communication OU dates proches.
+    // (Communications différentes À des dates différentes => PAS un doublon.)
+    $suspect = false; $memeComm = false; $proche = false; $mixte = false;
+    $n = count($dons);
+    for ($i = 0; $i < $n; $i++) {
+        for ($j = $i + 1; $j < $n; $j++) {
+            $ci = $normComm($dons[$i]); $cj = $normComm($dons[$j]);
+            $sameComm  = ($ci !== '' && $ci === $cj);
+            $t0 = strtotime($dons[$i]['date_don']); $t1 = strtotime($dons[$j]['date_don']);
+            $closeDate = ($t0 && $t1 && abs($t1 - $t0) <= $fenetre * 86400);
+            if ($sameComm || $closeDate) {
+                $suspect = true;
+                if ($sameComm)  $memeComm = true;
+                if ($closeDate) $proche = true;
+                $ri = trim($dons[$i]['ref_import'] ?? '') === '';
+                $rj = trim($dons[$j]['ref_import'] ?? '') === '';
+                if ($ri !== $rj) $mixte = true; // un don importé + un don manuel dans la paire douteuse
+            }
+        }
     }
-    // empreintes mixtes (un don importé + un don manuel) = signal fort
-    $sans_ref = 0; $avec_ref = 0;
-    foreach ($dons as $d) { if (trim($d['ref_import'] ?? '') === '') $sans_ref++; else $avec_ref++; }
-    $mixte = ($sans_ref > 0 && $avec_ref > 0);
-    if ($tous || $proche || $mixte) {
-        $groupes[] = ['g' => $g, 'dons' => $dons, 'proche' => $proche, 'mixte' => $mixte];
+    if ($tous || $suspect) {
+        $groupes[] = ['g' => $g, 'dons' => $dons, 'proche' => $proche, 'mixte' => $mixte, 'memeComm' => $memeComm];
     }
 }
 ?>
@@ -77,7 +91,7 @@ foreach ($cands as $g) {
     .b-ok{background:#e8f8f0;color:#27ae60}.b-wait{background:#fff3e0;color:#ba7517}.b-off{background:#fde8e8;color:#c53030}
     .b-imp{background:#e6f1fb;color:#1673B2}.b-man{background:#f0f0f0;color:#777}
     .tag{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.66rem;font-weight:700;margin-left:6px}
-    .t-mixte{background:#fde8e8;color:#c53030}.t-proche{background:#fff3e0;color:#ba7517}
+    .t-mixte{background:#fde8e8;color:#c53030}.t-proche{background:#fff3e0;color:#ba7517}.t-comm{background:#e6f1fb;color:#1673B2}
     .ogm{font-family:monospace;font-size:.72rem;color:#1673B2}
     .btn{padding:6px 12px;border-radius:6px;font-size:.74rem;font-weight:700;cursor:pointer;border:1.5px solid transparent;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px;line-height:1}
     .btn-del{background:#fff5f5;color:#c53030;border-color:#fed7d7}.btn-del:hover{background:#fee2e2}
@@ -91,7 +105,7 @@ foreach ($cands as $g) {
 <?php include __DIR__ . '/../includes/admin_sidebar.php'; ?>
 <div class="main">
   <div class="page-title">🔁 Doublons de dons potentiels</div>
-  <div class="sub">Même membre, même montant. <strong>Mixte</strong> = un don importé + un don manuel (signal fort). <strong>Proche</strong> = deux dons à moins de <?= $fenetre ?> jours.</div>
+  <div class="sub">Doublon probable = même membre + même montant <em>et</em> (<strong>même communication</strong> ou <strong>dates proches</strong>, &lt; <?= $fenetre ?> j). Des communications <em>différentes</em> à des dates <em>différentes</em> ne sont pas signalées.</div>
 
   <?php if ($msg === 'supprime'): ?><div class="flash-ok">✅ Don supprimé.</div><?php endif; ?>
 
@@ -118,7 +132,8 @@ foreach ($cands as $g) {
             <?= htmlspecialchars(trim($g['prenom'].' '.$g['nom'])) ?>
           </a>
           <span style="font-family:monospace;font-size:.7rem;color:#999"><?= htmlspecialchars($g['code_membre']) ?></span>
-          <?php if ($G['mixte']): ?><span class="tag t-mixte">⚠ Mixte (importé + manuel)</span><?php endif; ?>
+          <?php if ($G['memeComm']): ?><span class="tag t-comm">🔁 Même communication</span><?php endif; ?>
+          <?php if ($G['mixte']): ?><span class="tag t-mixte">⚠ Import + manuel</span><?php endif; ?>
           <?php if ($G['proche']): ?><span class="tag t-proche">⏱ Dates proches</span><?php endif; ?>
         </div>
         <div class="grp-montant"><?= number_format((float)$g['montant'], 2, ',', ' ') ?> € × <?= (int)$g['c'] ?></div>
