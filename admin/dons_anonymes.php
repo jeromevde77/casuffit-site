@@ -32,10 +32,12 @@ if (isset($_POST['ajouter_anon'])) {
     $montant = floatval(str_replace(',', '.', $_POST['montant'] ?? 0));
     $comm    = trim($_POST['communication'] ?? '');
     $date    = ($_POST['date'] ?? '') ?: date('Y-m-d');
+    $nom     = trim($_POST['nom'] ?? '');
     if ($montant > 0) {
+        $note = 'Don anonyme' . ($nom !== '' ? ' — ' . $nom : '');
         $db->prepare("INSERT INTO member_dons (member_id, montant, communication, statut, date_don, note)
-                      VALUES (?, ?, ?, 'confirme', ?, 'Don anonyme')")
-           ->execute([$anonId, $montant, $comm ?: null, $date . ' 12:00:00']);
+                      VALUES (?, ?, ?, 'confirme', ?, ?)")
+           ->execute([$anonId, $montant, $comm ?: null, $date . ' 12:00:00', $note]);
     }
     header('Location: dons_anonymes.php?msg=ajoute'); exit;
 }
@@ -104,8 +106,10 @@ $msg = $_GET['msg'] ?? '';
         <input type="number" name="montant" step="0.01" min="1" placeholder="50" style="width:100px" required></div>
       <div><label style="font-size:.68rem;color:#888;display:block;margin-bottom:3px">Date</label>
         <input type="date" name="date" value="<?= date('Y-m-d') ?>"></div>
+      <div><label style="font-size:.68rem;color:#888;display:block;margin-bottom:3px">Nom du donateur (optionnel)</label>
+        <input type="text" name="nom" placeholder="Nom figurant sur le virement" style="width:200px"></div>
       <div><label style="font-size:.68rem;color:#888;display:block;margin-bottom:3px">Communication (optionnel)</label>
-        <input type="text" name="communication" placeholder="+++…+++ ou note" style="width:220px"></div>
+        <input type="text" name="communication" placeholder="+++…+++ ou note" style="width:200px"></div>
       <button type="submit" name="ajouter_anon" class="btn btn-p">+ Ajouter</button>
     </form>
   </div>
@@ -116,11 +120,12 @@ $msg = $_GET['msg'] ?? '';
       <div class="empty">Aucun don anonyme pour le moment.</div>
     <?php else: ?>
     <table>
-      <tr><th>Date</th><th>Montant</th><th>Communication</th><th>Statut</th><th>Attribuer à</th></tr>
+      <tr><th>Date</th><th>Montant</th><th>Provenance / Nom</th><th>Communication</th><th>Statut</th><th>Attribuer à</th></tr>
       <?php foreach ($dons as $d): ?>
       <tr>
         <td><?= $d['date_don'] ? date('d/m/Y', strtotime($d['date_don'])) : '—' ?></td>
         <td><strong><?= number_format($d['montant'], 2, ',', ' ') ?> €</strong></td>
+        <td style="font-size:.75rem;color:#555;max-width:240px"><?= htmlspecialchars($d['note'] ?? '') ?: '<span style="color:#bbb">—</span>' ?></td>
         <td><?php $o = $d['ogm_don'] ?: $d['communication']; ?>
             <?php if ($o): ?><span class="ogm"><?= htmlspecialchars($o) ?></span><?php else: ?><span style="color:#bbb">—</span><?php endif; ?></td>
         <td><?= $d['statut']==='confirme'?'<span class="badge b-ok">Confirmé</span>':'<span class="badge b-wait">En attente</span>' ?></td>
