@@ -132,6 +132,7 @@ function extract_ogm($s) {
 // Renvoie l'id du don existant, ou null.
 function findDuplicateDon(PDO $db, int $mid, float $montant, ?string $ogm, ?string $comm, ?string $date): ?int {
     if ($mid <= 0) return null;
+    if (isAnonymousMember($db, $mid)) return null; // dons anonymes : donateurs distincts, jamais des doublons entre eux
     // a) Même communication structurée (OGM) + même montant pour ce membre → quasi-certain
     if (!empty($ogm)) {
         try {

@@ -4,7 +4,9 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../membre/functions.php';
 session_start(); requireAdmin();
 require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../includes/dons.php';
 $db = getDB();
+$anonId = getAnonymousMemberId($db); // exclu de la détection : les dons anonymes ne sont pas des doublons entre eux
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
 
@@ -20,11 +22,14 @@ $fenetre    = 10;                            // jours pour considérer deux dons
 $msg        = $_GET['msg'] ?? '';
 
 // Groupes candidats : même membre + même montant, au moins 2 dons
-$cands = $db->query("SELECT d.member_id, d.montant, COUNT(*) c, m.prenom, m.nom, m.code_membre
-                     FROM member_dons d JOIN members m ON m.id = d.member_id
-                     GROUP BY d.member_id, d.montant
-                     HAVING c > 1
-                     ORDER BY m.nom, m.prenom")->fetchAll();
+$stCands = $db->prepare("SELECT d.member_id, d.montant, COUNT(*) c, m.prenom, m.nom, m.code_membre
+                         FROM member_dons d JOIN members m ON m.id = d.member_id
+                         WHERE d.member_id <> ?
+                         GROUP BY d.member_id, d.montant
+                         HAVING c > 1
+                         ORDER BY m.nom, m.prenom");
+$stCands->execute([$anonId]);
+$cands = $stCands->fetchAll();
 
 $groupes = [];
 $stDons = $db->prepare("SELECT id, date_don, communication, ogm_don, statut, ref_import, note
