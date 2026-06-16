@@ -17,7 +17,12 @@ $flash_msg = '';
 // Onglet actif et compteur paiements en attente
 $current_tab  = $_GET['tab'] ?? 'import';
 $pending_count = 0;
-try { $pending_count = (int)$db->query("SELECT COUNT(*) FROM import_csv_lignes WHERE statut='en_attente'")->fetchColumn(); } catch (Exception $e) {}
+$pending_total = 0.0;
+try {
+    $r = $db->query("SELECT COUNT(*) AS n, COALESCE(SUM(montant),0) AS total FROM import_csv_lignes WHERE statut='en_attente'")->fetch();
+    $pending_count = (int)($r['n'] ?? 0);
+    $pending_total = (float)($r['total'] ?? 0);
+} catch (Exception $e) {}
 
 // ── Handlers onglet "En attente" ──────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
@@ -615,7 +620,11 @@ function member_options($membres, $selected) {
       } catch (Exception $e) { $pending=[]; $membres_all=[]; $count_reconcil=0; $filtre_reconcil=false; }
     ?>
     <div class="card">
-      <h3>⏳ Paiements en attente de réconciliation (<?= count($pending) ?>)</h3>
+      <h3>⏳ Paiements en attente de réconciliation (<?= count($pending) ?>)
+        <span style="float:right;font-size:.82rem;color:#c97300;font-weight:800">
+          <?= number_format($pending_total, 2, ',', '.') ?> € restant à assigner
+        </span>
+      </h3>
       <div class="help">
         Ces paiements ont été détectés lors d'un import CSV mais <strong>non réconciliés</strong> avec un membre.
         <br>• <strong>Réconcilier</strong> → sélectionne un membre → le don est enregistré immédiatement.
