@@ -28,6 +28,11 @@ try {
     $messages_non_lus = (int) $db->query("SELECT COUNT(*) FROM contacts WHERE statut='nouveau'")->fetchColumn();
     $total_dons       = (float) $db->query("SELECT COALESCE(SUM(montant),0) FROM member_dons WHERE statut='confirme'")->fetchColumn();
 
+    // Plaintes : nombre total de plaintes générées (table optionnelle).
+    $plaintes = 0;
+    try { $plaintes = (int) $db->query("SELECT COUNT(*) FROM plainte_clicks")->fetchColumn(); }
+    catch (Throwable $e) { $plaintes = 0; }
+
     $montant_initial = (float) cfg('montant_initial', 0);
     $objectif        = (float) cfg('montant_objectif', 0);
     $recolte         = $montant_initial + $total_dons;
@@ -36,6 +41,7 @@ try {
         'membres'          => $membres,
         'dons_enregistres' => $dons_enregistres,
         'messages_non_lus' => $messages_non_lus,
+        'plaintes'         => $plaintes,
         'total_dons'       => round($total_dons, 2),
         'recolte_totale'   => round($recolte, 2),
         'objectif'         => round($objectif, 2),

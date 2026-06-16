@@ -19,7 +19,7 @@ $db = getDB();
 
 // Données du clic
 $body   = json_decode(file_get_contents('php://input'), true) ?? [];
-$source = in_array($body['source'] ?? '', ['piste_meteo','historique_vent'])
+$source = in_array($body['source'] ?? '', ['piste_meteo','historique_vent','plainte_page'])
           ? $body['source'] : 'piste_meteo';
 $alert  = !empty($body['alert']) ? 'hors_prs' : 'dans_prs';
 

@@ -262,6 +262,21 @@ var _metar = null;
 var _plainText = '';
 var _captureDataUrl = null;
 var _dest = '<?= $plainte_dest_js ?>';
+var _plainteLogged = false;
+
+// Enregistre la plainte une seule fois par parcours (compteur widget / admin)
+function logPlainte() {
+  if (_plainteLogged) return;
+  _plainteLogged = true;
+  var horsPrs = !!(_metar && _metar.prs_active === false);
+  try {
+    fetch('/api/track_plainte.php', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({source:'plainte_page', alert: horsPrs})
+    }).catch(function(){});
+  } catch(e) {}
+}
 
 function confirmCommune() {
   var val = document.getElementById('commune-input').value.trim();
@@ -554,6 +569,7 @@ function proceedAnyway() {
 }
 
 function copyComplaint() {
+  logPlainte();
   var btn = document.getElementById('pl-copy-btn');
   var orig = btn.textContent;
   var copyOkText = <?= json_encode(tr($is_nl,'✓ Copié ! Collez le contenu dans votre email','✓ Gekopieerd! Plak de inhoud in uw e-mail')) ?>;
@@ -646,6 +662,7 @@ function buildHtmlBody() {
 }
 
 function openMail() {
+  logPlainte();
   var pisteLabel = _piste==='07' ? 'piste 07' : 'piste 01';
   var now = new Date();
   var dateStr = now.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});

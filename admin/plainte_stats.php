@@ -37,7 +37,8 @@ if ($table_ok) {
             SUM(1-is_membre)         as visiteurs,
             SUM(alert_level='hors_prs') as hors_prs,
             SUM(source='piste_meteo')   as from_meteo,
-            SUM(source='historique_vent') as from_histo
+            SUM(source='historique_vent') as from_histo,
+            SUM(source='plainte_page')  as from_plainte
         FROM plainte_clicks
     ")->fetch();
 
@@ -143,6 +144,10 @@ if ($table_ok) {
       <div class="val" style="color:#7c3aed"><?= $totaux['from_histo'] ?></div>
       <div class="lbl">Via Historique</div>
     </div>
+    <div class="kpi">
+      <div class="val" style="color:#FF9900"><?= $totaux['from_plainte'] ?></div>
+      <div class="lbl">Via Page Plainte</div>
+    </div>
   </div>
 
   <!-- Graphe 30 jours -->
@@ -204,9 +209,12 @@ if ($table_ok) {
           <?= $is_new_day ? date('D d/m/Y', strtotime($r['jour'])) : '' ?>
         </td>
         <td>
-          <span class="badge <?= $r['source']==='piste_meteo'?'b-blue':'b-ok' ?>">
-            <?= $r['source']==='piste_meteo' ? '📡 Piste Météo' : '📜 Historique' ?>
-          </span>
+          <?php
+            if ($r['source']==='piste_meteo')      { $src_cls='b-blue'; $src_lbl='📡 Piste Météo'; }
+            elseif ($r['source']==='plainte_page')  { $src_cls='b-warn'; $src_lbl='📝 Page Plainte'; }
+            else                                    { $src_cls='b-ok';   $src_lbl='📜 Historique'; }
+          ?>
+          <span class="badge <?= $src_cls ?>"><?= $src_lbl ?></span>
         </td>
         <td><strong><?= $r['total'] ?></strong></td>
         <td><?= $r['nb_membres'] > 0 ? '<strong style="color:#1673B2">'.$r['nb_membres'].'</strong>' : '<span style="color:#ddd">0</span>' ?></td>
