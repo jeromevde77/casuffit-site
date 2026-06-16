@@ -33,14 +33,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['action'])) {
                     $chk = $db->prepare("SELECT id FROM member_dons WHERE ref_import=?");
                     $chk->execute([$l['ref_import']]);
                     if (!$chk->fetch()) {
-                        $comm = extract_ogm(($l['communication']??'').' ') ?: ($l['communication'] ?: null);
-                        $note = 'Réconciliation manuelle — ' . ($l['contrepartie_nom'] ?? '');
-                        $db->prepare("INSERT INTO member_dons (member_id,montant,communication,statut,note,date_don,ref_import) VALUES (?,?,?,'confirme',?,?,?)")
-                           ->execute([$mid, $l['montant'], $comm, $note,
-                                      ($l['date_virement'] ? $l['date_virement'].' 12:00:00' : date('Y-m-d').' 12:00:00'),
-                                      $l['ref_import']]);
-                        require_once __DIR__ . '/../includes/mail_helper.php';
-                        sendDonMerci($db, (int)$db->lastInsertId());
+                        $ogm_l = extract_ogm(($l['communication']??'').' ');
+                        $comm = $ogm_l ?: ($l['communication'] ?: null);
+                        $dupId = findDuplicateDon($db, $mid, (float)$l['montant'], $ogm_l ?: null, $l['communication'] ?: null, $l['date_virement'] ?: null);
+                        if ($dupId) {
+                            // Don déjà présent (confirmé manuellement) : on rattache l'empreinte au lieu de dupliquer.
+                            $db->prepare("UPDATE member_dons SET ref_import = COALESCE(NULLIF(ref_import,''), ?), statut='confirme' WHERE id=?")
+                               ->execute([$l['ref_import'], $dupId]);
+                            require_once __DIR__ . '/../includes/mail_helper.php';
+                            sendDonMerci($db, $dupId);
+                        } else {
+                            $note = 'Réconciliation manuelle — ' . ($l['contrepartie_nom'] ?? '');
+                            $db->prepare("INSERT INTO member_dons (member_id,montant,communication,statut,note,date_don,ref_import) VALUES (?,?,?,'confirme',?,?,?)")
+                               ->execute([$mid, $l['montant'], $comm, $note,
+                                          ($l['date_virement'] ? $l['date_virement'].' 12:00:00' : date('Y-m-d').' 12:00:00'),
+                                          $l['ref_import']]);
+                            require_once __DIR__ . '/../includes/mail_helper.php';
+                            sendDonMerci($db, (int)$db->lastInsertId());
+                        }
                     }
                     $db->prepare("UPDATE import_csv_lignes SET statut='reconcilie',date_reconciliee=NOW() WHERE id=?")
                        ->execute([$lid]);
@@ -113,6 +123,34 @@ function parse_montant($s) {
 function extract_ogm($s) {
     if (preg_match('/\+{3}\d{3}\/\d{4}\/\d{5}\+{3}/', (string)$s, $m)) return $m[0];
     return '';
+}
+
+// Cherche un don existant qui correspond déjà à ce virement (pour éviter les
+// doublons quand un don a été confirmé/saisi manuellement, donc sans ref_import).
+// Renvoie l'id du don existant, ou null.
+function findDuplicateDon(PDO $db, int $mid, float $montant, ?string $ogm, ?string $comm, ?string $date): ?int {
+    if ($mid <= 0) return null;
+    // a) Même communication structurée (OGM) + même montant pour ce membre → quasi-certain
+    if (!empty($ogm)) {
+        try {
+            $q = $db->prepare("SELECT id FROM member_dons
+                               WHERE member_id=? AND ABS(montant - ?) < 0.01
+                                 AND (ogm_don = ? OR communication LIKE ?) LIMIT 1");
+            $q->execute([$mid, $montant, $ogm, '%' . $ogm . '%']);
+            if ($id = $q->fetchColumn()) return (int)$id;
+        } catch (Throwable $e) {}
+    }
+    // b) Don déjà saisi à la main (sans empreinte d'import) : même membre, même montant, date proche (±4 j)
+    try {
+        $d = $date ?: date('Y-m-d');
+        $q = $db->prepare("SELECT id FROM member_dons
+                           WHERE member_id=? AND ABS(montant - ?) < 0.01
+                             AND (ref_import IS NULL OR ref_import = '')
+                             AND ABS(DATEDIFF(date_don, ?)) <= 4 LIMIT 1");
+        $q->execute([$mid, $montant, $d]);
+        if ($id = $q->fetchColumn()) return (int)$id;
+    } catch (Throwable $e) {}
+    return null;
 }
 
 // Parse le CSV Belfius -> [transactions crédit | null, message d'erreur]
@@ -200,14 +238,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmer_import'])) 
             $mid = (int)($members[$k] ?? 0);
             if ($mid <= 0) continue;
             $comm = $tx['ogm'] ?: ($tx['comm'] ?: null);
-            $note = 'Import CSV ' . $fname . ($tx['nom'] ? ' — ' . $tx['nom'] : '');
-            $db->prepare("INSERT INTO member_dons
-                          (member_id, montant, communication, statut, note, date_don, ref_import)
-                          VALUES (?, ?, ?, 'confirme', ?, ?, ?)")
-               ->execute([$mid, $tx['montant'], $comm, $note, ($tx['date'] ?: date('Y-m-d')) . ' 12:00:00', $tx['ref']]);
-            $ins++;
-            require_once __DIR__ . '/../includes/mail_helper.php';
-            sendDonMerci($db, (int)$db->lastInsertId());
+            // Anti-doublon : un don correspondant existe-t-il déjà (confirmé/saisi manuellement) ?
+            $dupId = findDuplicateDon($db, $mid, (float)$tx['montant'], $tx['ogm'] ?: null, $tx['comm'] ?: null, $tx['date'] ?: null);
+            if ($dupId) {
+                // On ne duplique pas : on appose l'empreinte d'import sur le don existant et on le confirme.
+                $db->prepare("UPDATE member_dons SET ref_import = COALESCE(NULLIF(ref_import,''), ?), statut='confirme' WHERE id=?")
+                   ->execute([$tx['ref'], $dupId]);
+                require_once __DIR__ . '/../includes/mail_helper.php';
+                sendDonMerci($db, $dupId);
+                $skip++;
+            } else {
+                $note = 'Import CSV ' . $fname . ($tx['nom'] ? ' — ' . $tx['nom'] : '');
+                $db->prepare("INSERT INTO member_dons
+                              (member_id, montant, communication, statut, note, date_don, ref_import)
+                              VALUES (?, ?, ?, 'confirme', ?, ?, ?)")
+                   ->execute([$mid, $tx['montant'], $comm, $note, ($tx['date'] ?: date('Y-m-d')) . ' 12:00:00', $tx['ref']]);
+                $ins++;
+                require_once __DIR__ . '/../includes/mail_helper.php';
+                sendDonMerci($db, (int)$db->lastInsertId());
+            }
         }
         // Si ce don était en staging, le marquer réconcilié
         if (!empty($tx['is_staging'])) {
@@ -260,9 +309,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             }
             $by_ogm_don = [];
             try {
-                $dons = $db->query("SELECT d.id, d.member_id, d.ogm_don, d.montant, m.prenom, m.nom
+                $dons = $db->query("SELECT d.id, d.member_id, d.ogm_don, d.montant, d.statut, m.prenom, m.nom
                                     FROM member_dons d JOIN members m ON m.id=d.member_id
-                                    WHERE d.statut='en_attente' AND d.ogm_don IS NOT NULL AND d.ogm_don<>''")->fetchAll();
+                                    WHERE d.ogm_don IS NOT NULL AND d.ogm_don<>''
+                                    ORDER BY (d.statut='en_attente') ASC")->fetchAll();
                 foreach ($dons as $dn) { $by_ogm_don[$dn['ogm_don']] = $dn; }
             } catch (Exception $e) { /* colonne ogm_don absente : on ignore ce niveau */ }
 
@@ -299,8 +349,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                     $tx['tier'] = 'attente'; $tx['suggest'] = (int)($st['suggested_member_id']??0); $tx['is_staging'] = true;
                 } elseif ($tx['ogm'] && isset($by_ogm_don[$tx['ogm']])) {
                     $dn = $by_ogm_don[$tx['ogm']];
-                    $tx['tier'] = 'don'; $tx['don_id'] = $dn['id']; $tx['suggest'] = $dn['member_id'];
-                    $tx['membre_label'] = trim($dn['prenom'] . ' ' . $dn['nom']);
+                    if (($dn['statut'] ?? '') === 'en_attente') {
+                        $tx['tier'] = 'don'; $tx['don_id'] = $dn['id']; $tx['suggest'] = $dn['member_id'];
+                        $tx['membre_label'] = trim($dn['prenom'] . ' ' . $dn['nom']);
+                    } else {
+                        // Don déjà enregistré pour cet OGM (ex. confirmé manuellement) → éviter le doublon
+                        $tx['tier'] = 'deja';
+                    }
                 } elseif ($tx['ogm'] && isset($by_ogm[$tx['ogm']])) {
                     $m = $by_ogm[$tx['ogm']];
                     $tx['tier'] = 'ogm'; $tx['suggest'] = $m['id'];
