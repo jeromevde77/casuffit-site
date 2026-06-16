@@ -8,6 +8,14 @@ require_once __DIR__ . '/../includes/dons.php';
 $db = getDB();
 $anonId = getAnonymousMemberId($db);
 
+// Extrait le nom du donateur depuis la note (tout ce qui suit le dernier « — »).
+function donorNameFromNote(?string $note): string {
+    if (!$note) return '';
+    $pos = mb_strrpos($note, '—');
+    if ($pos === false) return '';
+    return trim(mb_substr($note, $pos + 1));
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') csrf_verify();
 
 // Attribuer un don anonyme à un vrai membre
@@ -120,12 +128,15 @@ $msg = $_GET['msg'] ?? '';
       <div class="empty">Aucun don anonyme pour le moment.</div>
     <?php else: ?>
     <table>
-      <tr><th>Date</th><th>Montant</th><th>Provenance / Nom</th><th>Communication</th><th>Statut</th><th>Attribuer à</th></tr>
-      <?php foreach ($dons as $d): ?>
+      <tr><th>Date</th><th>Montant</th><th>Nom</th><th>Communication</th><th>Statut</th><th>Attribuer à</th></tr>
+      <?php foreach ($dons as $d): $nm = donorNameFromNote($d['note'] ?? ''); ?>
       <tr>
         <td><?= $d['date_don'] ? date('d/m/Y', strtotime($d['date_don'])) : '—' ?></td>
         <td><strong><?= number_format($d['montant'], 2, ',', ' ') ?> €</strong></td>
-        <td style="font-size:.75rem;color:#555;max-width:240px"><?= htmlspecialchars($d['note'] ?? '') ?: '<span style="color:#bbb">—</span>' ?></td>
+        <td style="max-width:220px;font-weight:600;color:#0e3d6b">
+          <?php if ($nm !== ''): ?><span title="<?= htmlspecialchars($d['note'] ?? '') ?>"><?= htmlspecialchars($nm) ?></span>
+          <?php else: ?><span style="color:#bbb;font-weight:400">—</span><?php endif; ?>
+        </td>
         <td><?php $o = $d['ogm_don'] ?: $d['communication']; ?>
             <?php if ($o): ?><span class="ogm"><?= htmlspecialchars($o) ?></span><?php else: ?><span style="color:#bbb">—</span><?php endif; ?></td>
         <td><?= $d['statut']==='confirme'?'<span class="badge b-ok">Confirmé</span>':'<span class="badge b-wait">En attente</span>' ?></td>
