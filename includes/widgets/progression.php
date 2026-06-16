@@ -40,6 +40,18 @@ $widget_no_scale = true; // Ne pas agrandir la police sur mobile
         <span class="stat-val">+20 ans</span>
         <span class="stat-lab">De combat</span>
       </div>
+      <?php if (!empty($membres_effectifs)): ?>
+      <div class="stat">
+        <span class="stat-val"><?= number_format($membres_effectifs, 0, ',', ' ') ?></span>
+        <span class="stat-lab">Membres effectifs</span>
+      </div>
+      <?php endif; ?>
+      <?php if (!empty($fb_followers)): ?>
+      <div class="stat">
+        <span class="stat-val"><?= number_format($fb_followers, 0, ',', ' ') ?></span>
+        <span class="stat-lab">Followers Facebook</span>
+      </div>
+      <?php endif; ?>
     </div>
     <a href="/plainte.php" style="display:block;width:100%;margin-top:14px;padding:14px 16px;background:#FF9900;color:#fff;font-weight:700;font-size:.88rem;text-align:center;border-radius:10px;text-decoration:none;box-shadow:0 2px 8px rgba(255,153,0,.3);">
       ⚠ Porter plainte — usage anormal
