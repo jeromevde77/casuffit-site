@@ -28,6 +28,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['annuler'])) {
     header('Location: dons_all.php?msg=annule'); exit;
 }
 
+// Modifier un don (montant, date, communication, statut, réaffectation membre)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_don'])) {
+    $id      = (int)($_POST['don_id'] ?? 0);
+    $montant = floatval(str_replace(',', '.', $_POST['montant'] ?? 0));
+    $date    = trim($_POST['date_don'] ?? '');
+    $comm    = trim($_POST['communication'] ?? '');
+    $statut  = in_array($_POST['statut'] ?? '', ['confirme','en_attente','annule'], true) ? $_POST['statut'] : 'en_attente';
+    $mid     = (int)($_POST['member_id'] ?? 0);
+    if ($id > 0 && $montant > 0 && $mid > 0) {
+        $dt = $date ? date('Y-m-d H:i:s', strtotime($date)) : date('Y-m-d H:i:s');
+        $db->prepare("UPDATE member_dons SET member_id=?, montant=?, communication=?, date_don=?, statut=? WHERE id=?")
+           ->execute([$mid, $montant, ($comm !== '' ? $comm : null), $dt, $statut, $id]);
+    }
+    header('Location: dons_all.php?msg=modifie'); exit;
+}
+
+// Supprimer un don
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['supprimer_don'])) {
+    $id = (int)($_POST['don_id'] ?? 0);
+    if ($id > 0) $db->prepare("DELETE FROM member_dons WHERE id=?")->execute([$id]);
+    header('Location: dons_all.php?msg=supprime'); exit;
+}
+
 // ── Rappel promesses de don ───────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rappel_dons'])) {
     require_once __DIR__ . '/../includes/mail_helper.php';
@@ -130,6 +153,9 @@ $stmt = $db->prepare("
 $stmt->execute($params);
 $dons = $stmt->fetchAll();
 
+// Membres actifs (pour la réaffectation d'un don dans le modal)
+$membres_sel = $db->query("SELECT id, prenom, nom, code_membre FROM members WHERE statut='actif' ORDER BY nom, prenom")->fetchAll();
+
 // Top donateurs
 $top_donateurs = $db->query("
     SELECT m.prenom, m.nom, m.code_membre, m.commune,
@@ -208,7 +234,12 @@ $top_donateurs = $db->query("
 .act-btn.del:hover{background:#fee2e2;border-color:#fc8181;text-decoration:none}
 .act-btn.view{color:#38a169;border-color:#c6f6d5;background:#f0fff4}
 .act-btn.view:hover{background:#dcfce7;text-decoration:none}
+#edit-modal label{font-size:.7rem;color:#888;display:block;margin-bottom:3px}
+#edit-modal input,#edit-modal select{padding:7px 10px;border:1.5px solid #dde4ed;border-radius:6px;font-size:.82rem;font-family:inherit;outline:none;width:100%}
+.ts-wrapper.single .ts-control{border:1.5px solid #dde4ed;border-radius:6px;font-size:.82rem;min-height:unset;padding:5px 8px;box-shadow:none}
+.ts-dropdown{font-size:.8rem}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.3.1/css/tom-select.default.min.css">
 </head>
 <body>
 <?php include __DIR__ . '/../includes/admin_sidebar.php'; ?>
@@ -220,6 +251,10 @@ $top_donateurs = $db->query("
     <div class="flash-ok">Don confirmé.</div>
   <?php elseif ($msg === 'annule'): ?>
     <div class="flash-ok">Don annulé.</div>
+  <?php elseif ($msg === 'modifie'): ?>
+    <div class="flash-ok">✏️ Don modifié.</div>
+  <?php elseif ($msg === 'supprime'): ?>
+    <div class="flash-ok">🗑 Don supprimé.</div>
   <?php endif; ?>
 
   <!-- Stats -->
@@ -330,17 +365,32 @@ $top_donateurs = $db->query("
             <?php endif; ?>
           </td>
           <td>
-            <?php if ($d['statut']==='en_attente'): ?>
-            <form method="POST" style="display:inline"><?= csrf_field() ?>
-              <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
-              <button name="confirmer" class="btn btn-green" style="padding:4px 8px;font-size:.7rem">Confirmer</button>
-            </form>
-            <?php elseif ($d['statut']==='confirme'): ?>
-            <form method="POST" style="display:inline" onsubmit="return confirm('Annuler ce don ?')"><?= csrf_field() ?>
-              <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
-              <button name="annuler" class="btn btn-red" style="padding:4px 8px;font-size:.7rem">Annuler</button>
-            </form>
-            <?php endif; ?>
+            <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+              <?php if ($d['statut']==='en_attente'): ?>
+              <form method="POST" style="display:inline"><?= csrf_field() ?>
+                <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
+                <button name="confirmer" class="btn btn-green" style="padding:4px 8px;font-size:.7rem">Confirmer</button>
+              </form>
+              <?php elseif ($d['statut']==='confirme'): ?>
+              <form method="POST" style="display:inline" onsubmit="return confirm('Annuler ce don ?')"><?= csrf_field() ?>
+                <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
+                <button name="annuler" class="btn btn-red" style="padding:4px 8px;font-size:.7rem">Annuler</button>
+              </form>
+              <?php endif; ?>
+              <button type="button" class="act-btn edit" title="Modifier"
+                onclick='openEditDon(<?= htmlspecialchars(json_encode([
+                  "id"      => (int)$d["id"],
+                  "montant" => number_format((float)$d["montant"], 2, ".", ""),
+                  "date"    => date("Y-m-d", strtotime($d["date_don"])),
+                  "comm"    => $d["communication"] ?? "",
+                  "statut"  => $d["statut"],
+                  "mid"     => (int)$d["member_id"],
+                ]), ENT_QUOTES) ?>)'>✏️</button>
+              <form method="POST" style="display:inline" onsubmit="return confirm('Supprimer définitivement ce don ?')"><?= csrf_field() ?>
+                <input type="hidden" name="don_id" value="<?= $d['id'] ?>">
+                <button type="submit" name="supprimer_don" class="act-btn del" title="Supprimer">🗑</button>
+              </form>
+            </div>
           </td>
         </tr>
         <?php endforeach; ?>
@@ -429,6 +479,63 @@ function confirmRappel() {
   if (n === 0) { alert('Sélectionnez au moins un don.'); return false; }
   return confirm('Envoyer un email de rappel à ' + n + ' personne(s) ?');
 }
+</script>
+
+<!-- Modale édition d'un don -->
+<div id="edit-modal" onclick="if(event.target===this)closeEditDon()"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;width:480px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee">
+      <div style="font-weight:700;color:#0e3d6b">✏️ Modifier le don</div>
+      <button type="button" onclick="closeEditDon()" style="border:none;background:none;font-size:1.5rem;cursor:pointer;color:#bbb;line-height:1">×</button>
+    </div>
+    <form method="POST" style="padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+      <?= csrf_field() ?>
+      <input type="hidden" name="don_id" id="ed-id">
+      <div>
+        <label>Membre (réaffectation)</label>
+        <select name="member_id" id="ed-member" required>
+          <?php foreach ($membres_sel as $m): ?>
+            <option value="<?= (int)$m['id'] ?>"><?= htmlspecialchars(trim($m['prenom'].' '.$m['nom']).' ('.$m['code_membre'].')') ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1"><label>Montant (€)</label><input type="number" step="0.01" min="0.01" name="montant" id="ed-montant" required></div>
+        <div style="flex:1"><label>Date</label><input type="date" name="date_don" id="ed-date"></div>
+      </div>
+      <div><label>Communication</label><input type="text" name="communication" id="ed-comm" placeholder="OGM ou note"></div>
+      <div><label>Statut</label>
+        <select name="statut" id="ed-statut">
+          <option value="confirme">Confirmé</option>
+          <option value="en_attente">En attente</option>
+          <option value="annule">Annulé</option>
+        </select>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+        <button type="button" class="btn btn-g" onclick="closeEditDon()">Annuler</button>
+        <button type="submit" name="modifier_don" class="btn btn-p">💾 Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.3.1/js/tom-select.complete.min.js"></script>
+<script>
+var edTom = null;
+document.addEventListener('DOMContentLoaded', function(){
+  if (window.TomSelect) edTom = new TomSelect('#ed-member', { create:false, maxOptions:2000 });
+});
+function openEditDon(d){
+  document.getElementById('ed-id').value = d.id;
+  document.getElementById('ed-montant').value = d.montant;
+  document.getElementById('ed-date').value = d.date;
+  document.getElementById('ed-comm').value = d.comm || '';
+  document.getElementById('ed-statut').value = d.statut;
+  if (edTom) edTom.setValue(String(d.mid)); else document.getElementById('ed-member').value = d.mid;
+  document.getElementById('edit-modal').style.display = 'flex';
+}
+function closeEditDon(){ document.getElementById('edit-modal').style.display = 'none'; }
 </script>
 </body>
 </html>
