@@ -5,7 +5,9 @@
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../includes/dons.php';
 $db = getDB();
+getAnonymousMemberId($db); // garantit l'existence du membre « Donateur anonyme » (visible dans les listes)
 
 $error = '';
 $results  = null;   // étape 1 : résultat de l'analyse
@@ -547,6 +549,7 @@ function member_options($membres, $selected) {
           Coche les lignes à enregistrer. <strong>OGM</strong> et <strong>dons en attente</strong> sont fiables (pré-cochés).
           Pour <strong>IBAN</strong>, <strong>nom approchant</strong> et <strong>non attribué</strong>, vérifie/choisis le membre avant de cocher.
           Les lignes « déjà importées » sont grisées et ignorées.
+          <br>💡 Donateur inconnu ? Choisis <strong>« Donateur anonyme »</strong> dans la liste : le don est compté et tu pourras l'<a href="dons_anonymes.php">attribuer plus tard</a>.
         </div>
         <div style="overflow-x:auto">
         <table>

@@ -49,6 +49,8 @@ if (!empty($_SESSION['admin_2fa_required']) && !$_2fa_exempt) {
     <a href="members.php"     <?= basename($_SERVER['PHP_SELF'])==='members.php'     ?'class="active"':'' ?>>Membres</a>
     <a href="dons_all.php"    <?= basename($_SERVER['PHP_SELF'])==='dons_all.php'    ?'class="active"':'' ?>>Tous les dons</a>
     <a href="import_csv.php"  <?= basename($_SERVER['PHP_SELF'])==='import_csv.php'  ?'class="active"':'' ?>>Import CSV</a>
+    <a href="dons_anonymes.php" <?= basename($_SERVER['PHP_SELF'])==='dons_anonymes.php' ?'class="active"':'' ?>>Dons anonymes</a>
+    <a href="doublons.php"    <?= basename($_SERVER['PHP_SELF'])==='doublons.php'    ?'class="active"':'' ?>>Doublons</a>
     <div class="nav-section">Sécurité</div>
     <a href="admin_users.php" <?= basename($_SERVER['PHP_SELF'])==='admin_users.php' ?'class="active"':'' ?>>Comptes admin</a>
     <a href="setup_totp.php"  <?= basename($_SERVER['PHP_SELF'])==='setup_totp.php'  ?'class="active"':'' ?>>Mon 2FA</a>

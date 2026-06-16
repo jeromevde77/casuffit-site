@@ -118,6 +118,7 @@ function sendDonMerci(PDO $db, int $donId): bool {
     if (!$d)                                       return false; // don/membre introuvable
     if ($d['statut'] !== 'confirme')               return false; // uniquement les dons confirmés
     if (empty($d['email']))                        return false; // « si on le connaît »
+    if (strcasecmp(trim($d['email']), 'dons-anonymes@casuffit.be') === 0) return false; // don anonyme : pas de remerciement
     if ($hasMerci && !empty($d['merci_envoye']))   return false; // déjà remercié
 
     $prenom  = trim($d['prenom'] ?? '');
