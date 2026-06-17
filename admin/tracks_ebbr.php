@@ -126,6 +126,9 @@ h1{font-size:1.3rem;color:#1673B2;font-weight:700;margin-bottom:6px}
     <a href="/cron/ebbr_tracks.php?secret=<?= urlencode(defined('CRON_SECRET')?CRON_SECRET:'') ?>&date=<?= date('Y-m-d', strtotime('yesterday')) ?>"
        class="btn btn-blue" target="_blank">Lancer la collecte (hier)</a>
     <button class="btn btn-orange" onclick="openInitModal()">Initialiser les 30 derniers jours</button>
+    <?php if (!empty($days)): ?>
+    <a href="tracks_ebbr_export.php" class="btn btn-gray">⬇ Export Excel (CSV)</a>
+    <?php endif; ?>
     <span style="font-size:.78rem;color:#aaa">Le cron tourne automatiquement chaque nuit à 03:00 UTC</span>
   </div>
 
