@@ -1,4 +1,4 @@
-<?php /* rose-6mois.php — Générateur de rose des vents multi-mois (image Facebook) — v2 */ ?>
+<?php /* rose-6mois.php — Générateur de rose des vents multi-mois (image Facebook) — v3 */ ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -199,8 +199,10 @@
     var sectors = {};
     var totalObs = 0, calmCount = 0, maxSpd = 0, sumSpd = 0, spdCount = 0;
     var dirCount = {};
-    // % favorable par piste : vent dans ±90° du cap de la piste (composante de face)
-    var RWY = [[1,10],[7,70],[25,250],[19,190]]; // [numéro, cap en °]
+    // % favorable par piste — règles de l'outil météo du site (api/metar.php) :
+    //   composantes selon le QFU ; favorable si vent arrière ≤ 7 kt ET vent latéral ≤ 20 kt
+    var RWY_QFU = {1:14, 7:68, 25:248, 19:194}; // QFU magnétiques (07L/R=66/71, 25R/L=246/251 → moy.)
+    var TW_MAX = 7, XW_MAX = 20;                // seuils PRS : vent arrière / vent latéral
     var fav = {1:0, 7:0, 25:0, 19:0};
 
     lastObs.forEach(function(obs){
@@ -213,9 +215,12 @@
       if(wspd > maxSpd) maxSpd = wspd;
       sumSpd += wspd; spdCount++;
 
-      RWY.forEach(function(rw){
-        var diff = Math.abs(wdir - rw[1]); if(diff > 180) diff = 360 - diff;
-        if(diff < 90) fav[rw[0]]++;
+      Object.keys(RWY_QFU).forEach(function(rw){
+        var delta = (wdir - RWY_QFU[rw]) * Math.PI/180;
+        var hw = wspd * Math.cos(delta);          // + = vent de face, − = vent arrière
+        var tw = hw < 0 ? -hw : 0;                 // composante vent arrière
+        var xw = Math.abs(wspd * Math.sin(delta)); // composante vent latéral
+        if(tw <= TW_MAX && xw <= XW_MAX) fav[rw]++;
       });
 
       var secIdx = Math.round(wdir/10) % 36;
@@ -340,7 +345,7 @@
     });
     // Précision méthodo (sous les stats)
     ctx.fillStyle = '#aeb9c4'; ctx.font = 'italic 14px Arial'; ctx.textAlign = 'left';
-    ctx.fillText('« Favorable » = vent dans les ±90° du cap de piste (composante de face), hors périodes de calme.', 60, sy + 2*(bh+gap) + 14);
+    ctx.fillText('« Favorable » = vent arrière ≤ 7 kt ET vent latéral ≤ 20 kt (composantes selon le QFU, mêmes règles que l\'outil météo du site) · vent moyen, hors calme.', 60, sy + 2*(bh+gap) + 14);
 
     // Pied de page
     ctx.textAlign = 'right'; ctx.fillStyle = '#b3c0cc'; ctx.font = '18px Arial';
