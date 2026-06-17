@@ -1,4 +1,4 @@
-<?php /* rose-6mois.php — Générateur de rose des vents multi-mois (image Facebook) — v1 */ ?>
+<?php /* rose-6mois.php — Générateur de rose des vents multi-mois (image Facebook) — v2 */ ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -22,9 +22,16 @@
   .btn-green:hover{background:#147a30}
   .btn:disabled{opacity:.5;cursor:default}
   #status{padding:12px 16px;border-radius:8px;font-size:.88rem;background:#f0f6ff;color:#1673B2;margin-bottom:16px}
-  .canvas-box{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.08);display:inline-block}
-  canvas{max-width:100%;height:auto;display:block;border-radius:8px}
+  .canvas-box{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.08);display:inline-block;position:relative}
+  canvas{max-width:100%;height:auto;display:block;border-radius:8px;cursor:crosshair}
   .note{font-size:.78rem;color:#999;margin-top:12px;line-height:1.5}
+  #tooltip{position:absolute;background:rgba(20,20,20,.92);color:#fff;border-radius:10px;padding:10px 14px;font-size:.8rem;pointer-events:none;min-width:170px;z-index:10;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none}
+  #tooltip .tt-dir{font-size:1rem;font-weight:700;margin-bottom:6px}
+  #tooltip .tt-row{display:flex;align-items:center;gap:7px;margin:2px 0}
+  #tooltip .tt-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  #tooltip .tt-lbl{color:#ccc;flex:1}
+  #tooltip .tt-val{font-weight:700;color:#fff}
+  #tooltip .tt-tot{border-top:1px solid rgba(255,255,255,.2);margin-top:6px;padding-top:5px;color:#aaa;font-size:.72rem}
 </style>
 </head>
 <body>
@@ -62,6 +69,7 @@
 
   <div class="canvas-box">
     <canvas id="rose" width="1080" height="1080"></canvas>
+    <div id="tooltip"></div>
   </div>
 
   <div class="note">
@@ -89,6 +97,9 @@
   var lastObs = null;     // observations agrégées
   var lastPeriod = '';
   var lastFname = 'rose-vents.png';
+
+  // Géométrie + agrégation du dernier rendu (pour le survol)
+  var hov = {sectors:{}, grandTotal:0, cx:0, cy:0, maxR:0};
 
   // ── Init des sélecteurs ───────────────────────────────────────────────────
   function initControls(){
@@ -219,6 +230,9 @@
     // ── Géométrie de la rose ──
     var cx = 400, cy = 600, maxR = 320;
 
+    // Mémoriser pour le survol (détail des %)
+    hov = {sectors:sectors, grandTotal:grandTotal, cx:cx, cy:cy, maxR:maxR};
+
     // Cercles de référence + labels %
     var rings = [0.25,0.5,0.75,1.0];
     ctx.strokeStyle = '#dde8f0'; ctx.lineWidth = 1.5;
@@ -339,6 +353,58 @@
     a.href = canvas.toDataURL('image/png');
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   };
+
+  // ── Survol : détail des % par secteur ─────────────────────────────────────
+  (function(){
+    var canvas = document.getElementById('rose');
+    var tooltip = document.getElementById('tooltip');
+    var box = canvas.parentElement;
+
+    canvas.addEventListener('mousemove', function(e){
+      if(!lastObs || hov.grandTotal === 0){ tooltip.style.display='none'; return; }
+      var rect = canvas.getBoundingClientRect();
+      var scaleX = canvas.width / rect.width;
+      var scaleY = canvas.height / rect.height;
+      var mx = (e.clientX - rect.left) * scaleX;
+      var my = (e.clientY - rect.top)  * scaleY;
+      var dx = mx - hov.cx, dy = my - hov.cy;
+      var dist = Math.sqrt(dx*dx + dy*dy);
+
+      if(dist < 8 || dist > hov.maxR + 16){ tooltip.style.display='none'; return; }
+
+      var angleDeg = (Math.atan2(dy, dx) * 180/Math.PI + 90 + 360) % 360;
+      var secIdx = Math.round(angleDeg/10) % 36;
+      var sec = hov.sectors[secIdx];
+      if(!sec){ tooltip.style.display='none'; return; }
+
+      var deg = secIdx*10;
+      var nameLabel = DIRS_16[Math.round(deg/22.5)%16] + ' (' + deg + '°)';
+
+      var rows = SPEED_BINS.slice().reverse().map(function(b, ri){
+        var bi = SPEED_BINS.length - 1 - ri;
+        var cnt = sec.bins[bi] || 0;
+        if(cnt === 0) return '';
+        var pct = (cnt/hov.grandTotal*100).toFixed(2);
+        return '<div class="tt-row"><div class="tt-dot" style="background:'+b.color+'"></div>'
+          + '<span class="tt-lbl">'+b.label+'</span><span class="tt-val">'+pct+'%</span></div>';
+      }).join('');
+
+      var totalPct = (sec.total/hov.grandTotal*100).toFixed(1);
+      tooltip.innerHTML = '<div class="tt-dir">'+nameLabel+'</div>' + rows
+        + '<div class="tt-tot">Total : '+totalPct+'%  ·  '+sec.total+' obs</div>';
+
+      // Position (coordonnées affichées, relatives à .canvas-box)
+      var tipX = (e.clientX - box.getBoundingClientRect().left) + 14;
+      var tipY = (e.clientY - box.getBoundingClientRect().top)  - 20;
+      tooltip.style.display = 'block';
+      var tw = tooltip.offsetWidth;
+      if(tipX + tw + 20 > box.offsetWidth) tipX = tipX - tw - 28;
+      tooltip.style.left = tipX + 'px';
+      tooltip.style.top  = tipY + 'px';
+    });
+
+    canvas.addEventListener('mouseleave', function(){ tooltip.style.display='none'; });
+  })();
 
   initControls();
 })();
