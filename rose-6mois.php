@@ -1,4 +1,4 @@
-<?php /* rose-6mois.php — Générateur de rose des vents multi-mois (image Facebook) — v3 */ ?>
+<?php /* rose-6mois.php — Générateur de rose des vents multi-mois (image Facebook) — v4 */ ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -117,6 +117,50 @@
 
   function setStatus(msg){ document.getElementById('status').innerHTML = msg; }
 
+  // ── Sélection de la piste à utiliser selon le vent (portage de api/metar.php) ──
+  var SEL_QFU = {'07L':66,'25R':246,'07R':71,'25L':251,'01':14,'19':194};
+  function selComps(wdir, spd){
+    var c = {};
+    for(var r in SEL_QFU){
+      var delta = (wdir - SEL_QFU[r]) * Math.PI/180;
+      var h = spd * Math.cos(delta);                 // + = vent de face, − = vent arrière
+      c[r] = { tw: h < 0 ? -h : 0, xw: Math.abs(spd * Math.sin(delta)) };
+    }
+    return c;
+  }
+  function selectRunway(wdir, wspd, wgst){
+    var wspd_eff = Math.max(wspd, wgst || 0);
+    var comps   = selComps(wdir, wspd);
+    var comps_g = wgst ? selComps(wdir, wgst) : null;
+    function twEff(r){ return Math.max(comps[r].tw, comps_g ? comps_g[r].tw : 0); }
+    function xwM(r){ return comps[r].xw; }           // crosswind = vent moyen uniquement (AIP)
+
+    // Vent calme/faible → 25 préférentielle
+    if(wspd_eff < 3) return 25;
+
+    // PRS sur 25 (AIP 2013) : arrière moyen ≤ 7, latéral moyen ≤ 15, rafale arrière ≤ 10
+    var tw25  = Math.max(comps['25R'].tw, comps['25L'].tw);
+    var xw25  = Math.max(comps['25R'].xw, comps['25L'].xw);
+    var tw25g = comps_g ? Math.max(comps_g['25R'].tw, comps_g['25L'].tw) : null;
+    if(tw25 <= 7 && xw25 <= 15 && (tw25g === null || tw25g <= 10)) return 25;
+
+    // Hors PRS → piste alternative selon le secteur (selectAltRunway)
+    var d = ((Math.round(wdir) % 360) + 360) % 360;
+    var XW_MAX = 20;
+    if(d >= 335 || d < 40){              // Secteur Nord → 01
+      if(xwM('01') > XW_MAX) return 19;
+      return 1;
+    } else if(d >= 40 && d < 130){       // Secteur NE→SE → 07
+      if(xwM('07L') > XW_MAX) return 19;
+      if(twEff('07L') <= 3) return 7;
+      if(xwM('19') > XW_MAX) return 7;
+      return 19;
+    } else {                            // Secteur S/O/NO → 19
+      if(xwM('19') > XW_MAX) return 7;
+      return 19;
+    }
+  }
+
   // ── Chargement de tous les mois de la période ─────────────────────────────
   window.loadAll = function(){
     var year = parseInt(document.getElementById('year').value);
@@ -199,29 +243,26 @@
     var sectors = {};
     var totalObs = 0, calmCount = 0, maxSpd = 0, sumSpd = 0, spdCount = 0;
     var dirCount = {};
-    // % favorable par piste — règles de l'outil météo du site (api/metar.php) :
-    //   composantes selon le QFU ; favorable si vent arrière ≤ 7 kt ET vent latéral ≤ 20 kt
-    var RWY_QFU = {1:14, 7:68, 25:248, 19:194}; // QFU magnétiques (07L/R=66/71, 25R/L=246/251 → moy.)
-    var TW_MAX = 7, XW_MAX = 20;                // seuils PRS : vent arrière / vent latéral
+    // « Piste qui aurait dû être utilisée » selon les règles PRS du site (api/metar.php) :
+    //   25 préférentielle si dans les seuils, sinon piste alternative selon le secteur.
+    //   Une seule piste comptée par observation → les 4 % totalisent 100 %.
     var fav = {1:0, 7:0, 25:0, 19:0};
+    var selTotal = 0;
 
     lastObs.forEach(function(obs){
-      var wdir = obs.dir, wspd = obs.spd;
+      var wdir = obs.dir, wspd = obs.spd, wgst = obs.gust;
       if(wspd === null || wdir === null) return;
       if(wspd < speedMin) return;
-      if(wdir === 0 && wspd < 1){ calmCount++; return; }
+
+      // Piste attendue selon le vent (une seule par observation, calme inclus → 25)
+      fav[selectRunway(wdir, wspd, wgst)]++;
+      selTotal++;
+
+      if(wdir === 0 && wspd < 1){ calmCount++; return; } // calme : pas de pétale directionnel
 
       totalObs++;
       if(wspd > maxSpd) maxSpd = wspd;
       sumSpd += wspd; spdCount++;
-
-      Object.keys(RWY_QFU).forEach(function(rw){
-        var delta = (wdir - RWY_QFU[rw]) * Math.PI/180;
-        var hw = wspd * Math.cos(delta);          // + = vent de face, − = vent arrière
-        var tw = hw < 0 ? -hw : 0;                 // composante vent arrière
-        var xw = Math.abs(wspd * Math.sin(delta)); // composante vent latéral
-        if(tw <= TW_MAX && xw <= XW_MAX) fav[rw]++;
-      });
 
       var secIdx = Math.round(wdir/10) % 36;
       if(!sectors[secIdx]) sectors[secIdx] = {total:0, bins:SPEED_BINS.map(function(){return 0;})};
@@ -318,18 +359,18 @@
     Object.keys(dirCount).forEach(function(d){ if(dirCount[d]>domMax){ domMax=dirCount[d]; domIdx=parseInt(d); } });
     if(domIdx >= 0){ var dd = domIdx*10; domDir = DIRS_16[Math.round(dd/22.5)%16] + ' ('+dd+'°)'; }
     var avgSpd = spdCount>0 ? (sumSpd/spdCount).toFixed(1)+' kt' : '—';
-    function favPct(n){ return totalObs>0 ? Math.round(fav[n]/totalObs*100)+'%' : '—'; }
+    function favPct(n){ return selTotal>0 ? Math.round(fav[n]/selTotal*100)+'%' : '—'; }
 
-    // Rangée 1 : général · Rangée 2 : % favorable par piste (hors calme)
+    // Rangée 1 : général · Rangée 2 : part du temps où chaque piste aurait dû être utilisée
     var stats = [
       [grandTotal.toString(),     'Observations',        '#1673B2'],
       [domDir,                    'Direction dominante', '#1673B2'],
       [avgSpd,                    'Vent moyen',          '#1673B2'],
       [maxSpd.toFixed(0)+' kt',   'Vent max',            '#1673B2'],
-      [favPct(1),  'Favorable RWY 01 · Nord',  '#1a9e3f'],
-      [favPct(7),  'Favorable RWY 07 · Est',   '#f07800'],
-      [favPct(25), 'Favorable RWY 25 · Ouest', '#1673B2'],
-      [favPct(19), 'Favorable RWY 19 · Sud',   '#1673B2']
+      [favPct(1),  'RWY 01 attendue · Nord',  '#1a9e3f'],
+      [favPct(7),  'RWY 07 attendue · Est',   '#f07800'],
+      [favPct(25), 'RWY 25 attendue · Ouest', '#1673B2'],
+      [favPct(19), 'RWY 19 attendue · Sud',   '#1673B2']
     ];
     var sx0 = 60, sy = 905, bw = (W-120)/4, bh = 66, gap = 10;
     ctx.textAlign = 'left';
@@ -345,7 +386,7 @@
     });
     // Précision méthodo (sous les stats)
     ctx.fillStyle = '#aeb9c4'; ctx.font = 'italic 14px Arial'; ctx.textAlign = 'left';
-    ctx.fillText('« Favorable » = vent arrière ≤ 7 kt ET vent latéral ≤ 20 kt (composantes selon le QFU, mêmes règles que l\'outil météo du site) · vent moyen, hors calme.', 60, sy + 2*(bh+gap) + 14);
+    ctx.fillText('Piste qui aurait dû être utilisée selon le vent — règles PRS du site : 25 préférentielle si dans les seuils, sinon 01 / 07 / 19 selon le secteur · calme → 25.', 60, sy + 2*(bh+gap) + 14);
 
     // Pied de page
     ctx.textAlign = 'right'; ctx.fillStyle = '#b3c0cc'; ctx.font = '18px Arial';
