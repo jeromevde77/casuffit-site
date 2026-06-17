@@ -199,7 +199,9 @@
     var sectors = {};
     var totalObs = 0, calmCount = 0, maxSpd = 0, sumSpd = 0, spdCount = 0;
     var dirCount = {};
-    var eastCount = 0, westCount = 0; // 045–135° = Est ; 225–315° = Ouest
+    // % favorable par piste : vent dans ±90° du cap de la piste (composante de face)
+    var RWY = [[1,10],[7,70],[25,250],[19,190]]; // [numéro, cap en °]
+    var fav = {1:0, 7:0, 25:0, 19:0};
 
     lastObs.forEach(function(obs){
       var wdir = obs.dir, wspd = obs.spd;
@@ -211,8 +213,10 @@
       if(wspd > maxSpd) maxSpd = wspd;
       sumSpd += wspd; spdCount++;
 
-      if(wdir >= 45 && wdir <= 135) eastCount++;
-      if(wdir >= 225 && wdir <= 315) westCount++;
+      RWY.forEach(function(rw){
+        var diff = Math.abs(wdir - rw[1]); if(diff > 180) diff = 360 - diff;
+        if(diff < 90) fav[rw[0]]++;
+      });
 
       var secIdx = Math.round(wdir/10) % 36;
       if(!sectors[secIdx]) sectors[secIdx] = {total:0, bins:SPEED_BINS.map(function(){return 0;})};
@@ -228,7 +232,7 @@
     var grandTotal = totalObs + calmCount;
 
     // ── Géométrie de la rose ──
-    var cx = 400, cy = 600, maxR = 320;
+    var cx = 400, cy = 540, maxR = 300;
 
     // Mémoriser pour le survol (détail des %)
     hov = {sectors:sectors, grandTotal:grandTotal, cx:cx, cy:cy, maxR:maxR};
@@ -309,30 +313,34 @@
     Object.keys(dirCount).forEach(function(d){ if(dirCount[d]>domMax){ domMax=dirCount[d]; domIdx=parseInt(d); } });
     if(domIdx >= 0){ var dd = domIdx*10; domDir = DIRS_16[Math.round(dd/22.5)%16] + ' ('+dd+'°)'; }
     var avgSpd = spdCount>0 ? (sumSpd/spdCount).toFixed(1)+' kt' : '—';
-    var pctEast = grandTotal>0 ? Math.round(eastCount/grandTotal*100)+'%' : '—';
-    var pctWest = grandTotal>0 ? Math.round(westCount/grandTotal*100)+'%' : '—';
-    var pctCalm = grandTotal>0 ? Math.round(calmCount/grandTotal*100)+'%' : '—';
+    function favPct(n){ return totalObs>0 ? Math.round(fav[n]/totalObs*100)+'%' : '—'; }
 
+    // Rangée 1 : général · Rangée 2 : % favorable par piste (hors calme)
     var stats = [
-      [grandTotal.toString(), 'Observations'],
-      [domDir, 'Direction dominante'],
-      [avgSpd, 'Vent moyen'],
-      [maxSpd.toFixed(0)+' kt', 'Vent max'],
-      [pctEast, "Vent d'Est (045–135°)"],
-      [pctWest, "Vent d'Ouest (225–315°)"]
+      [grandTotal.toString(),     'Observations',        '#1673B2'],
+      [domDir,                    'Direction dominante', '#1673B2'],
+      [avgSpd,                    'Vent moyen',          '#1673B2'],
+      [maxSpd.toFixed(0)+' kt',   'Vent max',            '#1673B2'],
+      [favPct(1),  'Favorable RWY 01 · Nord',  '#1a9e3f'],
+      [favPct(7),  'Favorable RWY 07 · Est',   '#f07800'],
+      [favPct(25), 'Favorable RWY 25 · Ouest', '#1673B2'],
+      [favPct(19), 'Favorable RWY 19 · Sud',   '#1673B2']
     ];
-    var sx0 = 60, sy = 985, bw = (W-120)/3, bh = 78;
+    var sx0 = 60, sy = 905, bw = (W-120)/4, bh = 66, gap = 10;
     ctx.textAlign = 'left';
     stats.forEach(function(st, i){
-      var col = i%3, row = Math.floor(i/3);
-      var x = sx0 + col*bw, y = sy + row*(bh+10);
+      var col = i%4, row = Math.floor(i/4);
+      var x = sx0 + col*bw, y = sy + row*(bh+gap);
       ctx.fillStyle = '#f5f8fb';
-      roundRect(ctx, x, y, bw-14, bh, 10); ctx.fill();
-      ctx.fillStyle = '#1673B2'; ctx.font = 'bold 27px Arial'; ctx.textBaseline='alphabetic';
-      ctx.fillText(st[0], x+18, y+38);
-      ctx.fillStyle = '#8a98a5'; ctx.font = '16px Arial';
-      ctx.fillText(st[1].toUpperCase(), x+18, y+62);
+      roundRect(ctx, x, y, bw-12, bh, 10); ctx.fill();
+      ctx.fillStyle = st[2]; ctx.font = 'bold 26px Arial'; ctx.textBaseline='alphabetic';
+      ctx.fillText(st[0], x+16, y+34);
+      ctx.fillStyle = '#8a98a5'; ctx.font = '14px Arial';
+      ctx.fillText(st[1].toUpperCase(), x+16, y+55);
     });
+    // Précision méthodo (sous les stats)
+    ctx.fillStyle = '#aeb9c4'; ctx.font = 'italic 14px Arial'; ctx.textAlign = 'left';
+    ctx.fillText('« Favorable » = vent dans les ±90° du cap de piste (composante de face), hors périodes de calme.', 60, sy + 2*(bh+gap) + 14);
 
     // Pied de page
     ctx.textAlign = 'right'; ctx.fillStyle = '#b3c0cc'; ctx.font = '18px Arial';
