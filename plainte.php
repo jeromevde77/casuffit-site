@@ -1,5 +1,5 @@
 <?php
-// plainte.php — Page de plainte rapide, partageable par lien ou email
+// plainte.php — Page de plainte rapide, partageable par lien ou email — v2 (justif. AIP 2013)
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/membre/functions.php';
 session_start();
@@ -327,6 +327,17 @@ function fetchMetar() {
   fetch('/api/metar.php?_='+Date.now())
     .then(function(r){ return r.json(); })
     .then(function(d){
+      // La plainte se fonde sur l'AIP sept. 2013 (seule base légale valide) et non sur
+      // les seuils skeyes contestés (rafale arrière 7 kt au lieu des 10 kt légaux).
+      if (d && d.aip2013) {
+        d.prs_active     = d.aip2013.prs_active;
+        d.prs_exceptions = d.aip2013.prs_exceptions;
+        d.runways        = d.aip2013.runways;
+        d.reason         = d.aip2013.reason;
+        d.alert          = d.aip2013.alert;
+        d.tw_25_max      = d.aip2013.tw_25_max;
+        d.xw_25_max      = d.aip2013.xw_25_max;
+      }
       _metar = d;
       document.getElementById('meteo-loading').style.display = 'none';
       checkJustification(d);
@@ -490,7 +501,22 @@ function buildComplaint(d) {
 
 function checkJustification(d) {
   if (!d) { showResult(d); return; }
-  if (d.prs_active) { showResult(d); return; } // PRS actif → plainte justifiée
+
+  // Garde-fou : la piste 25 est-elle réellement inutilisable AU VENT (seuils légaux AIP 2013) ?
+  // Évite de décourager une plainte (et d'afficher « 3.2 kt → non utilisable ») quand le vent
+  // est faible : vent arrière moyen ≤ 7 kt, rafale arrière ≤ 10 kt, latéral ≤ 15 kt.
+  var c25Rj = (d.components || {})['25R'] || {};
+  var c25Lj = (d.components || {})['25L'] || {};
+  var tw25j  = Math.max(c25Rj.tw || 0, c25Lj.tw || 0);
+  var tw25gj = Math.max(
+    (c25Rj.tw_g != null ? c25Rj.tw_g : 0),
+    (c25Lj.tw_g != null ? c25Lj.tw_g : 0)
+  );
+  var xw25j  = Math.max(c25Rj.xw || 0, c25Lj.xw || 0);
+  var vent25Ok = (tw25j <= 7) && (tw25gj <= 10) && (xw25j <= 15);
+
+  // PRS actif (AIP 2013) OU 25 utilisable au vent → la 25 aurait dû être utilisée → plainte justifiée
+  if (d.prs_active || vent25Ok) { showResult(d); return; }
   // Hors PRS : la piste 25 ne peut pas être utilisée
   // Vérifier si la piste observée est la meilleure alternative
   var comps = d.components || {};
