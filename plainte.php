@@ -1,5 +1,5 @@
 <?php
-// plainte.php — Page de plainte rapide, partageable par lien ou email — v2 (justif. AIP 2013)
+// plainte.php — Page de plainte rapide, partageable par lien ou email — v3 (texte interrogatif)
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/membre/functions.php';
 session_start();
@@ -436,37 +436,25 @@ function buildComplaint(d) {
   var demandeLines = '';
 
   if (prsActive === true) {
-    // CAS 1 : PRS actif — piste 25 requise, mais on observe 01/07
+    // CAS 1 : toutes les composantes 25 dans les limites légales → on questionne l'usage de la 01/07
     contextLines =
-      'Les conditions météorologiques au moment de mon observation indiquent que les pistes 25'+
-      ' constituent la configuration préférentielle selon le Plan de Répartition du Survol :\n'+
-      '  • Vent arrière sur 25R : '+tw25R+' (seuil légal AIP 2013 : 7 kt)\n'+
-      (tw25Rg ? '  • Rafale arrière 25R : '+tw25Rg+' (seuil légal : 10 kt)\n' : '')+
-      '  • Vent arrière sur 25L : '+tw25L+'\n'+
-      '  • Analyse PRS (casuffit.be) : PRS actif — pistes 25 requises';
+      'Au moment de mon observation, toutes les composantes de vent sur les pistes 25'+
+      ' (configuration préférentielle du Plan de Répartition du Survol) se situaient dans les'+
+      ' limites légales de l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21) :'+
+      ' les pistes 25 étaient donc utilisables.';
     demandeLines =
-      'Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21), les pistes 25'+
-      ' doivent être utilisées en priorité dans ces conditions.\n\n'+
-      'Je souhaiterais dès lors obtenir les raisons opérationnelles ou météorologiques'+
-      ' qui ont justifié l\'utilisation de la '+pisteLabel+' plutôt que des pistes 25.';
+      'Avec de telles valeurs de vent, pouvez-vous me justifier pourquoi la '+pisteLabel+
+      ' a été utilisée plutôt que les pistes 25 préférentielles ?';
 
   } else if (prsActive === false) {
-    // CAS 2 : Hors PRS — piste 25 impossible (vent arrière trop élevé)
-    // La question est : pourquoi cette piste plutôt que l'autre alternative ?
+    // CAS 2 : une composante sur 25 dépasse une limite — on présente les valeurs et on questionne,
+    // sans affirmer une conclusion réglementaire à la place de l'autorité.
     contextLines =
-      'Les conditions météorologiques indiquent que les pistes 25 ne peuvent pas être utilisées'+
-      ' (vent arrière de '+tw25R+' sur 25R, dépassant le seuil légal de 7 kt). Hors PRS.\n\n'+
-      'Avec un vent de '+(d?d.wdir||'—':'—')+'° à '+(d?d.wspd||'—':'—')+' kt,'+
-      (_obsIsBetter
-        ? ' la '+pisteLabel+' (vent de face '+_altHw+' kt) est la configuration la plus adaptée aux conditions.'
-        : ' la '+_altPiste+' présenterait un vent de face de '+_altHw+' kt, ce qui en ferait une configuration alternative plus adaptée que la '+pisteLabel+'.')+
-      '\n  • Vent arrière sur 25R : '+tw25R+' (seuil légal : 7 kt) → piste 25 impossible'+
-      '\n  • Analyse PRS (casuffit.be) : HORS PRS';
-    demandeLines = _obsIsBetter
-      ? 'Je souhaiterais obtenir une confirmation de la configuration en service et une information'+
-        ' sur les mesures prises pour limiter les nuisances dans ce contexte météorologique.'
-      : 'Je souhaiterais obtenir les raisons opérationnelles qui ont conduit à utiliser la '+
-        pisteLabel+' plutôt que la '+_altPiste+' dans ces conditions.';
+      'Vent observé : '+(d?d.wdir||'—':'—')+'° à '+(d?d.wspd||'—':'—')+' kt'+
+      ' (détail des composantes ci-dessus).';
+    demandeLines =
+      'Avec de telles valeurs de vent, pouvez-vous me justifier pourquoi la '+pisteLabel+
+      ' a été utilisée, et confirmer la configuration réellement en service à ce moment ?';
 
   } else {
     // CAS 3 : pas de données météo

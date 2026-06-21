@@ -1,5 +1,5 @@
 <?php
-// api/metar.php — METAR + TAF EBBR, composantes de vent pour toutes les pistes
+// api/metar.php — METAR + TAF EBBR, composantes de vent pour toutes les pistes — v2 (seuils planning)
 // QFU magnétiques exacts (Jeppesen / AIP) :
 //   07L = 066°  /  25R = 246°
 //   07R = 071°  /  25L = 251°
@@ -294,12 +294,15 @@ function analyseConfig($wdir, $wspd, $wgst, $visib_m, $ceiling_ft, $variable, $R
             $plan_rwys = array_values(array_unique(array_merge($planning['dep'], $planning['arr'])));
             $rwys_ok = []; $rwys_ko = [];
             foreach ($plan_rwys as $rwy) {
-                $tw_rwy = max(
-                    $comps[$rwy]['tw'] ?? 0,
-                    $comps_g ? ($comps_g[$rwy]['tw'] ?? 0) : 0
-                );
-                if ($tw_rwy > 5) $rwys_ko[] = $rwy.' (arrière '.round($tw_rwy,1).'kt)';
-                else             $rwys_ok[] = $rwy;
+                $tw_rwy_moy  = $comps[$rwy]['tw'] ?? 0;
+                $tw_rwy_gust = $comps_g ? ($comps_g[$rwy]['tw'] ?? 0) : 0;
+                // Une piste du planning n'est inutilisable que si elle dépasse les seuils LÉGAUX
+                // (vent arrière moyen > seuil OU rafale arrière > seuil) — et non un seuil arbitraire
+                // de 5 kt qui déclarait à tort la 25 « hors PRS » dès 6,5 kt de rafale arrière.
+                if ($tw_rwy_moy > $tw_moy_seuil || $tw_rwy_gust > $tw_gust_seuil)
+                    $rwys_ko[] = $rwy.' (arrière '.round(max($tw_rwy_moy, $tw_rwy_gust),1).'kt)';
+                else
+                    $rwys_ok[] = $rwy;
             }
             if (!empty($rwys_ko) && empty($rwys_ok)) {
                 $prs_active = false; $alert = true;
