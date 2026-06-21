@@ -1,5 +1,5 @@
 <?php
-// plainte.php — Page de plainte rapide, partageable par lien ou email — v3 (texte interrogatif)
+// plainte.php — Page de plainte rapide, partageable par lien ou email — v4 (aucune affirmation PRS)
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/membre/functions.php';
 session_start();
@@ -361,15 +361,9 @@ function renderMeteo(d) {
   var c25R = comps['25R'] || {};
   var c25L = comps['25L'] || {};
 
-  // Badge PRS
+  // Aucun verdict PRS / hors PRS affiché : on ne montre que les conditions de vent mesurées.
   var badge = document.getElementById('prs-badge');
-  if (d.prs_active) {
-    badge.className = 'pl-prs-badge pl-prs-on';
-    badge.textContent = '✅ PRS actif — piste 25 requise';
-  } else {
-    badge.className = 'pl-prs-badge pl-prs-off';
-    badge.textContent = '⛔ HORS PRS';
-  }
+  if (badge) badge.style.display = 'none';
 
   // Table météo
   var tw25R = (c25R.tw||0).toFixed(1);
@@ -435,29 +429,18 @@ function buildComplaint(d) {
   var contextLines = '';
   var demandeLines = '';
 
-  if (prsActive === true) {
-    // CAS 1 : toutes les composantes 25 dans les limites légales → on questionne l'usage de la 01/07
+  if (d) {
+    // Aucune affirmation de statut PRS / hors PRS : on présente le vent mesuré (composantes
+    // détaillées ci-dessus) et on demande à l'autorité de justifier la configuration utilisée.
     contextLines =
-      'Au moment de mon observation, toutes les composantes de vent sur les pistes 25'+
-      ' (configuration préférentielle du Plan de Répartition du Survol) se situaient dans les'+
-      ' limites légales de l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21) :'+
-      ' les pistes 25 étaient donc utilisables.';
+      'Vent observé : '+(d.wdir?d.wdir+'°':d.variable?'Variable':'—')+' / '+(d.wspd||'—')+' kt'+
+      ' (composantes de vent par piste détaillées ci-dessus).';
     demandeLines =
       'Avec de telles valeurs de vent, pouvez-vous me justifier pourquoi la '+pisteLabel+
-      ' a été utilisée plutôt que les pistes 25 préférentielles ?';
-
-  } else if (prsActive === false) {
-    // CAS 2 : une composante sur 25 dépasse une limite — on présente les valeurs et on questionne,
-    // sans affirmer une conclusion réglementaire à la place de l'autorité.
-    contextLines =
-      'Vent observé : '+(d?d.wdir||'—':'—')+'° à '+(d?d.wspd||'—':'—')+' kt'+
-      ' (détail des composantes ci-dessus).';
-    demandeLines =
-      'Avec de telles valeurs de vent, pouvez-vous me justifier pourquoi la '+pisteLabel+
-      ' a été utilisée, et confirmer la configuration réellement en service à ce moment ?';
-
+      ' a été utilisée plutôt que les pistes 25 préférentielles, et me confirmer la'+
+      ' configuration réellement en service à ce moment ?';
   } else {
-    // CAS 3 : pas de données météo
+    // Pas de données météo
     contextLines = 'Je n\'ai pas pu obtenir les données météo en temps réel au moment de mon observation.';
     demandeLines =
       'Je souhaiterais obtenir les raisons opérationnelles ou météorologiques'+
@@ -490,49 +473,9 @@ function buildComplaint(d) {
 function checkJustification(d) {
   if (!d) { showResult(d); return; }
 
-  // Garde-fou : la piste 25 est-elle réellement inutilisable AU VENT (seuils légaux AIP 2013) ?
-  // Évite de décourager une plainte (et d'afficher « 3.2 kt → non utilisable ») quand le vent
-  // est faible : vent arrière moyen ≤ 7 kt, rafale arrière ≤ 10 kt, latéral ≤ 15 kt.
-  var c25Rj = (d.components || {})['25R'] || {};
-  var c25Lj = (d.components || {})['25L'] || {};
-  var tw25j  = Math.max(c25Rj.tw || 0, c25Lj.tw || 0);
-  var tw25gj = Math.max(
-    (c25Rj.tw_g != null ? c25Rj.tw_g : 0),
-    (c25Lj.tw_g != null ? c25Lj.tw_g : 0)
-  );
-  var xw25j  = Math.max(c25Rj.xw || 0, c25Lj.xw || 0);
-  var vent25Ok = (tw25j <= 7) && (tw25gj <= 10) && (xw25j <= 15);
-
-  // PRS actif (AIP 2013) OU 25 utilisable au vent → la 25 aurait dû être utilisée → plainte justifiée
-  if (d.prs_active || vent25Ok) { showResult(d); return; }
-  // Hors PRS : la piste 25 ne peut pas être utilisée
-  // Vérifier si la piste observée est la meilleure alternative
-  var comps = d.components || {};
-  var hw01  = (comps['01']  || {}).hw || 0;
-  var hw07R = (comps['07R'] || {}).hw || 0;
-  var bestAlt = hw07R > hw01 ? '07' : '01'; // piste avec le meilleur vent de face
-  if (_piste === bestAlt) {
-    // La piste observée EST la plus adaptée → demander confirmation
-    var pisteLabel  = _piste === '07' ? 'piste 07' : 'piste 01';
-    var altLabel    = bestAlt === '07' ? 'piste 07 (07L/07R)' : 'piste 01';
-    var altHw       = Math.max(hw01, hw07R).toFixed(1);
-    var tw25R       = (comps['25R'] ? comps['25R'].tw || 0 : 0).toFixed(1);
-    var windDesc    = (d.wdir ? d.wdir+'°' : '—') + ' / ' + (d.wspd || '—') + ' kt';
-    document.getElementById('confirm-msg').innerHTML =
-      '<strong>D\'après les conditions météo actuelles, la '+pisteLabel+' est la configuration la plus adaptée.</strong><br><br>'+
-      '<ul style="margin:8px 0 8px 18px;line-height:2">'+
-      '<li>Vent : '+windDesc+'</li>'+
-      '<li>Vent arrière sur piste 25R : <strong>'+tw25R+' kt</strong> (seuil légal 7 kt → piste 25 <strong>non utilisable</strong>)</li>'+
-      '<li>Vent de face sur '+altLabel+' : <strong>'+altHw+' kt</strong> → configuration appropriée</li>'+
-      '</ul>'+
-      '<em>Porter plainte dans ce cas pourrait nuire à la crédibilité de votre démarche. '+
-      'Si vous avez d\'autres raisons de vous plaindre (bruit, fréquence, horaires…), vous pouvez quand même continuer.</em>';
-    document.getElementById('step-confirm').classList.remove('pl-hidden');
-    document.getElementById('step-confirm').scrollIntoView({behavior:'smooth',block:'start'});
-    document.getElementById('step-result').classList.add('pl-hidden');
-  } else {
-    showResult(d); // piste observée n'est pas la meilleure → plainte justifiée
-  }
+  // On ne juge plus la pertinence de la piste et on n'affirme aucun statut PRS / hors PRS :
+  // on affiche directement les conditions mesurées et la demande de justification.
+  showResult(d);
 }
 
 function showResult(d) {
@@ -638,20 +581,16 @@ function buildHtmlBody() {
     if(d.obs_time){var obs=new Date(d.obs_time);
       obsDateStr=obs.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
       obsTimeStr=obs.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC';}
-    prsLine='<tr><td style="padding:8px 12px;font-weight:bold">Analyse PRS</td><td style="padding:8px 12px">'+(prsActive?'<span style="color:#27ae60;font-weight:bold">✅ PRS actif — pistes 25 requises</span>':'<span style="color:#c0392b;font-weight:bold">⛔ HORS PRS — pistes 25 impossibles</span>')+'</td></tr>';
+    prsLine='';
   }
-  var analyseHtml = prsActive === true
-    ? '<p>Les conditions météo indiquent que les pistes 25 constituent la configuration préférentielle'+
-      ' (vent arrière 25R : <strong>'+tw25R+'</strong> — seuil légal AIP 2013 : 7 kt).</p>'+
-      '<p>Selon l\'instruction ministérielle du 17/07/2013 (AIP EBBR AD 2.21), les pistes 25 doivent'+
-      ' être utilisées prioritairement dans ces conditions.</p>'+
-      '<p>Je souhaiterais obtenir les raisons opérationnelles qui ont justifié l\'utilisation de la <strong>'+pisteLabel+'</strong> plutôt que des pistes 25.</p>'
-    : prsActive === false
-      ? '<p>Les conditions actuelles ne permettent pas d\'utiliser les pistes 25 (vent arrière de <strong>'+tw25R+'</strong> sur 25R — seuil légal : 7 kt). La configuration HORS PRS s\'applique.</p>'+
-        (obsBetter
-          ? '<p>La <strong>'+pisteLabel+'</strong> est la configuration la plus adaptée aux conditions actuelles. Je souhaite être informé(e) des mesures prises pour limiter les nuisances.</p>'
-          : '<p>Avec ce vent ('+( d?d.wdir+'°':'')+'), la <strong>'+altPiste+'</strong> (vent de face '+altHw+' kt) serait la configuration alternative la plus adaptée. Je souhaiterais obtenir les raisons du choix de la '+pisteLabel+' à la place.</p>')
-      : '<p>Je souhaiterais obtenir les raisons opérationnelles ou météorologiques qui ont justifié l\'utilisation de la <strong>'+pisteLabel+'</strong>.</p>';
+  var analyseHtml = d
+    ? '<p>Vent observé : <strong>'+(d.wdir?d.wdir+'°':d.variable?'Variable':'—')+' / '+(d.wspd||'—')+' kt</strong>'+
+      ' (composantes de vent par piste détaillées ci-dessus).</p>'+
+      '<p>Avec de telles valeurs de vent, pouvez-vous me justifier pourquoi la <strong>'+pisteLabel+'</strong>'+
+      ' a été utilisée plutôt que les pistes 25 préférentielles, et me confirmer la configuration'+
+      ' réellement en service à ce moment ?</p>'
+    : '<p>Je souhaiterais obtenir les raisons opérationnelles ou météorologiques qui ont justifié'+
+      ' l\'utilisation de la <strong>'+pisteLabel+'</strong>.</p>';
 
   return '<div style="font-family:Arial,sans-serif;color:#333;max-width:680px">'+
     '<p>Madame, Monsieur,</p>'+
