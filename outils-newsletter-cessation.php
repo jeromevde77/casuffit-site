@@ -53,6 +53,12 @@ if ($row) {
     $id = (int)$db->lastInsertId();
     $info = "Brouillon créé (#{$id}).";
 }
+
+// ── Objectif de dons → 35 000 € ───────────────────────────────────────────
+$objectif_cible = '35000';
+$db->prepare("INSERT INTO site_config (cle,valeur) VALUES ('montant_objectif',?) ON DUPLICATE KEY UPDATE valeur=?")
+   ->execute([$objectif_cible, $objectif_cible]);
+$info_obj = "Objectif de dons mis à jour : 35 000 €.";
 ?>
 <!DOCTYPE html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -67,6 +73,7 @@ if ($row) {
 </style></head><body>
 <div class="box">
   <h1><?= htmlspecialchars($info) ?></h1>
+  <p style="font-size:.92rem;color:#1a7a4a;font-weight:600">✓ <?= htmlspecialchars($info_obj) ?></p>
   <p style="font-size:.9rem;color:#555;line-height:1.6">Le brouillon est prêt. <strong>Relisez-le</strong>, puis envoyez-le aux abonnés depuis l'admin (l'envoi n'est <em>pas</em> automatique).</p>
   <p>
     <a class="btn orange" href="/admin/compose.php?id=<?= $id ?>">Relire / éditer le brouillon</a>
