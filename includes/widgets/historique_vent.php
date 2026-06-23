@@ -1,5 +1,5 @@
 <?php
-// includes/widgets/historique_vent.php — v2 avec saisie par ligne + export Excel
+// includes/widgets/historique_vent.php — v3 avec saisie par ligne + export Excel
 // Destinataires de la plainte — configurable dans Admin → Paramètres (clé plainte_destinataires)
 $pmh_dest_raw = function_exists('cfg') ? cfg('plainte_destinataires', 'airportmediation@mobilit.fgov.be') : 'airportmediation@mobilit.fgov.be';
 $pmh_dest_list = array_filter(array_map('trim', preg_split('/[\r\n,;]+/', $pmh_dest_raw)));
@@ -533,12 +533,12 @@ function pmhRender(d){
     }
     // AIP 2013
     var s2013=m.aip2013;
-    var cell2013=(s2013.prs?'<span class="pmh-prs-on">PRS actif</span>':'<span class="pmh-prs-off">HORS PRS</span>')
+    var cell2013=(s2013.prs?'<span class="pmh-prs-on">PRS possible</span>':'<span class="pmh-prs-off">Hors PRS probable</span>')
       +'<br>'+s2013.runways.map(rwyBadge).join('')
       +'<br><small style="color:#aaa;font-size:.62rem">arr:'+s2013.tw+'kt lat:'+s2013.xw+'kt</small>';
     // AIP actuel
     var snow=m.aip_now;
-    var cellNow=(snow.prs?'<span class="pmh-prs-on">PRS actif</span>':'<span class="pmh-prs-off">HORS PRS</span>')
+    var cellNow=(snow.prs?'<span class="pmh-prs-on">PRS possible</span>':'<span class="pmh-prs-off">Hors PRS probable</span>')
       +'<br>'+snow.runways.map(rwyBadge).join('')
       +'<br><small style="color:#aaa;font-size:.62rem">arr:'+snow.tw+'kt lat:'+snow.xw+'kt</small>';
     if(m.divergence)cellNow+='<br><span style="font-size:.62rem;background:#fff8ee;color:#c97200;padding:1px 5px;border-radius:3px">⚡ divergence</span>';

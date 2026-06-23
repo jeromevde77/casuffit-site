@@ -1,4 +1,4 @@
-<?php // includes/widgets/piste_meteo.php — v5 METAR + composantes + TAF ?>
+<?php // includes/widgets/piste_meteo.php — v6 METAR + composantes + TAF ?>
 <?php
 // Destinataires de la plainte — configurable dans Admin → Paramètres (clé plainte_destinataires)
 // Format en base : adresses séparées par virgule, point-virgule ou retour à la ligne
@@ -21,6 +21,13 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
   </div>
 
   <div class="pmw-body">
+
+    <!-- Avertissement : source des données de vent -->
+    <div class="pmw-datasource-note">
+      ℹ️ <strong>Données indicatives.</strong> Le vent n'est pas mesuré au niveau des pistes (donnée
+      non disponible publiquement). Les valeurs proviennent du <strong>METAR de Brussels Airport (EBBR)</strong>
+      et de la <strong>station IRM 6451</strong> ; les conditions réelles au seuil de piste peuvent légèrement différer.
+    </div>
 
     <!-- ── VENT ACTUEL ───────────────────────────────────────────────── -->
     <div class="pmw-wind-section">
@@ -225,7 +232,8 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
 
     <p class="pmw-disclaimer">
       Calcul basé sur le PRS skeyes/BATC (AIP EBBR AD 2.21) — QFU : 07L=066°, 25R=246°, 07R=071°, 25L=251°, 01=014°, 19=194°.
-      Rafales incluses. Donnée indicative, non contractuelle.
+      Rafales incluses. Vent non mesuré au niveau des pistes : basé sur le METAR EBBR et la station IRM 6451.
+      Donnée indicative, non contractuelle.
     </p>
 
     <!-- Bouton "Porter plainte" permanent -->
@@ -394,6 +402,8 @@ if (empty($pmw_dest_list)) $pmw_dest_list = ['airportmediation@mobilit.fgov.be']
 .pmw-rwy-cfg{background:#e8f8f0;color:#1a7a4a;border:2px solid #1a7a4a;font-size:.95rem}
 .pmw-reason{font-size:.78rem;color:#444;line-height:1.6;background:#f7fafd;border-radius:7px;padding:8px 12px;border-left:3px solid #1673B2}
 .pmw-reason.alert{border-left-color:#e53e3e;background:#fff5f5;color:#742a2a}
+.pmw-datasource-note{font-size:.72rem;color:#2c5282;background:#f0f7ff;border:1px solid #b0d4f0;border-left:3px solid #1673B2;border-radius:7px;padding:8px 12px;line-height:1.55}
+.pmw-datasource-note strong{color:#0e3d6b}
 .pmw-plan-jour{font-weight:700;color:#0e3d6b;font-size:.8rem}
 .pmw-plan-plage{color:#888;font-size:.7rem}
 .pmw-plan-dep{color:#1673B2;font-weight:600}
@@ -665,6 +675,8 @@ var batcRwy  = null;   // piste saisie depuis BATC
 var RWY_ORDER = ['25R','25L','07L','07R','01','19'];
 var RWY_QFU   = {'25R':246,'25L':251,'07L':66,'07R':71,'01':14,'19':194};
 var RWY_PREF  = {'25R':true,'25L':true};
+// Configs jugées dangereuses — ne devraient JAMAIS être utilisées (toujours en rouge)
+var CFG_DANGER = {'01/07R':true};
 
 /* ── Utilitaires ── */
 function dirText(d){
@@ -771,14 +783,14 @@ function renderWind(d){
   var isNordSector = !d.variable && (wdir >= 330 || wdir <= 30);
 
   if(d.prs_active){
-    badge.className='pmw-prs-badge pmw-prs-on'; badge.textContent='PRS actif';
+    badge.className='pmw-prs-badge pmw-prs-on'; badge.textContent='PRS possible';
   if(window.pmwUpdateReportBtn) pmwUpdateReportBtn(false);
     var subTxt = 'Pistes préférentielles applicables';
     if(isNordSector) subTxt += ' — vent de face optimal (' + wdir + '° ' + dirText(wdir) + ')';
     document.getElementById('pmw-prs-sub').textContent = subTxt;
     document.getElementById('pmw-alt-configs').style.display='none';
   }else{
-    badge.className='pmw-prs-badge pmw-prs-off'; badge.textContent='HORS PRS';
+    badge.className='pmw-prs-badge pmw-prs-off'; badge.textContent='Hors PRS probable';
   if(window.pmwUpdateReportBtn) pmwUpdateReportBtn(true);
     var subTxt2 = 'Pistes alternatives possibles :';
     if(isNordSector) subTxt2 = '⚠ Vent ' + wdir + '° ' + dirText(wdir) + ' — secteur favorable 25, mais seuils dépassés';
@@ -820,11 +832,20 @@ function renderAltConfigs(d) {
     {label:'07L/07R', rwys:['07L','07R']},
   ];
 
-  function configUsable(rwys) {
+  function configUsable(rwys, label) {
+    if (CFG_DANGER[label]) return false;   // config dangereuse — jamais proposée
+    var has01 = rwys.indexOf('01') !== -1;
+    if (has01) {
+      // 01 : justifiée seulement si vent du secteur 335°–040° (son axe d'atterrissage)
+      var wd = d.wdir || 0;
+      if (d.variable || !(wd >= 335 || wd <= 40)) return false;
+    }
     return rwys.every(function(rwy) {
       var c = comps[rwy]; if(!c) return true;
       var tw_m = c.tw || 0;
       var tw_g = (c.tw_g !== null && c.tw_g !== undefined) ? c.tw_g : tw_m;
+      // Pistes 01 : aucun souffle de vent arrière toléré
+      if (has01) return tw_m <= 0 && tw_g <= 0;
       return tw_m <= 7 && tw_g <= 10;
     });
   }
@@ -839,7 +860,7 @@ function renderAltConfigs(d) {
   }
 
   var usable = ALT_CONFIGS.filter(function(cfg) {
-    return configUsable(cfg.rwys);
+    return configUsable(cfg.rwys, cfg.label);
   }).sort(function(a, b) {
     return configHeadwind(b.rwys) - configHeadwind(a.rwys);
   });
@@ -1000,12 +1021,16 @@ function renderTaf(forecast, rawTaf){
 
     // Une config est impossible si vent arrière moyen > 7kt OU si PRS actif et config non-PRS
     function cfgImpossible(rwys, label) {
+      if (CFG_DANGER[label]) return true;   // config dangereuse — jamais utilisable
       if (f.prs_active && label !== '25R/25L' && label !== '19/25R') return true;
+      var has01 = rwys.indexOf('01') !== -1;
       // Contrainte directionnelle 01
-      if (rwys.indexOf('01') !== -1 && !dir01Possible(f.wdir||0, f.variable)) return true;
+      if (has01 && !dir01Possible(f.wdir||0, f.variable)) return true;
       return rwys.some(function(rwy){
         var c = comps[rwy]; if(!c) return false;
-        return (c.tw||0) > 7;
+        var tw = Math.max(c.tw||0, c.tw_g||0);
+        // Pistes 01 : aucun vent arrière toléré (le moindre souffle exclut la config)
+        return has01 ? tw > 0 : tw > 7;
       });
     }
     // Headwind moyen de la config
@@ -1112,7 +1137,7 @@ function render3Col(d) {
     var badge = document.getElementById(badgeId);
     if(badge){
       badge.className = 'pmw-cmp3-badge ' + (prsData.prs_active ? 'pmw-cmp3-prs-on' : 'pmw-cmp3-prs-off');
-      badge.textContent = prsData.prs_active ? 'PRS actif' : 'HORS PRS';
+      badge.textContent = prsData.prs_active ? 'PRS possible' : 'Hors PRS probable';
     }
 
     // Badges des 6 configurations possibles — vert si possible, rouge si impossible
@@ -1134,13 +1159,16 @@ function render3Col(d) {
       // Une config est possible si AUCUNE de ses pistes n'a de vent arrière > seuil
       // Pour AIP 2013 : seuil 10 kt rafale arrière, pour AIP actuel : 7 kt rafale arrière
       function configOk(rwys_list, label) {
+        if (CFG_DANGER[label]) return false;   // config dangereuse — jamais utilisable
         // Si PRS actif, seules les configs PRS sont utilisables par règlement
         if (prs_active_local && label !== '25R/25L' && label !== '19/25R') return false;
+        var has01 = rwys_list.indexOf('01') !== -1;
         return rwys_list.every(function(rwy) {
           var c = comps[rwy];
           if(!c) return true;
           var tw = Math.max(c.tw||0, c.tw_g||0);
-          return tw <= seuils_tw_gust;
+          // Pistes 01 : aucun vent arrière toléré
+          return has01 ? tw <= 0 : tw <= seuils_tw_gust;
         });
       }
 
@@ -1232,7 +1260,11 @@ function renderBatc(d) {
   var wdir01 = d.wdir || 0;
   var dir01OK = !d.variable && (wdir01 >= 335 || wdir01 <= 40);
   var configA01 = batcPistes.indexOf('01') !== -1;
-  var violation01 = configA01 && !dir01OK;
+  // 01 : aucun vent arrière toléré (le moindre souffle exclut la config)
+  var tw01 = 0;
+  if (configA01 && comps['01']) tw01 = Math.max(comps['01'].tw||0, comps['01'].tw_g||0);
+  var violation01 = configA01 && (!dir01OK || tw01 > 0);
+  var configDangereuse = !!CFG_DANGER[batcRwy];
 
   var ok2013 = batcPistes.length > 0
     && batcPistes.every(function(r){ return pisteOk(r, 7, 10); })
@@ -1253,9 +1285,14 @@ function renderBatc(d) {
 
   var cls, txt;
 
-  // ── Cas prioritaire : VIOLATION DIRECTIONNELLE de la piste 01 ──
-  // La 01 est utilisée alors que le vent n'est pas dans son secteur (335°–040°).
-  if (violation01) {
+  // ── Cas prioritaire : CONFIGURATION DANGEREUSE (01/07R) ──
+  // Pistes sécantes 01 et 07R : ne devrait jamais être utilisée.
+  if (configDangereuse) {
+    cls = 'pmw-verdict-danger';
+    txt = '⛔ CONFIGURATION DANGEREUSE — La configuration ' + batcRwy + ' (pistes sécantes 01 et 07R) '
+        + 'ne devrait jamais être utilisée : elle est considérée comme dangereuse. '
+        + 'Toute utilisation est anormale. Configuration attendue : ' + ((a.runways||[]).join('/')||'25R/25L') + '.';
+  } else if (violation01) {
     cls = 'pmw-verdict-danger';
     var dirInfo = d.variable
       ? 'le vent est variable (aucune direction dominante)'
