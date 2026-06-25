@@ -590,6 +590,7 @@ $api_token = $_SESSION['api_token'];
 </nav>
 <style>.app-nav-bar-btn{font-size:.55rem}</style>
 
+<script src="/assets/js/qrcode-generator.js?v=1"></script>
 <script>
 window._API_TOKEN = '<?= htmlspecialchars($api_token) ?>';function switchView(view) {
   ['meteo','historique','rose','vols','don'].forEach(function(v) {
@@ -682,6 +683,19 @@ function genQRWind(montant) {
   var iban_raw = '<?= preg_replace('/\s+/', '', cfg('iban','BE41068901496910')) ?>';
   var epc = ['BCD','002','1','SCT','<?= cfg('bic','GKCCBEBB') ?>','<?= addslashes(cfg('beneficiaire','ca suffit !')) ?>',
     iban_raw, montant ? 'EUR'+parseFloat(montant).toFixed(2) : '', '', 'DON CASUFFIT <?= date('Y') ?>', ''].join('\n');
+  // Génération locale (aucun service tiers) via qrcode-generator
+  if (typeof qrcode === 'function') {
+    try {
+      var qr = qrcode(0, 'M');
+      qr.addData(epc);
+      qr.make();
+      el.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 16, scalable: true });
+      var svg = el.querySelector('svg');
+      if (svg) { svg.setAttribute('width', '140'); svg.setAttribute('height', '140'); svg.style.display = 'block'; }
+      return;
+    } catch (e) { /* repli ci-dessous */ }
+  }
+  // Repli : services externes si la lib locale est indisponible
   var img = document.createElement('img');
   img.width = 140; img.height = 140; img.alt = 'QR don';
   img.src = 'https://quickchart.io/qr?text=' + encodeURIComponent(epc) + '&size=140&margin=1&ecLevel=M';
