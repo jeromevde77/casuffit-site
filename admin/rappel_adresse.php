@@ -22,14 +22,20 @@ if (!$expected || !$submitted || !hash_equals($expected, $submitted)) {
 
 $db = getDB();
 
-$ids = array_filter(array_map('intval', (array)($_POST['ids'] ?? [])));
-if (empty($ids)) { echo json_encode(['ok'=>false,'error'=>'Aucun membre sélectionné']); exit; }
+if (!empty($_POST['all_incomplets'])) {
+    // Mode « un clic » : TOUS les membres actifs sans adresse OU sans code postal
+    $membres = $db->query("SELECT id, email, prenom, nom, adresse, code_postal FROM members
+                           WHERE statut='actif'
+                             AND (TRIM(COALESCE(adresse,''))='' OR TRIM(COALESCE(code_postal,''))='')")->fetchAll();
+} else {
+    $ids = array_filter(array_map('intval', (array)($_POST['ids'] ?? [])));
+    if (empty($ids)) { echo json_encode(['ok'=>false,'error'=>'Aucun membre sélectionné']); exit; }
+    $in = implode(',', $ids);
+    $membres = $db->query("SELECT id, email, prenom, nom, adresse, code_postal FROM members
+                           WHERE id IN ($in) AND statut='actif'")->fetchAll();
+}
 
-$in = implode(',', $ids);
-$membres = $db->query("SELECT id, email, prenom, nom, adresse, code_postal FROM members
-                       WHERE id IN ($in) AND statut='actif'")->fetchAll();
-
-if (empty($membres)) { echo json_encode(['ok'=>false,'error'=>'Aucun membre actif dans la sélection']); exit; }
+if (empty($membres)) { echo json_encode(['ok'=>false,'error'=>'Aucun membre concerné']); exit; }
 
 $site_url = defined('SITE_URL') ? SITE_URL : 'https://www.casuffit.be';
 $sent = 0; $skipped = 0; $errors = [];

@@ -243,9 +243,10 @@ function sort_th($label, $col, $extra_style=''){
         📍 <strong><?= $nb_incomplets ?> membre(s)</strong> avec adresse incomplète —
         <a href="<?= su(['incomplet'=>'1','page'=>1]) ?>" style="color:#1673B2;font-weight:600">voir uniquement les incomplets</a>
       </div>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn btn-sm" style="background:#e07000;color:#fff;border-color:#e07000;font-weight:700" onclick="envoyerRappelAdresseTous()">✉ Rappel à TOUS les incomplets (<?= $nb_incomplets ?>) — 1 clic</button>
         <button type="button" class="btn btn-g btn-sm" onclick="selectIncomplets()">Sélectionner les incomplets (page courante)</button>
-        <button type="button" class="btn btn-sm" style="background:#FF9900;color:#fff;border-color:#FF9900" onclick="envoyerRappelAdresse()">✉ Envoyer rappel adresse</button>
+        <button type="button" class="btn btn-sm" style="background:#FF9900;color:#fff;border-color:#FF9900" onclick="envoyerRappelAdresse()">✉ Envoyer à la sélection</button>
       </div>
     </div>
     <?php endif; ?>
@@ -550,6 +551,18 @@ function envoyerRappelAdresse(){
   var fd=new FormData();
   fd.append('_csrf','<?=htmlspecialchars(csrf_token())?>');
   ids.forEach(id=>fd.append('ids[]',id));
+  fetch('rappel_adresse.php',{method:'POST',body:fd})
+    .then(r=>r.json()).then(d=>{alert(d.msg||(d.ok?'Rappels envoyés !':'Erreur : '+d.error));if(d.ok)location.reload();})
+    .catch(e=>alert('Erreur réseau : '+e.message))
+    .finally(()=>{btn.disabled=false;btn.textContent=orig;});
+}
+function envoyerRappelAdresseTous(){
+  if(!confirm('Envoyer le rappel « compléter l\'adresse » à TOUS les <?= $nb_incomplets ?> membre(s) sans adresse ?'))return;
+  var btn=event.currentTarget,orig=btn.textContent;
+  btn.disabled=true;btn.textContent='⏳ Envoi…';
+  var fd=new FormData();
+  fd.append('_csrf','<?=htmlspecialchars(csrf_token())?>');
+  fd.append('all_incomplets','1');
   fetch('rappel_adresse.php',{method:'POST',body:fd})
     .then(r=>r.json()).then(d=>{alert(d.msg||(d.ok?'Rappels envoyés !':'Erreur : '+d.error));if(d.ok)location.reload();})
     .catch(e=>alert('Erreur réseau : '+e.message))
