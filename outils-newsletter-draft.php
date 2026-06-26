@@ -1,7 +1,8 @@
 <?php
 /**
  * outils-newsletter-draft.php — OUTIL PONCTUEL
- * Crée un brouillon de newsletter pré-mis en forme, puis s'auto-supprime.
+ * Met à jour (ou crée) le brouillon de newsletter pré-mis en forme, avec
+ * bouton vers la page Agir. S'auto-supprime après usage.
  * Protégé par session admin. À supprimer du dépôt après usage.
  */
 require_once __DIR__ . '/config.php';
@@ -36,25 +37,34 @@ La région bruxelloise a lancé une procédure contre l'État belge. Si les dema
 
 <p style="margin:0 0 16px;"><strong>Il faut agir et faire respecter nos droits.</strong> La justice a toujours donné raison aux riverains en cas de non-respect des normes de vent. Il ne faut absolument pas que la situation actuelle débouche sur une loi qui bétonnerait pour toujours les injustices et donc les nuisances.</p>
 
+<div style="text-align:center;margin:30px 0 6px;">
+<a href="###AGIR###" style="display:inline-block;background:#FF9900;color:#ffffff;text-decoration:none;padding:14px 38px;border-radius:8px;font-size:15px;font-weight:700;box-shadow:0 2px 6px rgba(255,153,0,0.35);">✊ Passez à l'action →</a>
+</div>
+
 <p style="margin:28px 0 0;color:#0e3d6b;"><span style="color:#888;">Bien à vous,</span><br><strong style="font-size:16px;">L'équipe Ça suffit&nbsp;!</strong></p>
 HTML;
 
-// Éviter les doublons si la page est rechargée (au cas où l'auto-suppression échoue)
+// Lien absolu vers la page Agir (/agir → agir.php)
+$contenu = str_replace('###AGIR###', rtrim(SITE_URL, '/') . '/agir', $contenu);
+
+// Mettre à jour le brouillon existant, sinon le créer
 $stmt = $db->prepare("SELECT id FROM newsletters WHERE sujet=? AND statut='brouillon' ORDER BY id DESC LIMIT 1");
 $stmt->execute([$sujet]);
 $existing = $stmt->fetchColumn();
 
 if ($existing) {
     $id = (int)$existing;
-    $note = "Un brouillon avec ce sujet existait déjà (aucun doublon créé).";
+    $db->prepare("UPDATE newsletters SET contenu_html=? WHERE id=? AND statut='brouillon'")
+       ->execute([$contenu, $id]);
+    $note = "Brouillon mis à jour (bouton « Agir » ajouté).";
 } else {
     $db->prepare("INSERT INTO newsletters (sujet, contenu_html, statut) VALUES (?,?,'brouillon')")
        ->execute([$sujet, $contenu]);
     $id = (int)$db->lastInsertId();
-    $note = "Brouillon créé avec succès.";
+    $note = "Brouillon créé avec le bouton « Agir ».";
 }
 
-// Auto-suppression (sécurité) — le fichier ne doit pas rester accessible
+// Auto-suppression (sécurité)
 $selfDeleted = @unlink(__FILE__);
 ?>
 <!DOCTYPE html>
@@ -67,12 +77,11 @@ $selfDeleted = @unlink(__FILE__);
   a.btn{display:inline-block;background:#1673B2;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;margin-top:8px}
   .ok{background:#e8f8f0;border-left:4px solid #1a7a4a;padding:10px 14px;border-radius:6px;font-size:.85rem;color:#1a5c35;margin-top:18px}
   .warn{background:#fff5f5;border-left:4px solid #e53e3e;padding:10px 14px;border-radius:6px;font-size:.85rem;color:#7a1a1a;margin-top:12px}
-  code{background:#f0f4f8;padding:1px 5px;border-radius:4px}
 </style>
 </head><body><div class="box">
   <h2>✅ <?= htmlspecialchars($note) ?></h2>
-  <p>Le brouillon « <strong><?= htmlspecialchars($sujet) ?></strong> » est prêt. Tu peux le relire, ajuster, puis l'envoyer.</p>
+  <p>Le brouillon « <strong><?= htmlspecialchars($sujet) ?></strong> » contient maintenant un bouton <strong>« Passez à l'action&nbsp;»</strong> vers la page Agir, en bas du message.</p>
   <a class="btn" href="/admin/compose.php?id=<?= $id ?>">Ouvrir le brouillon dans l'éditeur →</a>
   <div class="ok"><?= $selfDeleted ? "🔒 Ce fichier outil s'est auto-supprimé du serveur." : "ℹ️ Auto-suppression non confirmée — le fichier sera retiré du dépôt." ?></div>
-  <div class="warn">Tu peux changer le <strong>sujet</strong> et la mise en forme directement dans l'éditeur.</div>
+  <div class="warn">⚠ Cette opération a remplacé le contenu du brouillon par la version mise en forme + bouton. Tes éventuelles retouches manuelles dans l'éditeur sont écrasées.</div>
 </div></body></html>
