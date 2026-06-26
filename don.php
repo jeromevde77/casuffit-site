@@ -285,7 +285,7 @@ function copyIBAN() {
   navigator.clipboard.writeText(iban).then(function() {
     var btn = document.getElementById('copy-btn');
     btn.textContent = '✓ <?= $is_nl ? 'Gekopieerd!' : 'Copié !' ?>'; btn.classList.add('ok');
-    setTimeout(function(){ btn.textContent = '📋 <?= $is_nl ? 'IBAN kopiëren' : 'Copier l\'IBAN' ?>'; btn.classList.remove('ok'); }, 2500);
+    setTimeout(function(){ btn.textContent = "📋 <?= $is_nl ? 'IBAN kopiëren' : 'Copier l\'IBAN' ?>"; btn.classList.remove('ok'); }, 2500);
   });
 }
 
