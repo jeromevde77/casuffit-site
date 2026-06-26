@@ -154,9 +154,15 @@ $brouillons   = array_filter($newsletters, function($n){ return $n['statut'] ===
     <?php $nb_en_attente = (int)$db->query("SELECT COUNT(*) FROM send_queue WHERE statut='en_attente'")->fetchColumn(); ?>
     <?php if ($nb_en_attente > 0): ?>
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.18)">
-      <a href="/admin/send_now.php" target="_blank" rel="noopener"
-         class="btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a">▶ Traiter la file maintenant (<?= $nb_en_attente ?> en attente)</a>
-      <span style="font-size:.72rem;color:rgba(255,255,255,.75);margin-left:8px">Envoie le lot immédiatement (nouvel onglet). Recharge ensuite cette page pour voir l'avancement.</span>
+      <button type="button" id="btn-flush" class="btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a"
+              onclick="flushQueue()">▶ Traiter la file maintenant (<span id="q-reste"><?= $nb_en_attente ?></span> en attente)</button>
+      <span style="font-size:.72rem;color:rgba(255,255,255,.75);margin-left:8px">Envoi par paquets, avec avancement en direct.</span>
+      <div id="q-progress" style="display:none;margin-top:12px">
+        <div style="height:12px;background:rgba(255,255,255,.25);border-radius:6px;overflow:hidden">
+          <div id="q-bar" style="height:100%;width:0;background:#fff;border-radius:6px;transition:width .3s"></div>
+        </div>
+        <div id="q-stat" style="font-size:.78rem;color:#fff;margin-top:6px"></div>
+      </div>
     </div>
     <?php endif; ?>
   </div>
@@ -200,5 +206,48 @@ $brouillons   = array_filter($newsletters, function($n){ return $n['statut'] ===
   </div>
 
 </div>
+<script>
+function flushQueue(){
+  var btn   = document.getElementById('btn-flush');
+  var resteEl = document.getElementById('q-reste');
+  var total = parseInt(resteEl.textContent) || 0;
+  if(total <= 0){ alert('File vide.'); return; }
+  if(!confirm('Envoyer la newsletter à '+total+' destinataire(s) ?')) return;
+
+  btn.disabled = true;
+  var prog = document.getElementById('q-progress'); prog.style.display = 'block';
+  var bar  = document.getElementById('q-bar');
+  var stat = document.getElementById('q-stat');
+  var totalErr = 0, prevReste = total, stall = 0;
+
+  function step(){
+    fetch('/admin/send_now.php?json=1&max=25', {cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(!d || !d.ok){ stat.textContent = 'Erreur : '+((d&&d.error)||'réponse invalide'); btn.disabled=false; return; }
+        totalErr += d.errors;
+        var done = total - d.reste; if(done < 0) done = 0;
+        var pct  = total > 0 ? Math.round(done/total*100) : 100;
+        bar.style.width = pct + '%';
+        stat.textContent = done+' / '+total+' traités · '+totalErr+' erreur(s) · '+d.reste+' restant(s)';
+        resteEl.textContent = d.reste;
+
+        // Garde-fou : si la file ne diminue plus, on arrête
+        if(d.reste >= prevReste){ stall++; } else { stall = 0; }
+        prevReste = d.reste;
+        if(stall >= 2){ stat.textContent = '⚠ Arrêt : la file ne diminue plus ('+d.reste+' restant). Vérifie les erreurs / la config email.'; btn.disabled=false; return; }
+
+        if(d.reste > 0){ step(); }
+        else {
+          bar.style.width = '100%';
+          stat.textContent = '✅ Terminé : '+done+' envoyé(s), '+totalErr+' erreur(s).';
+          setTimeout(function(){ location.reload(); }, 1800);
+        }
+      })
+      .catch(function(e){ stat.textContent = 'Erreur réseau : '+e.message; btn.disabled=false; });
+  }
+  step();
+}
+</script>
 </body>
 </html>
