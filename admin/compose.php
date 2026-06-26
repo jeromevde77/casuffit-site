@@ -41,12 +41,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_newsletter'])) {
     }
 }
 
+// ── Envoyer un email de TEST à une adresse saisie ─────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_test'])) {
+    require_once __DIR__ . '/../includes/mail_helper.php';
+    $test_email   = filter_var(trim($_POST['test_email'] ?? ''), FILTER_VALIDATE_EMAIL);
+    $sujet        = trim($_POST['sujet'] ?? '');
+    $contenu_html = $_POST['contenu_html'] ?? '';
+    if (!$test_email) {
+        $error = 'Adresse email de test invalide.';
+    } elseif ($sujet === '') {
+        $error = 'Renseignez d\'abord un sujet avant d\'envoyer un test.';
+    } else {
+        // Rendu identique à l'envoi réel (même template)
+        $prenom_display  = 'test';
+        $unsubscribe_url = SITE_URL . '/newsletter/unsubscribe.php?token=TEST';
+        ob_start();
+        include __DIR__ . '/../templates/email_newsletter.php';
+        $html_body = ob_get_clean();
+        $ok = sendMail($test_email, 'Test', '[TEST] ' . $sujet, $html_body, strip_tags($contenu_html));
+        $msg   = $ok ? ('Email de test envoyé à ' . htmlspecialchars($test_email) . '.') : '';
+        $error = $ok ? '' : 'Échec de l\'envoi du test (vérifiez la configuration email).';
+    }
+}
+
 // Charger une newsletter existante
 $nl = null;
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     $nl = $db->prepare("SELECT * FROM newsletters WHERE id=?");
     $nl->execute(array(intval($_GET['id'])));
     $nl = $nl->fetch();
+}
+// Après un envoi de test (pas de redirection), conserver le contenu courant dans l'éditeur
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_test'])) {
+    if (!$nl) $nl = ['id' => intval($_POST['nl_id'] ?? 0), 'statut' => 'brouillon'];
+    $nl['sujet']        = trim($_POST['sujet'] ?? '');
+    $nl['contenu_html'] = $_POST['contenu_html'] ?? '';
 }
 $msg = $_GET['msg'] ?? $msg;
 
@@ -271,12 +300,21 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
         <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor(); majApercu()"></div>
         <textarea name="contenu_html" id="f-contenu" style="display:none"><?= htmlspecialchars($nl ? $nl['contenu_html'] : '') ?></textarea>
         <script>(function(){var t=document.getElementById('f-contenu');var e=document.getElementById('wysiwyg-editor');if(t&&e)e.innerHTML=t.value;})();</script>
+
+        <label>Tester l'envoi</label>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="email" name="test_email" placeholder="adresse@exemple.be"
+                 value="<?= htmlspecialchars($_POST['test_email'] ?? '') ?>"
+                 style="flex:1;min-width:200px;padding:8px 10px;border:1.5px solid #dde4ed;border-radius:6px;font-size:.85rem;font-family:inherit">
+          <button type="submit" name="send_test" class="btn btn-g">✉ Envoyer un test</button>
+        </div>
+        <div style="font-size:.7rem;color:#999;margin-top:4px">Envoie la newsletter (sujet + contenu actuels) à cette seule adresse, avec le rendu réel.</div>
       </form>
     </div>
     <div class="editor-foot">
-      <button type="submit" form="nlf" name="save_draft" class="btn btn-p"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Sauvegarder</button>
+      <button type="submit" form="nlf" name="save_draft" formnovalidate class="btn btn-p"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Sauvegarder</button>
       <?php if ($nl && $nl['statut'] === 'brouillon'): ?>
-      <button type="submit" form="nlf" name="send_newsletter" class="btn btn-send"
+      <button type="submit" form="nlf" name="send_newsletter" formnovalidate class="btn btn-send"
               onclick="return confirm('Envoyer à <?= $nb_abonnes ?> abonnés actifs ?')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Envoyer (<?= $nb_abonnes ?> abonnés)
       </button>
