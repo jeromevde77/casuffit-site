@@ -17,7 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_draft'])) {
     else {
         $id = intval($_POST['nl_id'] ?? 0);
         if ($id > 0) {
-            $db->prepare("UPDATE newsletters SET sujet=?, contenu_html=? WHERE id=? AND statut='brouillon'")
+            // 'brouillon' OU 'envoi' : permet de corriger une newsletter dont l'envoi est en cours
+            // (le cron lit le contenu en direct → les destinataires restants reçoivent la version corrigée)
+            $db->prepare("UPDATE newsletters SET sujet=?, contenu_html=? WHERE id=? AND statut IN ('brouillon','envoi')")
                ->execute(array($sujet, $contenu, $id));
         } else {
             $db->prepare("INSERT INTO newsletters (sujet, contenu_html, statut) VALUES (?,?,'brouillon')")
