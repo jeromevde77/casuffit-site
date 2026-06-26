@@ -9,14 +9,23 @@
  *   Fréquence : chaque jour à 09:00
  *   Email rapport : info@casuffit.be
  */
-if (PHP_SAPI !== 'cli' && ((isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '')) !== '127.0.0.1') {
+require_once __DIR__ . '/../config.php';
+
+// Déclencheur autorisé : CLI (cron OVH), 127.0.0.1, ou URL avec ?secret=CRON_SECRET
+// (permet un lancement manuel depuis l'admin ou via cron-job.org)
+$is_web        = (PHP_SAPI !== 'cli');
+$web_secret_ok = isset($_GET['secret']) && defined('CRON_SECRET')
+               && hash_equals((string)CRON_SECRET, (string)$_GET['secret']);
+if ($is_web && (($_SERVER['REMOTE_ADDR'] ?? '') !== '127.0.0.1') && !$web_secret_ok) {
     http_response_code(403); die('Accès refusé');
 }
 
-require_once __DIR__ . '/../config.php';
-
 $db         = getDB();
 $batch_size = QUEUE_BATCH_SIZE;
+// En lancement web (manuel), on borne le lot pour éviter les timeouts ; on peut relancer
+if ($is_web) {
+    $batch_size = isset($_GET['max']) ? max(1, min((int)$_GET['max'], QUEUE_BATCH_SIZE)) : min(120, QUEUE_BATCH_SIZE);
+}
 $start      = microtime(true);
 $sent = $errors = 0;
 
@@ -24,10 +33,13 @@ log_msg("═══ Démarrage envoi — lot max: $batch_size ═══");
 
 // Récupérer le prochain lot
 $stmt = $db->prepare("
-    SELECT q.*, n.sujet, n.contenu_html
+    SELECT q.id, q.newsletter_id, q.subscriber_id, q.tentatives,
+           n.sujet, n.contenu_html,
+           s.email, s.prenom, s.nom, s.token_unsub
     FROM send_queue q
-    JOIN newsletters n ON n.id = q.newsletter_id
-    WHERE q.statut = 'en_attente' AND q.date_planifie <= NOW() AND q.tentatives < 3
+    JOIN newsletters  n ON n.id = q.newsletter_id
+    JOIN subscribers  s ON s.id = q.subscriber_id
+    WHERE q.statut = 'en_attente' AND q.tentatives < 3
     ORDER BY q.id ASC LIMIT ?");
 $stmt->execute([$batch_size]);
 $queue = $stmt->fetchAll();
@@ -74,17 +86,16 @@ foreach ($queue as $item) {
         : sendViaSMTP($item['email'],  trim($item['prenom'].' '.$item['nom']), $sujet, $html_body, strip_tags($contenu_html));
 
     if ($ok) {
-        $db->prepare("UPDATE send_queue SET statut='envoye', date_envoye=NOW() WHERE id=?")->execute([$item['id']]);
+        $db->prepare("UPDATE send_queue SET statut='envoye', envoye_at=NOW() WHERE id=?")->execute([$item['id']]);
         $sent++;
         log_msg("  ✓ {$item['email']}");
     } else {
         $db->prepare("UPDATE send_queue SET tentatives=tentatives+1, erreur_msg=?,
-            statut=IF(tentatives>=2,'erreur','en_attente'),
-            date_planifie=DATE_ADD(NOW(), INTERVAL 1 DAY) WHERE id=?")->execute([$err, $item['id']]);
+            statut=IF(tentatives>=2,'erreur','en_attente') WHERE id=?")->execute([$err, $item['id']]);
         $errors++;
         log_msg("  ✗ {$item['email']} — $err");
     }
-    usleep(200000); // 0.2s entre chaque
+    usleep($is_web ? 50000 : 200000); // pause anti rate-limit (plus courte en web)
 }
 
 // Mettre à jour les compteurs newsletters
@@ -101,6 +112,14 @@ foreach (array_unique(array_column($queue, 'newsletter_id')) as $nid) {
 
 $dur = round(microtime(true) - $start, 2);
 log_msg("═══ Résumé : ✓ $sent envoyés · ✗ $errors erreurs · ⏱ {$dur}s ═══");
+
+// Retour lisible si lancé manuellement depuis le navigateur
+if ($is_web) {
+    $reste = (int)$db->query("SELECT COUNT(*) FROM send_queue WHERE statut='en_attente'")->fetchColumn();
+    echo "\nLot traité : $sent envoyé(s), $errors erreur(s). Restant en file d'attente : $reste.\n";
+    if ($reste > 0) echo "→ Relance cette page pour envoyer le lot suivant.\n";
+    else            echo "✅ File vide — newsletter(s) entièrement envoyée(s).\n";
+}
 
 // ── Fonctions ──────────────────────────────────────────────────────────
 function sendViaBrevo(string $to, string $name, string $subject, string $html) {

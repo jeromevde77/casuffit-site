@@ -150,6 +150,15 @@ $brouillons   = array_filter($newsletters, function($n){ return $n['statut'] ===
       </button>
     </form>
     <?php endif; ?>
+
+    <?php $nb_en_attente = (int)$db->query("SELECT COUNT(*) FROM send_queue WHERE statut='en_attente'")->fetchColumn(); ?>
+    <?php if ($nb_en_attente > 0): ?>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.18)">
+      <a href="/cron/send_queue.php?secret=<?= urlencode(defined('CRON_SECRET') ? CRON_SECRET : '') ?>" target="_blank" rel="noopener"
+         class="btn" style="background:#1a7a4a;color:#fff;border-color:#1a7a4a">▶ Traiter la file maintenant (<?= $nb_en_attente ?> en attente)</a>
+      <span style="font-size:.72rem;color:rgba(255,255,255,.75);margin-left:8px">Envoie le lot immédiatement (nouvel onglet). Recharge ensuite cette page pour voir l'avancement.</span>
+    </div>
+    <?php endif; ?>
   </div>
 
   <!-- HISTORIQUE -->
