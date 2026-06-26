@@ -1,5 +1,5 @@
 <?php
-// don.php — Page de don dédiée, partageable par lien ou QR code
+// don.php — Page de don dédiée, partageable par lien ou QR code — v2 (fix SyntaxError QR JS)
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
