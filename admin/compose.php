@@ -296,6 +296,8 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
           <button type="button" class="wt-btn" onclick="fmt('removeFormat')">Tx</button>
           <div class="wt-sep"></div>
           <button type="button" class="wt-btn" onclick="openPalette(this)" style="background:#1673B2;color:#fff;padding:3px 12px;font-weight:700">＋ Style</button>
+          <div class="wt-sep"></div>
+          <button type="button" class="wt-btn" onclick="translateNL()" title="Traduire le contenu en néerlandais (ouvre DeepL)" style="background:#FF9900;color:#fff;padding:3px 12px;font-weight:700">🌐 Traduire NL</button>
         </div>
         <div id="wysiwyg-editor" contenteditable="true" oninput="syncEditor(); majApercu()"></div>
         <textarea name="contenu_html" id="f-contenu" style="display:none"><?= htmlspecialchars($nl ? $nl['contenu_html'] : '') ?></textarea>
@@ -495,6 +497,21 @@ function getWidgetNewsletter() {
 }
 </script>
 <script>
+// Traduire le contenu courant en néerlandais : copie le texte + ouvre DeepL (FR→NL)
+function translateNL() {
+  var ed = document.getElementById('wysiwyg-editor');
+  var txt = ed ? (ed.innerText || ed.textContent || '').trim() : '';
+  if (!txt) { alert('Rédige d\'abord le contenu de la newsletter.'); return; }
+  // Copier le texte complet dans le presse-papier (au cas où il dépasse la longueur d\'URL)
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).catch(function(){});
+  }
+  // Ouvrir DeepL pré-rempli (tronqué pour l\'URL ; le texte complet est dans le presse-papier)
+  var url = 'https://www.deepl.com/translator#fr/nl/' + encodeURIComponent(txt.slice(0, 4500));
+  window.open(url, '_blank', 'noopener');
+  alert('Texte copié dans le presse-papier et DeepL ouvert (FR→NL).\nColle (Ctrl+V) si besoin, puis recopie la traduction NL sous ton texte FR pour un email bilingue.');
+}
+
 function fmt(cmd, val) {
   document.getElementById('wysiwyg-editor').focus();
   document.execCommand(cmd, false, val || null);
