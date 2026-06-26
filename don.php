@@ -220,6 +220,7 @@ footer{text-align:center;padding:20px 16px;font-size:.72rem;color:#aaa}
 
 <footer>© <?= date('Y') ?> Ça suffit !</footer>
 
+<script src="/assets/js/qrcode-generator.js?v=1"></script>
 <script>
 var curMontant = 50;
 
@@ -254,13 +255,25 @@ function genQRAnon(montant) {
     iban_raw,
     montant ? 'EUR' + parseFloat(montant).toFixed(2) : '',
     '', 'DON CASUFFIT <?= date('Y') ?>', ''].join('\n');
-  var src = 'https://quickchart.io/qr?text=' + encodeURIComponent(epc) + '&size=160&margin=1&ecLevel=M';
+  // Génération locale (aucun service tiers) via qrcode-generator
+  if (typeof qrcode === 'function') {
+    try {
+      var qr = qrcode(0, 'M');
+      qr.addData(epc);
+      qr.make();
+      el.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 16, scalable: true });
+      var svg = el.querySelector('svg');
+      if (svg) { svg.setAttribute('width', '160'); svg.setAttribute('height', '160'); svg.style.display = 'block'; }
+      return;
+    } catch (e) { /* repli ci-dessous */ }
+  }
+  // Repli : services externes si la lib locale est indisponible
   var img = document.createElement('img');
   img.width = 160; img.height = 160; img.alt = 'QR code don';
   img.onerror = function() {
     this.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(epc);
   };
-  img.src = src;
+  img.src = 'https://quickchart.io/qr?text=' + encodeURIComponent(epc) + '&size=160&margin=1&ecLevel=M';
   el.appendChild(img);
 }
 

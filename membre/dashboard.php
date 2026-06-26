@@ -595,6 +595,7 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
 
 </div>
 
+<script src="/assets/js/qrcode-generator.js?v=1"></script>
 <script>
 var bic          = "<?= addslashes($bic) ?>";
 var iban_raw     = "<?= preg_replace('/\s+/', '', $iban) ?>";
@@ -629,7 +630,20 @@ function getEPC(ogm, montant) {
 function genererQR(ogm, montant) {
   var img = document.getElementById('qrcode-img');
   if (!img) return;
-  var enc = encodeURIComponent(getEPC(ogm||ogm_actif, montant||montant_actif));
+  var epc = getEPC(ogm||ogm_actif, montant||montant_actif);
+  // Génération locale (aucun service tiers) via qrcode-generator
+  if (typeof qrcode === 'function') {
+    try {
+      var qr = qrcode(0, 'M');
+      qr.addData(epc);
+      qr.make();
+      img.onerror = null;
+      img.src = qr.createDataURL(6, 16);
+      return;
+    } catch (e) { /* repli ci-dessous */ }
+  }
+  // Repli : services externes si la lib locale est indisponible
+  var enc = encodeURIComponent(epc);
   img.src = 'https://quickchart.io/qr?text='+enc+'&size=160&margin=1&ecLevel=M';
   img.onerror = function(){ img.src='https://api.qrserver.com/v1/create-qr-code/?size=160x160&data='+enc; };
 }
