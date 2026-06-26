@@ -103,7 +103,7 @@ foreach (array_unique(array_column($queue, 'newsletter_id')) as $nid) {
     $db->prepare("UPDATE newsletters SET nb_envoyes=(SELECT COUNT(*) FROM send_queue WHERE newsletter_id=? AND statut='envoye') WHERE id=?")->execute([$nid, $nid]);
     $reste = $db->prepare("SELECT COUNT(*) FROM send_queue WHERE newsletter_id=? AND statut='en_attente'")->execute([$nid]) ? $db->query("SELECT COUNT(*) FROM send_queue WHERE newsletter_id=$nid AND statut='en_attente'")->fetchColumn() : 0;
     if ($reste == 0) {
-        $db->prepare("UPDATE newsletters SET statut='envoye', date_envoi=NOW() WHERE id=? AND statut!='envoye'")->execute([$nid]);
+        $db->prepare("UPDATE newsletters SET statut='envoye', sent_at=NOW() WHERE id=? AND statut!='envoye'")->execute([$nid]);
         log_msg("🎉 Newsletter #$nid complètement envoyée !");
     } else {
         log_msg("⏳ Newsletter #$nid : $reste restant(s)");

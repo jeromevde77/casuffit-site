@@ -38,6 +38,15 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 $msg   = $_GET['msg'] ?? $msg;
 $error = $_GET['error'] ?? $error;
 
+// Auto-correction : passer en « Envoyée » toute newsletter dont la file est entièrement traitée
+// (débloque celles restées « En cours » à tort)
+try {
+    $db->exec("UPDATE newsletters n
+               SET n.statut='envoye', n.sent_at=COALESCE(n.sent_at, NOW())
+               WHERE n.statut='envoi'
+                 AND NOT EXISTS (SELECT 1 FROM send_queue q WHERE q.newsletter_id=n.id AND q.statut='en_attente')");
+} catch (Throwable $e) {}
+
 $newsletters  = $db->query("SELECT n.*, (SELECT COUNT(*) FROM send_queue sq WHERE sq.newsletter_id=n.id) as nb_queue, (SELECT COUNT(*) FROM send_queue sq WHERE sq.newsletter_id=n.id AND sq.statut='envoye') as nb_envoyes_queue FROM newsletters n ORDER BY n.created_at DESC")->fetchAll();
 $nb_abonnes   = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'")->fetchColumn();
 $brouillons   = array_filter($newsletters, function($n){ return $n['statut'] === 'brouillon'; });
