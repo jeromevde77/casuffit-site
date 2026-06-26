@@ -146,7 +146,8 @@ $brouillons   = array_filter($newsletters, function($n){ return $n['statut'] ===
     <?php if (empty($brouillons)): ?>
       <p class="no-brouillon">Aucun brouillon disponible. <a href="compose.php" style="color:#FF9900">Rédigez-en un →</a></p>
     <?php else: ?>
-    <form method="POST" class="send-form" onsubmit="return confirm('Envoyer cette newsletter à <?= $nb_abonnes ?><?= csrf_field() ?> abonnés ?')">
+    <form method="POST" class="send-form" onsubmit="return confirm('Envoyer cette newsletter à <?= $nb_abonnes ?> abonnés ?')">
+      <?= csrf_field() ?>
       <select name="nl_id" required>
         <option value="">— Choisir un brouillon —</option>
         <?php foreach ($brouillons as $b): ?>
