@@ -477,6 +477,18 @@ function syncEditor() {
   if (ed && ta) ta.value = ed.innerHTML;
 }
 
+// ── Préserver la sélection de l'éditeur quand on clique un bouton ──────────
+// Sans ça, le clic sur un bouton vole le focus du contenteditable : la
+// sélection est perdue et la mise en forme retombe sur la 1re ligne.
+// preventDefault sur mousedown empêche le bouton de prendre le focus
+// (le onclick se déclenche quand même), donc la sélection reste intacte.
+document.addEventListener('mousedown', function(e){
+  var btn = e.target.closest ? e.target.closest('button') : null;
+  if (btn && (btn.closest('#wysiwyg-toolbar') || btn.closest('#style-palette'))) {
+    e.preventDefault();
+  }
+});
+
 
 // ── Palette flottante ─────────────────────────────────────────────────
 var BLOCS = {
