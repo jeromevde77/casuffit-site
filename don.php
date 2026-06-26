@@ -1,5 +1,8 @@
 <?php
 // don.php — Page de don dédiée, partageable par lien ou QR code
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/lang.php';
 session_start();
