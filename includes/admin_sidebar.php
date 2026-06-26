@@ -60,6 +60,8 @@ if (!empty($_SESSION['admin_2fa_required']) && !$_2fa_exempt) {
     <a href="plainte_stats.php" <?= basename($_SERVER['PHP_SELF'])==='plainte_stats.php' ?'class="active"':'' ?>>Clics plaintes</a>
     <a href="landing_stats.php" <?= basename($_SERVER['PHP_SELF'])==='landing_stats.php' ?'class="active"':'' ?>>Stats flyers</a>
     <a href="email_stats.php"   <?= basename($_SERVER['PHP_SELF'])==='email_stats.php'   ?'class="active"':'' ?>>Ouvertures emails</a>
+    <div class="nav-section">Bilan &amp; subsides</div>
+    <a href="bilan.php" <?= basename($_SERVER['PHP_SELF'])==='bilan.php' ?'class="active"':'' ?>>📊 Bilan annuel</a>
     <div class="nav-section">Outils</div>
     <a href="landing.php" <?= basename($_SERVER['PHP_SELF'])==='landing.php' ?'class="active"':'' ?>>Landing /agir</a>
     <a href="qr.php" <?= basename($_SERVER['PHP_SELF'])==='qr.php' ?'class="active"':'' ?>>QR Codes</a>
