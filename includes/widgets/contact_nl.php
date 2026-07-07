@@ -1,4 +1,12 @@
-<?php // Widget contact — NL ?>
+<?php
+// Widget contact — NL
+// Anti-bot : rekenvraag + tijdstempel in sessie
+if (session_status() === PHP_SESSION_NONE) session_start();
+$wct_a = random_int(2, 9);
+$wct_b = random_int(2, 9);
+$_SESSION['contact_captcha']    = $wct_a + $wct_b;
+$_SESSION['contact_captcha_ts'] = time();
+?>
 <div class="wct-wrap">
 <style>
 .wct-wrap{max-width:560px}
@@ -39,6 +47,10 @@
     </select>
   </div>
   <div class="wct-group"><label>Bericht *</label><textarea name="message" required placeholder="Uw bericht..."></textarea></div>
+  <div class="wct-group">
+    <label>Anti-spam : hoeveel is <?= $wct_a ?> + <?= $wct_b ?> ? *</label>
+    <input type="text" name="captcha" inputmode="numeric" required placeholder="Uw antwoord" autocomplete="off" style="max-width:180px">
+  </div>
   <!-- Honeypot -->
   <div style="display:none" aria-hidden="true"><input type="text" name="website" value="" tabindex="-1" autocomplete="off"></div>
   <button type="submit" class="wct-btn" id="wct-btn">📨 Bericht verzenden</button>

@@ -27,6 +27,29 @@ if (!empty($_POST['website'])) {
     exit;
 }
 
+// ── Piège temporel : rejet si formulaire soumis trop vite ou trop tard ─
+$captcha_ts = $_SESSION['contact_captcha_ts'] ?? 0;
+$elapsed = time() - $captcha_ts;
+if (!$captcha_ts || $elapsed < 3 || $elapsed > 7200) {
+    unset($_SESSION['contact_captcha'], $_SESSION['contact_captcha_ts']);
+    echo json_encode(['ok' => false, 'message' => tr($is_nl,
+        'La page a expiré. Merci de recharger la page et de réessayer.',
+        'De pagina is verlopen. Herlaad de pagina en probeer opnieuw.')]);
+    exit;
+}
+
+// ── Question mathématique : vérifie que la réponse est correcte ────────
+$captcha_attendu = $_SESSION['contact_captcha'] ?? null;
+$captcha_saisi   = trim($_POST['captcha'] ?? '');
+if ($captcha_attendu === null || !ctype_digit($captcha_saisi) || (int)$captcha_saisi !== (int)$captcha_attendu) {
+    echo json_encode(['ok' => false, 'message' => tr($is_nl,
+        'Réponse anti-spam incorrecte. Merci de vérifier le calcul.',
+        'Anti-spam antwoord onjuist. Controleer de berekening.')]);
+    exit;
+}
+// Captcha valide → on le consomme (usage unique)
+unset($_SESSION['contact_captcha'], $_SESSION['contact_captcha_ts']);
+
 $nom     = trim($_POST['nom']     ?? '');
 $email   = trim($_POST['email']   ?? '');
 $sujet   = trim($_POST['sujet']   ?? '');
