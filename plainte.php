@@ -619,9 +619,15 @@ function openMail() {
   var pisteLabel = _piste==='07' ? 'piste 07' : 'piste 01';
   var now = new Date();
   var dateStr = now.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
-  var subj = <?= json_encode(tr($is_nl,'Klacht luchthinder EBBR','Plainte nuisance aérienne EBBR')) ?> + ' — '+pisteLabel+' — '+dateStr;
+  var timeStr = now.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  // Référence unique à chaque clic (évite le filtrage des emails identiques)
+  var ref = '';
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  for (var i=0;i<5;i++) ref += chars.charAt(Math.floor(Math.random()*chars.length));
+  var subj = <?= json_encode(tr($is_nl,'Klacht luchthinder EBBR','Plainte nuisance aérienne EBBR')) ?> + ' — '+pisteLabel+' — '+dateStr+' '+timeStr+' — réf. '+ref;
   var body = <?= json_encode(tr($is_nl,'[ Inhoud van uw klacht hier plakken ]','[ Coller ici le contenu de votre plainte ]')) ?>;
-  window.location.href = 'mailto:'+_dest+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+  // Destinataires en BCC (copie cachée) plutôt qu'en À
+  window.location.href = 'mailto:?bcc='+encodeURIComponent(_dest)+'&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
 }
 </script>
 
