@@ -464,8 +464,7 @@ function buildComplaint(d) {
     demandeLines+'\n\n'+
     'Je vous remercie de l\'attention portée à ce message et reste disponible pour tout'+
     ' complément d\'information.\n\n'+
-    'Cordialement,\n\n'+
-    '— Via Ça suffit ! — casuffit.be';
+    'Cordialement,\n\n';
 
   document.getElementById('complaint-text').textContent = _plainText;
 }
@@ -610,7 +609,6 @@ function buildHtmlBody() {
     '<p>Je vous remercie de l\'attention portée à ce message et reste disponible pour tout complément d\'information.</p>'+
     '<p>Cordialement,</p>'+
     (_captureDataUrl ? '<p><img src="'+_captureDataUrl+'" style="max-width:100%;border:1px solid #ddd;border-radius:8px;margin-top:12px" alt="Capture conditions EBBR"></p>' : '')+
-    '<p style="font-size:.8em;color:#888">— Via Ça suffit ! — casuffit.be</p>'+
     '</div>';
 }
 
@@ -624,7 +622,7 @@ function openMail() {
   var ref = '';
   var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   for (var i=0;i<5;i++) ref += chars.charAt(Math.floor(Math.random()*chars.length));
-  var subj = 'IKW aérien — '+pisteLabel+' — '+dateStr+' '+timeStr+' — réf. '+ref;
+  var subj = 'IKW aérien — '+dateStr+' '+timeStr+' — réf. '+ref;
   var body = <?= json_encode(tr($is_nl,'[ Inhoud van uw klacht hier plakken ]','[ Coller ici le contenu de votre plainte ]')) ?>;
   // Destinataires en BCC (copie cachée) plutôt qu'en À
   window.location.href = 'mailto:?bcc='+encodeURIComponent(_dest)+'&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
