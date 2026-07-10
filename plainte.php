@@ -624,7 +624,7 @@ function openMail() {
   var ref = '';
   var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   for (var i=0;i<5;i++) ref += chars.charAt(Math.floor(Math.random()*chars.length));
-  var subj = <?= json_encode(tr($is_nl,'Klacht luchthinder EBBR','Plainte nuisance aérienne EBBR')) ?> + ' — '+pisteLabel+' — '+dateStr+' '+timeStr+' — réf. '+ref;
+  var subj = 'IKW aérien — '+pisteLabel+' — '+dateStr+' '+timeStr+' — réf. '+ref;
   var body = <?= json_encode(tr($is_nl,'[ Inhoud van uw klacht hier plakken ]','[ Coller ici le contenu de votre plainte ]')) ?>;
   // Destinataires en BCC (copie cachée) plutôt qu'en À
   window.location.href = 'mailto:?bcc='+encodeURIComponent(_dest)+'&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
