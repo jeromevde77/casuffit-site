@@ -1668,7 +1668,7 @@ window.pmwOpenMail = function() {
   var ref = '';
   var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   for (var i=0;i<5;i++) ref += chars.charAt(Math.floor(Math.random()*chars.length));
-  var sujet = 'IKW aérien — ' + dateStr + ' ' + timeStr + ' — réf. ' + ref;
+  var sujet = 'Demande d\'infos — ' + dateStr + ' ' + timeStr + ' — réf. ' + ref;
   var corps = 'Bonjour,\n\n(Collez ici le contenu copié depuis l\'outil — Ctrl+V / Cmd+V)\n';
   // Destinataires configurés dans l'admin (attribut data sur le widget)
   var pmwEl = document.getElementById('pmw');
