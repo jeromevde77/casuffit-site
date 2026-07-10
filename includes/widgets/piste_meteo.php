@@ -1663,15 +1663,19 @@ window.pmwUpdateReportBtn = function(alert) {
 window.pmwOpenMail = function() {
   var now = new Date();
   var dateStr = now.toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'numeric'});
-  var timeStr = now.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'});
-  var cfg = window._currentBatcRwy || '';
-  var sujet = 'Plainte nuisance aérienne EBBR — ' + (cfg ? cfg + ' — ' : '') + dateStr + ' ' + timeStr;
+  var timeStr = now.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  // Référence unique à chaque clic (evite le filtrage des emails identiques)
+  var ref = '';
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  for (var i=0;i<5;i++) ref += chars.charAt(Math.floor(Math.random()*chars.length));
+  var sujet = 'IKW aérien — ' + dateStr + ' ' + timeStr + ' — réf. ' + ref;
   var corps = 'Bonjour,\n\n(Collez ici le contenu copié depuis l\'outil — Ctrl+V / Cmd+V)\n';
   // Destinataires configurés dans l'admin (attribut data sur le widget)
   var pmwEl = document.getElementById('pmw');
   var dest = (pmwEl && pmwEl.getAttribute('data-plainte-dest')) || 'airportmediation@mobilit.fgov.be';
-  var mailto = 'mailto:' + encodeURIComponent(dest).replace(/%2C/g, ',')
-             + '?subject=' + encodeURIComponent(sujet)
+  // Destinataires en BCC (copie cachée) plutôt qu'en À
+  var mailto = 'mailto:?bcc=' + encodeURIComponent(dest).replace(/%2C/g, ',')
+             + '&subject=' + encodeURIComponent(sujet)
              + '&body=' + encodeURIComponent(corps);
   window.location.href = mailto;
 };
