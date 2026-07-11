@@ -624,8 +624,8 @@ function openMail() {
   for (var i=0;i<5;i++) ref += chars.charAt(Math.floor(Math.random()*chars.length));
   var subj = 'Demande d\'infos — '+dateStr+' '+timeStr+' — réf. '+ref;
   var body = <?= json_encode(tr($is_nl,'[ Inhoud van uw klacht hier plakken ]','[ Coller ici le contenu de votre plainte ]')) ?>;
-  // Destinataires en BCC (copie cachée) plutôt qu'en À
-  window.location.href = 'mailto:?bcc='+encodeURIComponent(_dest)+'&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+  // Destinataires en BCC (copie cachée) + CC vers plaintes@casuffit.be
+  window.location.href = 'mailto:?cc=plaintes@casuffit.be&bcc='+encodeURIComponent(_dest)+'&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
 }
 </script>
 

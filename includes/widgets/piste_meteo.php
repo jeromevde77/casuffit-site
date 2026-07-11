@@ -1673,8 +1673,8 @@ window.pmwOpenMail = function() {
   // Destinataires configurés dans l'admin (attribut data sur le widget)
   var pmwEl = document.getElementById('pmw');
   var dest = (pmwEl && pmwEl.getAttribute('data-plainte-dest')) || 'airportmediation@mobilit.fgov.be';
-  // Destinataires en BCC (copie cachée) plutôt qu'en À
-  var mailto = 'mailto:?bcc=' + encodeURIComponent(dest).replace(/%2C/g, ',')
+  // Destinataires en BCC (copie cachée) + CC vers plaintes@casuffit.be
+  var mailto = 'mailto:?cc=plaintes@casuffit.be&bcc=' + encodeURIComponent(dest).replace(/%2C/g, ',')
              + '&subject=' + encodeURIComponent(sujet)
              + '&body=' + encodeURIComponent(corps);
   window.location.href = mailto;
