@@ -1062,7 +1062,13 @@ window.pmhOpenPlainteFromModal = function() {
 
   var illegal = (d.prs_active===false) && (d.aip2013 && d.aip2013.prs_active===true);
 
-  window._pmhMailSubject = 'Plainte nuisances aériennes EBBR — ' + dateStr + ' ' + timeStr;
+  // Référence unique à chaque génération (évite le filtrage des emails identiques)
+  var _pmhRef = '';
+  var _pmhChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  for (var _i=0;_i<5;_i++) _pmhRef += _pmhChars.charAt(Math.floor(Math.random()*_pmhChars.length));
+  var _pmhNow = new Date();
+  var _pmhTimeFull = _pmhNow.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  window._pmhMailSubject = 'Demande d\'infos — ' + dateStr + ' ' + _pmhTimeFull + ' — réf. ' + _pmhRef;
   window._pmhMailDest    = dest;
   window._pmhMailBody    =
     'Madame, Monsieur,\n\n' +
@@ -1082,8 +1088,7 @@ window.pmhOpenPlainteFromModal = function() {
         + 'apparaît donc NON CONFORME pour ce créneau.\n'
       : 'Les conditions de ce créneau sont documentées ci-dessus à toutes fins utiles.\n') + '\n' +
     'Je vous demande de bien vouloir examiner ce cas et de me tenir informé(e) des suites données.\n\n' +
-    'Veuillez agréer, Madame, Monsieur, mes salutations distinguées.\n\n' +
-    '— Via Ça suffit ! — casuffit.be';
+    'Veuillez agréer, Madame, Monsieur, mes salutations distinguées.\n';
 
   // Ouvrir la modale de revue
   var overlay = document.getElementById('pmh-plainte-overlay');
@@ -1135,8 +1140,10 @@ window.pmhCopyComplaint = function() {
 };
 window.pmhOpenMail = function() {
   if (!window._pmhMailBody) return;
-  window.location.href = 'mailto:'+encodeURIComponent(window._pmhMailDest||'airportmediation@mobilit.fgov.be')
-    +'?subject='+encodeURIComponent(window._pmhMailSubject||'Plainte nuisances EBBR')
+  // Destinataires en BCC (copie cachée) + CC vers plaintes@casuffit.be
+  window.location.href = 'mailto:?cc=plaintes@casuffit.be'
+    +'&bcc='+encodeURIComponent(window._pmhMailDest||'airportmediation@mobilit.fgov.be').replace(/%2C/g, ',')
+    +'&subject='+encodeURIComponent(window._pmhMailSubject||'Demande d\'infos')
     +'&body='+encodeURIComponent(window._pmhMailBody);
 };
 window.pmhDownloadCapture = function() {
