@@ -1070,25 +1070,54 @@ window.pmhOpenPlainteFromModal = function() {
   var _pmhTimeFull = _pmhNow.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   window._pmhMailSubject = 'Demande d\'infos — ' + dateStr + ' ' + _pmhTimeFull + ' — réf. ' + _pmhRef;
   window._pmhMailDest    = dest;
+  // Composantes 25R / 25L pour aligner la structure sur la page plainte
+  var c25R = d.components ? d.components['25R'] : null;
+  var c25L = d.components ? d.components['25L'] : null;
+  var tw25R  = c25R ? (c25R.tw_moy>0 ? c25R.tw_moy.toFixed(1)+' kt' : '(de face)') : '—';
+  var tw25L  = c25L ? (c25L.tw_moy>0 ? c25L.tw_moy.toFixed(1)+' kt' : '(de face)') : '—';
+  var xw25R  = c25R ? c25R.xw_moy.toFixed(1)+' kt' : '—';
+  var tw25Rg = (c25R && c25R.tw_gst!==null && c25R.tw_gst!==undefined && c25R.tw_gst>0) ? c25R.tw_gst.toFixed(1)+' kt' : '';
+  var metatLine = d.metar || 'IRM / synop';
+
+  var _pmhContext, _pmhDemande;
+  if (illegal) {
+    _pmhContext =
+      'Selon les normes de vent légales (instruction ministérielle du 17/07/2013, AIP EBBR AD 2.21),'+
+      ' les pistes 25 préférentielles auraient dû être utilisées dans ces conditions.'+
+      ' L\'utilisation de la piste 01 apparaît donc non conforme pour ce créneau.';
+    _pmhDemande =
+      'Pourriez-vous m\'indiquer les raisons pour lesquelles la piste 01'+
+      ' a été utilisée plutôt que les pistes 25 préférentielles, et me confirmer la'+
+      ' configuration réellement en service à ce moment ?';
+  } else {
+    _pmhContext = 'Les conditions de vent de ce créneau sont documentées ci-dessus à toutes fins utiles.';
+    _pmhDemande =
+      'Je souhaiterais obtenir les raisons opérationnelles ou météorologiques'+
+      ' qui ont justifié la configuration de pistes en service à ce moment.';
+  }
+
   window._pmhMailBody    =
     'Madame, Monsieur,\n\n' +
-    'Je me permets de vous contacter suite à des nuisances aériennes constatées au-dessus de ma commune. Sur la base des données météorologiques historiques de Brussels Airport (EBBR), je ne comprends pas pourquoi la configuration préférentielle du Plan de Répartition du Survol (PRS) n\'était pas appliquée au créneau concerné.\n\n' +
-    '=== CRÉNEAU CONCERNÉ ===\n' +
-    'Date / Heure     : '+dateStr+' à '+timeStr+'\n' +
-    'Source           : '+(d.metar||'IRM / synop')+'\n\n' +
-    '=== CONDITIONS DE VENT ===\n' +
-    'Direction        : '+((d.wdir!==null&&d.wdir!==undefined)?d.wdir+'° ('+dirTxt+')':'Variable')+'\n' +
-    'Vitesse moyenne  : '+(d.wspd||'—')+' kt\n' +
-    'Rafales          : '+(d.wgst?d.wgst+' kt':'—')+'\n' +
-    (detail01?detail01+'\n':'') + '\n' +
-    '=== ANALYSE RÉGLEMENTAIRE ===\n' +
-    (illegal
-      ? 'Selon les normes de vent légales (instruction ministérielle du 17/07/2013, AIP EBBR AD 2.21),\n'
-        + 'la piste 25 aurait dû être utilisée dans ces conditions. L\'utilisation de la piste 01\n'
-        + 'apparaît donc NON CONFORME pour ce créneau.\n'
-      : 'Les conditions de ce créneau sont documentées ci-dessus à toutes fins utiles.\n') + '\n' +
-    'Je vous demande de bien vouloir examiner ce cas et de me tenir informé(e) des suites données.\n\n' +
-    'Veuillez agréer, Madame, Monsieur, mes salutations distinguées.\n';
+    'Je me permets de vous contacter afin de vous signaler qu\'en date du '+dateStr+
+    ' vers '+timeStr+', un usage de la piste 01 a été constaté'+
+    ' à l\'aéroport de Bruxelles-National (EBBR).\n\n' +
+    '=== CONDITIONS MÉTÉO EBBR ===\n' +
+    'METAR               : '+metatLine+'\n' +
+    'Date / Heure (obs.) : '+dateStr+' à '+timeStr+'\n' +
+    'Direction du vent   : '+((d.wdir!==null&&d.wdir!==undefined)?d.wdir+'° ('+dirTxt+')':'Variable')+'\n' +
+    'Vitesse moyenne     : '+(d.wspd||'—')+' kt\n' +
+    'Rafales             : '+(d.wgst?d.wgst+' kt':'—')+'\n' +
+    'Vent arrière 25R    : '+tw25R+' (seuil légal AIP 2013 : 7 kt)\n' +
+    'Vent arrière 25L    : '+tw25L+'\n' +
+    'Vent latéral 25R    : '+xw25R+' (seuil légal : 15 kt)\n' +
+    (tw25Rg ? 'Rafale arrière 25R  : '+tw25Rg+' (seuil légal : 10 kt)\n' : '') +
+    (detail01 ? detail01+'\n' : '') +
+    '\n=== ANALYSE ===\n' +
+    _pmhContext+'\n\n' +
+    _pmhDemande+'\n\n' +
+    'Je vous remercie de l\'attention portée à ce message et reste disponible pour tout'+
+    ' complément d\'information.\n\n' +
+    'Cordialement,\n\n';
 
   // Ouvrir la modale de revue
   var overlay = document.getElementById('pmh-plainte-overlay');
