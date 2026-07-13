@@ -145,7 +145,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
         ? 'Mobilisatie tegen de hinder van baan 01' 
         : 'Mobilisation contre les nuisances de la piste 01' ?>
     </p>
+    <?php $urgence = function_exists('cfgLang') ? cfgLang('urgence_texte', '') : (function_exists('cfg') ? cfg('urgence_texte', '') : ''); ?>
+    <?php if ($urgence): ?>
     <div class="urgence-banner">🤝 <?= htmlspecialchars($urgence) ?></div>
+    <?php endif; ?>
   </div>
 
   <div class="content">
