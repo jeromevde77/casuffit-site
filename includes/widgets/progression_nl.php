@@ -47,5 +47,8 @@ $widget_no_scale = true;
     <p style="font-size:.72rem;color:#888;margin-top:6px;line-height:1.5;text-align:center">
       Voor een overlast <strong>op dit moment</strong>. Voor een overlast in het <strong>verleden</strong> → <a href="/wind.php#historique" style="color:#1673B2">Windgeschiedenis</a>
     </p>
+    <a href="/membre/inscription.php?lang=nl" style="display:block;width:100%;margin-top:10px;padding:14px 16px;background:#1673B2;color:#fff;font-weight:700;font-size:.88rem;text-align:center;border-radius:10px;text-decoration:none;box-shadow:0 2px 8px rgba(22,115,178,.3);">
+      ✊ Lid worden — sluit u aan bij de strijd
+    </a>
   </div>
 </section>
