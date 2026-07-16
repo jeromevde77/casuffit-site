@@ -103,8 +103,6 @@ $beneficiaire = cfg('beneficiaire', 'ca suffit !');
 require_once __DIR__ . '/includes/facebook.php';
 $membres_effectifs = 0;
 try { $membres_effectifs = (int)$db->query("SELECT COUNT(*) FROM members WHERE statut='actif'")->fetchColumn(); } catch (Exception $e) {}
-// + invitations envoyées mais pas encore confirmées (futurs membres)
-try { $membres_effectifs += (int)$db->query("SELECT COUNT(*) FROM subscribers WHERE invite_membre_sent_at IS NOT NULL AND invite_membre_accepted=0")->fetchColumn(); } catch (Exception $e) {}
 $fb_followers = fbFollowers($db);
 
 // Charger le contenu des tabs depuis la BDD
