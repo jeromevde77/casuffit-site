@@ -34,12 +34,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_draft'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_newsletter'])) {
     $id = intval($_POST['nl_id'] ?? 0);
     if ($id > 0) {
-        // Mettre en file d'envoi
-        $abonnes = $db->query("SELECT id FROM subscribers WHERE statut='actif'")->fetchAll();
+        // Filtre par communes (facultatif) : si des communes sont cochées, on cible ; sinon tout le monde
+        $communes_sel = array_filter(array_map('trim', (array)($_POST['communes'] ?? [])));
+        if ($communes_sel) {
+            $ph = implode(',', array_fill(0, count($communes_sel), '?'));
+            $stmt_ab = $db->prepare("SELECT id FROM subscribers WHERE statut='actif' AND commune IN ($ph)");
+            $stmt_ab->execute(array_values($communes_sel));
+            $abonnes = $stmt_ab->fetchAll();
+            $cible_txt = count($communes_sel).' commune(s)';
+        } else {
+            $abonnes = $db->query("SELECT id FROM subscribers WHERE statut='actif'")->fetchAll();
+            $cible_txt = 'tous';
+        }
         $db->prepare("UPDATE newsletters SET statut='envoi' WHERE id=?")->execute(array($id));
         $stmt = $db->prepare("INSERT INTO send_queue (newsletter_id, subscriber_id, statut) VALUES (?,?,'en_attente')");
         foreach ($abonnes as $a) { $stmt->execute(array($id, $a['id'])); }
-        header('Location: newsletters.php?msg='.urlencode('Envoi lancé pour '.count($abonnes).' abonnés.')); exit;
+        header('Location: newsletters.php?msg='.urlencode('Envoi lancé pour '.count($abonnes).' abonnés ('.$cible_txt.').')); exit;
     }
 }
 
@@ -102,6 +112,15 @@ try {
 
 // Compter les abonnés actifs
 $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'")->fetchColumn();
+// Communes distinctes avec nombre d'abonnés actifs (pour le ciblage)
+$communes_list = $db->query("
+    SELECT TRIM(commune) AS commune, COUNT(*) AS n
+    FROM subscribers
+    WHERE statut='actif' AND commune IS NOT NULL AND TRIM(commune) <> ''
+    GROUP BY TRIM(commune)
+    ORDER BY n DESC, commune ASC
+")->fetchAll();
+$nb_sans_commune = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif' AND (commune IS NULL OR TRIM(commune)='')")->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -313,13 +332,35 @@ $nb_abonnes = $db->query("SELECT COUNT(*) FROM subscribers WHERE statut='actif'"
           <button type="submit" name="send_test" class="btn btn-g">✉ Envoyer un test</button>
         </div>
         <div style="font-size:.7rem;color:#999;margin-top:4px">Envoie la newsletter (sujet + contenu actuels) à cette seule adresse, avec le rendu réel.</div>
+
+        <label style="margin-top:16px">🎯 Cibler par communes <span style="font-weight:400;color:#888;font-size:.8rem">(facultatif — rien de coché = tous les abonnés)</span></label>
+        <div style="border:1.5px solid #dde4ed;border-radius:8px;padding:10px 12px;max-height:210px;overflow-y:auto;background:#fafbfc">
+          <div style="display:flex;gap:10px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #eef2f7;flex-wrap:wrap">
+            <button type="button" class="btn btn-g" style="font-size:.72rem;padding:3px 10px" onclick="document.querySelectorAll('.cbm').forEach(c=>c.checked=true);updCount()">Tout cocher</button>
+            <button type="button" class="btn btn-g" style="font-size:.72rem;padding:3px 10px" onclick="document.querySelectorAll('.cbm').forEach(c=>c.checked=false);updCount()">Tout décocher</button>
+            <span id="cible-count" style="font-size:.75rem;color:#1673B2;font-weight:700;align-self:center"></span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:3px 14px">
+          <?php foreach ($communes_list as $c): ?>
+            <label style="display:flex;align-items:center;gap:7px;font-size:.82rem;cursor:pointer;padding:2px 0">
+              <input type="checkbox" class="cbm" name="communes[]" value="<?= htmlspecialchars($c['commune']) ?>" onchange="updCount()" style="width:15px;height:15px;flex-shrink:0">
+              <span><?= htmlspecialchars($c['commune']) ?> <span style="color:#aaa">(<?= $c['n'] ?>)</span></span>
+            </label>
+          <?php endforeach; ?>
+          </div>
+          <?php if ($nb_sans_commune > 0): ?>
+          <div style="font-size:.72rem;color:#999;margin-top:8px;padding-top:8px;border-top:1px solid #eef2f7">
+            ⚠ <?= $nb_sans_commune ?> abonné(s) sans commune renseignée — ils ne reçoivent la newsletter que si aucun ciblage n'est appliqué.
+          </div>
+          <?php endif; ?>
+        </div>
       </form>
     </div>
     <div class="editor-foot">
       <button type="submit" form="nlf" name="save_draft" formnovalidate class="btn btn-p"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Sauvegarder</button>
       <?php if ($nl && $nl['statut'] === 'brouillon'): ?>
       <button type="submit" form="nlf" name="send_newsletter" formnovalidate class="btn btn-send"
-              onclick="return confirm('Envoyer à <?= $nb_abonnes ?> abonnés actifs ?')">
+              onclick="return confirmSend()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Envoyer (<?= $nb_abonnes ?> abonnés)
       </button>
       <?php endif; ?>
@@ -775,5 +816,40 @@ function removeBloc() {
   </div>
 </div>
 
+<script>
+// Ciblage newsletter par communes
+function updCount() {
+  var checked = document.querySelectorAll('.cbm:checked').length;
+  var total = <?= (int)$nb_abonnes ?>;
+  var span = document.getElementById('cible-count');
+  if (!span) return;
+  if (checked === 0) {
+    span.textContent = '→ envoi à tous les abonnés (' + total + ')';
+    span.style.color = '#1673B2';
+  } else {
+    var n = 0;
+    document.querySelectorAll('.cbm:checked').forEach(function(c){
+      var m = c.parentNode.textContent.match(/\((\d+)\)/);
+      if (m) n += parseInt(m[1], 10);
+    });
+    span.textContent = '→ ' + checked + ' commune(s), ~' + n + ' abonné(s) ciblé(s)';
+    span.style.color = '#e08800';
+  }
+}
+function confirmSend() {
+  var checked = document.querySelectorAll('.cbm:checked');
+  if (checked.length === 0) {
+    return confirm('Envoyer à TOUS les abonnés actifs (<?= (int)$nb_abonnes ?>) ?');
+  }
+  var noms = [], n = 0;
+  checked.forEach(function(c){
+    noms.push(c.value);
+    var m = c.parentNode.textContent.match(/\((\d+)\)/);
+    if (m) n += parseInt(m[1], 10);
+  });
+  return confirm('Envoyer uniquement aux abonnés de :\n\n' + noms.join(', ') + '\n\n(~' + n + ' abonné(s))');
+}
+document.addEventListener('DOMContentLoaded', updCount);
+</script>
 </body>
 </html>
