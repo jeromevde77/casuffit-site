@@ -1,4 +1,4 @@
-<?php /* includes/admin_sidebar.php — v4 : Messages contacts + rôle support */ ?>
+<?php /* includes/admin_sidebar.php — v5 : + Roses des vents */ ?>
 <?php
 // Rôle 'support' : accès limité à contacts.php uniquement
 $_admin_role = $_SESSION['admin_role'] ?? 'admin';
@@ -67,6 +67,7 @@ if (!empty($_SESSION['admin_2fa_required']) && !$_2fa_exempt) {
     <a href="qr.php" <?= basename($_SERVER['PHP_SELF'])==='qr.php' ?'class="active"':'' ?>>QR Codes</a>
     <a href="email_templates.php" <?= basename($_SERVER['PHP_SELF'])==='email_templates.php' ?'class="active"':'' ?>>Templates email</a>
     <a href="tracks_ebbr.php" <?= basename($_SERVER['PHP_SELF'])==='tracks_ebbr.php' ?'class="active"':'' ?>>Traces EBBR</a>
+    <a href="roses_vents.php" <?= basename($_SERVER['PHP_SELF'])==='roses_vents.php' ?'class="active"':'' ?>>Roses des vents</a>
     <a href="backup.php" <?= basename($_SERVER['PHP_SELF'])==='backup.php' ?'class="active"':'' ?>>Backup &amp; Export</a>
     <div class="nav-section">Newsletter</div>
     <a href="subscribers.php" <?= basename($_SERVER['PHP_SELF'])==='subscribers.php' ?'class="active"':'' ?>>Abonnés</a>
