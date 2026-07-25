@@ -1,5 +1,5 @@
 <?php
-// admin/batc_api.php — v1 — Explorateur des endpoints API BATC (skeyes / Brussels Airport)
+// admin/batc_api.php — v2 — Explorateur des endpoints API BATC (skeyes / Brussels Airport)
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 
@@ -92,6 +92,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['probe'])) {
     }
 }
 
+// ── Découverte automatique : analyse des bundles JS de batc.be ──────────
+$scan_result = null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['scan'])) {
+    $pages = [
+        'https://www.batc.be/fr/statistiques/roses-des-vents',
+        'https://www.batc.be/fr/statistiques/prs',
+        'https://www.batc.be/fr/statistiques/mouvements-aeroportuaires',
+        'https://www.batc.be/fr/pistes-en-usage/actuel-prevision',
+        'https://www.batc.be/fr/bruit/mesures-sonores',
+        'https://www.batc.be/fr/meteo/mesures-meteo',
+    ];
+    $scripts = [];   // url => true
+    $errors  = [];
+    foreach ($pages as $pg) {
+        $r = batc_call($pg, 12);
+        if (!$r['ok'] || $r['code'] >= 400) { $errors[] = "Page inaccessible : $pg (HTTP {$r['code']})"; continue; }
+        // Extraire les <script src>
+        if (preg_match_all('#<script[^>]+src=["\']([^"\']+)["\']#i', $r['body'], $m)) {
+            foreach ($m[1] as $src) {
+                // Résoudre les URL relatives, ne garder que batc.be
+                if (strpos($src, '//') === 0)      $src = 'https:' . $src;
+                elseif (strpos($src, '/') === 0)   $src = 'https://www.batc.be' . $src;
+                elseif (!preg_match('#^https?://#', $src)) continue;
+                if (!preg_match('#^https://(www\.)?batc\.be/#', $src)) continue;
+                $scripts[$src] = true;
+            }
+        }
+        usleep(250000);
+    }
+    // Télécharger chaque bundle et y chercher des chemins d'API
+    $found = [];   // chemin => [scripts...]
+    $scanned = 0;
+    foreach (array_keys($scripts) as $js_url) {
+        if ($scanned >= 20) break;
+        $r = batc_call($js_url, 15);
+        $scanned++;
+        if (!$r['ok'] || $r['code'] >= 400 || $r['len'] === 0) continue;
+        $body = $r['body'];
+        $patterns = [
+            '#["\'](/(?:[a-z]{2}/)?api/[A-Za-z0-9_\-/]+)["\']#',
+            '#["\'](https://(?:www\.)?batc\.be/[^"\']*api[^"\']*)["\']#',
+            '#["\'](visualisation/[A-Za-z0-9_\-/]+)["\']#',
+            '#["\'](/[a-z]{2}/api/[^"\'?]+)#',
+        ];
+        foreach ($patterns as $pat) {
+            if (preg_match_all($pat, $body, $mm)) {
+                foreach ($mm[1] as $path) {
+                    $path = rtrim($path, '/');
+                    if (strlen($path) < 5 || strlen($path) > 200) continue;
+                    if (!isset($found[$path])) $found[$path] = [];
+                    $short = basename(parse_url($js_url, PHP_URL_PATH));
+                    if (!in_array($short, $found[$path])) $found[$path][] = $short;
+                }
+            }
+        }
+        usleep(250000);
+    }
+    ksort($found);
+    $scan_result = [
+        'pages'    => count($pages),
+        'scripts'  => count($scripts),
+        'scanned'  => $scanned,
+        'found'    => $found,
+        'errors'   => $errors,
+    ];
+}
+
 // ── Test d'une URL libre ─────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['custom'])) {
     $u = trim($_POST['url'] ?? '');
@@ -156,7 +223,55 @@ pre{background:#0e2438;color:#d6e4f0;padding:12px 14px;border-radius:8px;overflo
 </div>
 
 <div class="card">
-  <h2>1. Sonder les endpoints candidats</h2>
+  <h2>1. Découverte automatique (analyse des scripts JS de batc.be)</h2>
+  <form method="POST">
+    <button type="submit" name="scan" value="1" class="btn btn-go">🔎 Analyser les bundles JS et extraire les chemins d'API</button>
+    <div class="note">
+      Cette méthode télécharge les pages statistiques de batc.be, récupère leurs fichiers JavaScript,
+      et y cherche les chemins d'API réellement appelés par le site. C'est la façon la plus fiable de
+      trouver les vrais endpoints (plutôt que de les deviner). Comptez ~20 à 40 secondes.
+    </div>
+  </form>
+
+  <?php if (isset($scan_result) && $scan_result !== null): ?>
+    <div class="sum" style="margin-top:16px">
+      <span class="pill"><?= $scan_result['pages'] ?> pages analysées</span>
+      <span class="pill"><?= $scan_result['scripts'] ?> scripts trouvés</span>
+      <span class="pill"><?= $scan_result['scanned'] ?> bundles scannés</span>
+      <span class="pill" style="color:<?= $scan_result['found'] ? '#1a6e3c' : '#a5352a' ?>">
+        <?= count($scan_result['found']) ?> chemin(s) d'API détecté(s)
+      </span>
+    </div>
+    <?php if ($scan_result['errors']): ?>
+      <div class="note" style="color:#9a6a00">
+        <?php foreach ($scan_result['errors'] as $e): ?>⚠ <?= htmlspecialchars($e) ?><br><?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+    <?php if ($scan_result['found']): ?>
+      <table style="margin-top:8px">
+        <tr><th style="width:60%">Chemin d'API détecté</th><th>Trouvé dans</th><th style="width:90px">Tester</th></tr>
+        <?php foreach ($scan_result['found'] as $path => $srcs):
+          $full = (strpos($path,'http')===0) ? $path : ('https://www.batc.be'.(strpos($path,'/')===0?'':'/fr/api/').$path);
+        ?>
+        <tr class="hit">
+          <td><code><?= htmlspecialchars($path) ?></code></td>
+          <td style="font-size:.72rem;color:#888"><?= htmlspecialchars(implode(', ', array_slice($srcs,0,3))) ?></td>
+          <td><a href="#test" onclick="document.querySelector('[name=url]').value='<?= htmlspecialchars($full) ?>';document.querySelector('[name=url]').scrollIntoView({block:'center'});return false;" style="font-size:.74rem;color:#1673B2;font-weight:700">↓ tester</a></td>
+        </tr>
+        <?php endforeach; ?>
+      </table>
+    <?php else: ?>
+      <div class="note" style="color:#a5352a;font-weight:700;margin-top:10px">
+        Aucun chemin d'API trouvé dans les bundles. Le site charge peut-être ses données autrement
+        (GraphQL, endpoints construits dynamiquement). Utilisez alors la méthode manuelle ci-dessous
+        via l'inspecteur réseau du navigateur.
+      </div>
+    <?php endif; ?>
+  <?php endif; ?>
+</div>
+
+<div class="card">
+  <h2>2. Sonder les endpoints candidats</h2>
   <form method="POST">
     <div class="ctrl">
       <div class="fg">
@@ -219,7 +334,7 @@ pre{background:#0e2438;color:#d6e4f0;padding:12px 14px;border-radius:8px;overflo
 <?php endif; ?>
 
 <div class="card">
-  <h2>2. Tester une URL précise</h2>
+  <h2 id="test">3. Tester une URL précise</h2>
   <form method="POST">
     <div class="ctrl">
       <div class="fg grow">
