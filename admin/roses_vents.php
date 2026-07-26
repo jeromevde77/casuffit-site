@@ -1,5 +1,5 @@
 <?php
-// admin/roses_vents.php — v1 — Génération en série des roses des vents mensuelles (IRM 6451)
+// admin/roses_vents.php — v2 — Génération en série des roses des vents mensuelles (IRM 6451)
 require_once __DIR__ . '/../config.php';
 session_start(); requireAdmin();
 
@@ -117,12 +117,13 @@ var RANGES = [
   {min:17, max:21,  color:'#d42020', label:'17 – 21 kt'},
   {min:21, max:999, color:'#7b2fa0', label:'≥ 21 kt'}
 ];
-// Axes de pistes EBBR (QFU)
+// Axes de pistes EBBR (QFU) — uniquement 01 et 07L (les deux qui nous concernent)
 var PISTES = [
-  {qfu:14,  lbl:'01'},  {qfu:194, lbl:'19'},
-  {qfu:66,  lbl:'07L'}, {qfu:246, lbl:'25R'},
-  {qfu:71,  lbl:'07R'}, {qfu:251, lbl:'25L'}
+  {qfu:14,  lbl:'01'},
+  {qfu:66,  lbl:'07L'}
 ];
+// Ligne repère supplémentaire (vent de Nord-Est : bascule 01 → 07)
+var REPERE_DEG = 40;
 var MOIS = ['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 var results = [];   // {y,m,label,canvas,stats}
 
@@ -130,6 +131,8 @@ var results = [];   // {y,m,label,canvas,stats}
 (function(){
   var h = '';
   RANGES.forEach(function(r){ h += '<div class="lg"><i style="background:'+r.color+'"></i>'+r.label+'</div>'; });
+  h += '<div class="lg"><i style="background:repeating-linear-gradient(90deg,#c62828 0 4px,transparent 4px 7px);height:2px"></i>Axes 01 / 07L</div>';
+  h += '<div class="lg"><i style="background:repeating-linear-gradient(90deg,#1e6edc 0 4px,transparent 4px 7px);height:2px"></i>Repère 40°</div>';
   document.getElementById('legend').innerHTML = h;
 })();
 
@@ -158,7 +161,7 @@ function drawRose(obs, showAxes) {
   var c = document.createElement('canvas');
   c.width = S; c.height = S;
   var ctx = c.getContext('2d');
-  var cx = S/2, cy = S/2, R = S*0.375;
+  var cx = S/2, cy = S*0.46, R = S*0.35;
 
   ctx.fillStyle = '#fff'; ctx.fillRect(0,0,S,S);
 
@@ -250,11 +253,39 @@ function drawRose(obs, showAxes) {
       ctx.setLineDash([6,5]);
     });
     ctx.setLineDash([]);
+
+    // Ligne repère à 40° (bleu pointillé) — seuil de bascule vent NE
+    var ar = (REPERE_DEG - 90) * Math.PI/180;
+    ctx.setLineDash([5,5]); ctx.lineWidth = 1.8;
+    ctx.strokeStyle = 'rgba(30,110,220,.85)';
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(ar)*(R*0.97), cy + Math.sin(ar)*(R*0.97)); ctx.stroke();
+    ctx.setLineDash([]);
+    var rlx = cx + Math.cos(ar)*(R+40), rly = cy + Math.sin(ar)*(R+40);
+    ctx.fillStyle = '#fff'; ctx.fillRect(rlx-20, rly-8, 40, 16);
+    ctx.fillStyle = '#1e6edc'; ctx.font = 'bold 11px Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(REPERE_DEG + '°', rlx, rly);
   }
 
   // Centre
   ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2);
   ctx.fillStyle = '#0e3d6b'; ctx.fill();
+
+  // Légende des couleurs (bas de l'image, sur 2 lignes)
+  var lx0 = 16, ly0 = S - 44, sw = 16, sh = 11, gapY = 18;
+  var perLine = 4, colW = (S - 32) / perLine;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = '12px Arial';
+  RANGES.forEach(function(r, i){
+    var col = i % perLine, row = Math.floor(i / perLine);
+    var x = lx0 + col*colW, y = ly0 + row*gapY;
+    ctx.fillStyle = r.color;
+    ctx.fillRect(x, y - sh/2, sw, sh);
+    ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 1;
+    ctx.strokeRect(x, y - sh/2, sw, sh);
+    ctx.fillStyle = '#555';
+    ctx.fillText(r.label, x + sw + 5, y);
+  });
 
   return {canvas:c, total:total, calm:calm};
 }
