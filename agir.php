@@ -30,7 +30,8 @@ try {
         $agir_contenu = ($is_nl && !empty($lp['contenu_nl'])) ? $lp['contenu_nl'] : ($lp['contenu'] ?? '');
     }
 } catch (Exception $e) {}
-$obj_total      = (float)cfg('objectif_total', 20000);
+// Même clé que index.php / widget progression ; 'objectif_total' conservé en repli historique
+$obj_total      = (float)cfg('montant_objectif', cfg('objectif_total', 20000));
 $date_lancement = cfg('date_lancement', '2026-05-25');
 $montant_initial = (float)cfg('montant_initial', 0);
 try {
