@@ -1,4 +1,4 @@
-<?php
+<?php /* membre/dashboard.php — v2 : + participation action */
 // v5 — QR tappable : modal paiement mobile + copie IBAN/OGM
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -46,6 +46,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profil'])) {
 }
 
 // Changement d'email — demande
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_participation'])) {
+    csrf_verify();
+    $veut = isset($_POST['participe']) ? 1 : 0;
+    // L'adresse complète est indispensable pour établir l'intérêt à agir
+    $s = $db->prepare("SELECT adresse, commune FROM members WHERE id=?");
+    $s->execute(array($membre['id']));
+    $m = $s->fetch();
+    $adresse_ok = !empty(trim($m['adresse'] ?? '')) && !empty(trim($m['commune'] ?? ''));
+
+    if ($veut && !$adresse_ok) {
+        header('Location: dashboard.php?msg=action_adresse#action'); exit;
+    }
+    try {
+        $db->prepare("UPDATE members SET action_participe=?, action_participe_at=?, action_participe_ip=? WHERE id=?")
+           ->execute(array($veut, $veut ? date('Y-m-d H:i:s') : null,
+                           $veut ? substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 45) : null, $membre['id']));
+        header('Location: dashboard.php?msg='.($veut ? 'action_ok' : 'action_retire').'#action'); exit;
+    } catch (Exception $e) {
+        header('Location: dashboard.php?msg=action_err#action'); exit;
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changer_email'])) {
     $email_nouveau = strtolower(trim($_POST['email_nouveau'] ?? ''));
     if (!filter_var($email_nouveau, FILTER_VALIDATE_EMAIL)) {
@@ -240,6 +262,23 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
     .flash-warn{background:#fff3e0;color:#856404;border-color:#FF9900}
     .flash-err{background:#fde8e8;color:#c53030;border-color:#e53e3e}
     .banner-maj{background:#fff3e0;border:1.5px solid #FF9900;border-radius:10px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px}
+    /* ── Encadré participation à l'action ── */
+    .apart-card{background:#fff;border:2px solid #1673B2;border-radius:12px;padding:18px 20px;margin-bottom:18px;box-shadow:0 2px 10px rgba(22,115,178,.10)}
+    .apc-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e8f0f8}
+    .apc-ico{font-size:1.7rem;line-height:1}
+    .apc-t{font-weight:800;color:#0e3d6b;font-size:1rem;line-height:1.25}
+    .apc-s{font-size:.76rem;color:#8a9bb0;margin-top:2px}
+    .apc-badge{background:#e8f5e9;color:#1b5e20;font-size:.72rem;font-weight:800;padding:5px 12px;border-radius:20px;white-space:nowrap}
+    .apc-txt{font-size:.86rem;color:#555;line-height:1.6;margin:0 0 9px}
+    .apc-warn{background:#fff8ee;border:1.5px solid #FF9900;border-radius:9px;padding:11px 14px;font-size:.82rem;color:#7a4500;line-height:1.55;margin-top:10px}
+    .apc-warn a{color:#1673B2;font-weight:700;text-decoration:none;white-space:nowrap}
+    .apc-check{display:flex;align-items:flex-start;gap:11px;background:#f0f7fd;border:1.5px solid #cfe2fb;border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .15s,background .15s}
+    .apc-check:hover{border-color:#1673B2;background:#e8f3fb}
+    .apc-check input{width:20px;height:20px;flex-shrink:0;margin-top:1px;cursor:pointer;accent-color:#1673B2}
+    .apc-check input:disabled{cursor:not-allowed;opacity:.45}
+    .apc-check span{font-size:.88rem;color:#0e3d6b;font-weight:600;line-height:1.45}
+    .apc-date{font-size:.74rem;color:#9aa8b8;margin-top:10px;text-align:center}
+    @media(max-width:480px){.apc-badge{font-size:.66rem;padding:4px 9px}.apc-t{font-size:.94rem}}
     .banner-maj .bm-txt{flex:1;font-size:.82rem;color:#856404;line-height:1.5}
     .banner-rgpd{background:#fde8e8;border:1.5px solid #e53e3e;border-radius:10px;padding:14px 16px;margin-bottom:18px}
     .banner-rgpd strong{color:#c53030}
@@ -367,6 +406,64 @@ if ($msg_flash === 'don_supprime') $tab_actif = 'dons';
     <button class="btn-blue" onclick="showTab('profil')" style="flex-shrink:0"><?= tm('btn_maj') ?></button>
   </div>
   <?php endif; ?>
+
+  <?php
+    $ap_on     = !empty($membre['action_participe']);
+    $ap_date   = $membre['action_participe_at'] ?? null;
+    $ap_adr_ok = !empty(trim($membre['adresse'] ?? '')) && !empty(trim($membre['commune'] ?? ''));
+  ?>
+  <div class="apart-card" id="action">
+    <div class="apc-head">
+      <span class="apc-ico">⚖️</span>
+      <div style="flex:1">
+        <div class="apc-t">Participer à l'action en justice</div>
+        <div class="apc-s">Recensement des membres volontaires</div>
+      </div>
+      <?php if ($ap_on): ?><span class="apc-badge">✓ Inscrit(e)</span><?php endif; ?>
+    </div>
+
+    <?php if ($msg_flash === 'action_ok'): ?>
+      <div class="flash flash-ok">✅ Merci — votre nom est ajouté à la liste des volontaires. Nous vous contacterons personnellement.</div>
+    <?php elseif ($msg_flash === 'action_retire'): ?>
+      <div class="flash flash-info">Votre nom a été retiré de la liste des volontaires.</div>
+    <?php elseif ($msg_flash === 'action_adresse'): ?>
+      <div class="flash flash-err">Votre adresse complète (rue, numéro et commune) est nécessaire. Complétez-la dans « Mon profil », puis revenez ici.</div>
+    <?php elseif ($msg_flash === 'action_err'): ?>
+      <div class="flash flash-err">Une erreur est survenue. Merci de réessayer.</div>
+    <?php endif; ?>
+
+    <p class="apc-txt">
+      Notre association prépare une intervention judiciaire pour défendre les riverains de la piste 01.
+      Plus nous sommes nombreux à agir en notre nom propre, plus notre démarche a de poids devant le tribunal.
+    </p>
+    <p class="apc-txt">
+      En cochant ci-dessous, vous nous indiquez que <strong>vous souhaitez être contacté(e)</strong> pour
+      participer en votre nom. Cela ne vous engage à rien à ce stade : rien ne sera introduit sans votre
+      accord écrit et signé, transmis ultérieurement.
+    </p>
+
+    <?php if (!$ap_adr_ok && !$ap_on): ?>
+      <div class="apc-warn">
+        📋 Votre <strong>adresse complète</strong> est requise pour participer — elle établit votre intérêt à agir.
+        <a href="#" onclick="showTab('profil');return false;">Compléter mon profil →</a>
+      </div>
+    <?php endif; ?>
+
+    <form method="POST" style="margin-top:14px">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action_participation" value="1">
+      <label class="apc-check">
+        <input type="checkbox" name="participe" value="1" <?= $ap_on ? 'checked' : '' ?>
+               <?= (!$ap_adr_ok && !$ap_on) ? 'disabled' : '' ?> onchange="this.form.submit()">
+        <span>Je souhaite être contacté(e) pour participer à l'action en mon nom</span>
+      </label>
+      <noscript><button type="submit" class="btn-blue" style="margin-top:10px">Valider</button></noscript>
+    </form>
+
+    <?php if ($ap_on && $ap_date): ?>
+      <div class="apc-date">Choix enregistré le <?= date('d/m/Y à H:i', strtotime($ap_date)) ?> — révocable à tout moment en décochant.</div>
+    <?php endif; ?>
+  </div>
 
   <div class="tabs">
     <button class="tab-btn <?= $tab_actif==='dons'?'active':'' ?>" id="tab-btn-dons" onclick="showTab('dons')"><?= tm('tab_dons') ?></button>
