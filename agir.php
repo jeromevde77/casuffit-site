@@ -1,5 +1,5 @@
 <?php
-// agir.php — Page d'atterrissage dédiée aux flyers / QR codes
+// agir.php — v3 : don direct (montants + QR EPC + IBAN) — Page d'atterrissage flyers / QR codes
 // URL courte : casuffit.be/agir
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/lang.php';
@@ -95,6 +95,21 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
 .btn-orange { background: #FF9900; color: #fff; box-shadow: 0 4px 14px rgba(255,153,0,.35); }
 .btn-blue { background: #1673B2; color: #fff; box-shadow: 0 4px 14px rgba(22,115,178,.35); }
 .btn-outline { background: #fff; color: #1673B2; border: 2px solid #1673B2; }
+/* ── Don direct ── */
+.don-mnt{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 10px}
+.don-mnt .mnt{padding:12px 6px;border:2px solid #cfe2fb;background:#fff;border-radius:9px;font-weight:700;font-size:.95rem;color:#1673B2;cursor:pointer;font-family:inherit;transition:all .15s}
+.don-mnt .mnt:hover{border-color:#1673B2;background:#f0f7fd}
+.don-mnt .mnt.on{background:#1673B2;color:#fff;border-color:#1673B2}
+#libre-wrap{margin-bottom:10px}
+#mnt-libre{width:100%;padding:12px 14px;border:2px solid #cfe2fb;border-radius:9px;font-size:1rem;font-family:inherit;text-align:center}
+#mnt-libre:focus{outline:none;border-color:#1673B2}
+.qr-box{background:#e8f3fb;border:1px solid #c8dff0;border-radius:10px;padding:16px;text-align:center;cursor:pointer;margin-bottom:10px}
+.qr-help{margin-top:8px;font-size:.74rem;color:#7a8ba0}
+.iban-box{background:#e8f3fb;border-radius:10px;padding:13px 15px;font-size:.8rem;text-align:center}
+.iban-val{font-family:ui-monospace,Menlo,monospace;font-size:.96rem;font-weight:700;color:#0e5a96;margin-bottom:4px}
+.iban-sub{color:#5a6b7d;margin-bottom:3px;font-size:.78rem}
+.btn-copy{margin-top:9px;background:#1673B2;color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-copy:hover{background:#0e5a96}
 
 .divider { text-align: center; color: #aaa; font-size: .8rem; margin: 16px 0; }
 
@@ -192,11 +207,50 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
       <a href="/wind.php" class="btn btn-outline" style="font-size:.88rem;padding:11px 14px">🕐 <?= $is_nl ? 'Overlast in het verleden → Windgeschiedenis' : 'Nuisance passée → Historique du vent' ?></a>
     </div>
 
-    <!-- 5. SOUTENIR / DON -->
+    <!-- 5. SOUTENIR / DON — don direct -->
     <div class="cta-block">
       <h3>💛 <?= $is_nl ? 'De juridische strijd steunen' : 'Soutenir le combat juridique' ?></h3>
       <p><?= $is_nl ? 'Help ons de juridische strijd tegen de Belgische Staat te financieren.' : 'Aidez-nous à financer la suite de notre combat juridique contre l\'État belge.' ?></p>
-      <a href="/don.php<?= $is_nl ? '?lang=nl' : '' ?>" class="btn btn-orange">💳 <?= $is_nl ? 'Een gift doen' : 'Faire un don' ?></a>
+
+      <div class="don-mnt">
+        <?php foreach ([20,50,100,250,500] as $m): ?>
+          <button type="button" class="mnt<?= $m===50?' on':'' ?>" data-m="<?= $m ?>" onclick="setMnt(<?= $m ?>,this)"><?= $m ?> €</button>
+        <?php endforeach; ?>
+        <button type="button" class="mnt" onclick="libreMnt(this)"><?= $is_nl ? 'Vrij' : 'Libre' ?></button>
+      </div>
+      <div id="libre-wrap" style="display:none">
+        <input type="number" id="mnt-libre" min="1" step="1"
+               placeholder="<?= $is_nl ? 'Vrij bedrag in €' : 'Montant libre en €' ?>"
+               oninput="majLibre(this.value)">
+      </div>
+
+      <div class="qr-box" onclick="openPay()">
+        <div id="qr-agir" style="display:inline-block;line-height:0;border:3px solid #1673B2;border-radius:6px;background:#fff"></div>
+        <div class="qr-help">📷 <?= $is_nl ? 'Scan · 📱 Tik voor rekeninggegevens' : 'Scannez · 📱 Appuyez pour les coordonnées' ?></div>
+      </div>
+
+      <div class="iban-box">
+        <div class="iban-val"><?= htmlspecialchars(cfg('iban','BE41 0689 0149 6910')) ?></div>
+        <div class="iban-sub">BIC : <?= htmlspecialchars(cfg('bic','GKCCBEBB')) ?> · <?= htmlspecialchars(cfg('beneficiaire','Piste01 ça suffit ! ASBL')) ?></div>
+        <div class="iban-sub"><?= $is_nl ? 'Mededeling' : 'Communication' ?> : <strong>DON CASUFFIT <?= date('Y') ?></strong></div>
+        <button type="button" class="btn-copy" id="copy-btn" onclick="copyIban()">📋 <?= $is_nl ? 'IBAN kopiëren' : 'Copier l\'IBAN' ?></button>
+      </div>
+
+      <a href="/don.php<?= $is_nl ? '?lang=nl' : '' ?>" class="btn btn-outline" style="font-size:.86rem;padding:11px 14px;margin-top:10px">
+        <?= $is_nl ? 'Alle giftmogelijkheden →' : 'Toutes les options de don →' ?>
+      </a>
+    </div>
+
+    <!-- Modal coordonnées de paiement -->
+    <div id="pay-modal" onclick="if(event.target===this)closePay()"
+         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:flex-end;justify-content:center">
+      <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 22px 34px;width:100%;max-width:520px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <strong style="font-size:1rem;color:#0e3d6b">💳 <?= $is_nl ? 'Rekeninggegevens' : 'Coordonnées de paiement' ?></strong>
+          <button onclick="closePay()" style="border:none;background:none;font-size:1.5rem;cursor:pointer;color:#bbb;line-height:1">&times;</button>
+        </div>
+        <div id="pay-content"></div>
+      </div>
     </div>
 
     <!-- 6. NOS OUTILS -->
@@ -235,5 +289,78 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-s
 
 </div>
 
+
+<script src="/assets/js/qrcode-generator.js?v=1"></script>
+<script>
+var curMnt = 50;
+var IBAN_RAW = '<?= preg_replace('/\s+/','',cfg('iban','BE41068901496910')) ?>';
+var IBAN_FMT = '<?= htmlspecialchars(cfg('iban','BE41 0689 0149 6910'), ENT_QUOTES) ?>';
+var BIC   = '<?= htmlspecialchars(cfg('bic','GKCCBEBB'), ENT_QUOTES) ?>';
+var BENEF = '<?= htmlspecialchars(cfg('beneficiaire','Piste01 ça suffit ! ASBL'), ENT_QUOTES) ?>';
+var COMM  = 'DON CASUFFIT <?= date('Y') ?>';
+
+function setMnt(m, el) {
+  curMnt = m;
+  document.querySelectorAll('.don-mnt .mnt').forEach(function(b){ b.classList.remove('on'); });
+  if (el) el.classList.add('on');
+  document.getElementById('libre-wrap').style.display = 'none';
+  genQR(m);
+}
+function libreMnt(el) {
+  document.querySelectorAll('.don-mnt .mnt').forEach(function(b){ b.classList.remove('on'); });
+  if (el) el.classList.add('on');
+  document.getElementById('libre-wrap').style.display = 'block';
+  document.getElementById('mnt-libre').focus();
+}
+function majLibre(v) { var n = parseInt(v); if (n > 0) { curMnt = n; genQR(n); } }
+
+function genQR(montant) {
+  montant = montant || curMnt;
+  var el = document.getElementById('qr-agir');
+  if (!el) return;
+  el.innerHTML = '';
+  var epc = ['BCD','002','1','SCT', BIC, BENEF, IBAN_RAW,
+             montant ? 'EUR' + parseFloat(montant).toFixed(2) : '', '', COMM, ''].join('\n');
+  if (typeof qrcode === 'function') {
+    try {
+      var qr = qrcode(0,'M'); qr.addData(epc); qr.make();
+      el.innerHTML = qr.createSvgTag({cellSize:4, margin:16, scalable:true});
+      var svg = el.querySelector('svg');
+      if (svg) { svg.setAttribute('width','160'); svg.setAttribute('height','160'); svg.style.display='block'; }
+      return;
+    } catch(e) {}
+  }
+  var img = document.createElement('img');
+  img.width=160; img.height=160; img.alt='QR don';
+  img.onerror = function(){ this.src='https://api.qrserver.com/v1/create-qr-code/?size=160x160&data='+encodeURIComponent(epc); };
+  img.src='https://quickchart.io/qr?text='+encodeURIComponent(epc)+'&size=160&margin=1&ecLevel=M';
+  el.appendChild(img);
+}
+
+function copyIban() {
+  navigator.clipboard.writeText(IBAN_FMT).then(function(){
+    var b = document.getElementById('copy-btn');
+    var t = b.textContent; b.textContent = '✅ <?= $is_nl ? "Gekopieerd!" : "Copié !" ?>';
+    setTimeout(function(){ b.textContent = t; }, 1800);
+  });
+}
+
+function openPay() {
+  document.getElementById('pay-content').innerHTML =
+    '<div style="background:#e8f3fb;border-radius:10px;padding:14px 16px;font-size:.86rem;line-height:1.9">'
+    + '<div><strong>IBAN</strong><br><span style="font-family:monospace;font-size:1rem;font-weight:700;color:#0e5a96">'+IBAN_FMT+'</span></div>'
+    + '<div style="margin-top:8px"><strong>BIC</strong> : '+BIC+'</div>'
+    + '<div><strong><?= $is_nl ? "Begunstigde" : "Bénéficiaire" ?></strong> : '+BENEF+'</div>'
+    + '<div><strong><?= $is_nl ? "Bedrag" : "Montant" ?></strong> : '+curMnt+' €</div>'
+    + '<div><strong><?= $is_nl ? "Mededeling" : "Communication" ?></strong> : '+COMM+'</div>'
+    + '</div>'
+    + '<button onclick="copyIban()" style="width:100%;margin-top:12px;background:#1673B2;color:#fff;border:none;border-radius:9px;padding:13px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit">📋 <?= $is_nl ? "IBAN kopiëren" : "Copier l\'IBAN" ?></button>';
+  var m = document.getElementById('pay-modal');
+  m.style.display = 'flex';
+}
+function closePay(){ document.getElementById('pay-modal').style.display='none'; }
+
+document.addEventListener('DOMContentLoaded', function(){ genQR(50); });
+</script>
 </body>
 </html>
