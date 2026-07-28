@@ -21,7 +21,7 @@ $CONTENU = <<<'HTML'
   La Région de Bruxelles-Capitale a engagé une <strong>action en cessation contre la procédure RNP 07L</strong>. Si elle aboutit sans réforme des normes de vent, le trafic ne disparaîtra pas : il sera simplement reporté — notamment sur la piste 01. Il est urgent de réagir et de <strong>ne pas laisser les riverains de la piste 01 payer la facture des erreurs passées.</strong>
 </div>
 
-<h2>Piste 01 : nous agissons</h2>
+<h2 class="section-title">Piste 01 : nous agissons</h2>
 
 <p>Ces derniers jours, <strong>Piste 01 Ça Suffit !</strong> a procédé à une analyse approfondie de la situation juridique actuelle autour de Brussels Airport. Nous avons étudié en détail les citations introduites par des riverains flamands, ainsi que celle de la <strong>Région de Bruxelles-Capitale contre l'État belge</strong>.</p>
 
@@ -39,7 +39,7 @@ $CONTENU = <<<'HTML'
 
 <p>Pour des raisons évidentes, nous ne dévoilerons pas publiquement le contenu de notre analyse ni notre stratégie. En revanche, nous mettons à la disposition des communes concernées les documents dont nous disposons, nos analyses techniques et juridiques, ainsi que le travail accumulé par notre association depuis de nombreuses années.</p>
 
-<h2>Notre position n'a pas changé</h2>
+<h2 class="section-title">Notre position n'a pas changé</h2>
 
 <p>Aucun citoyen ne souhaite être survolé de manière injuste et récurrente. C'est le combat des habitants de l'Est de Bruxelles, de Waterloo, Lasne, Braine-l'Alleud, La Hulpe et des communes limitrophes depuis plus de vingt ans.</p>
 
@@ -56,7 +56,7 @@ $CONTENU = <<<'HTML'
 
 <p><strong>Nous ne demandons donc pas de déplacer les nuisances d'une population vers une autre.</strong></p>
 
-<h2>Ce que notre procédure en référé a obtenu</h2>
+<h2 class="section-title">Ce que notre procédure en référé a obtenu</h2>
 
 <div class="cadre-vert">
   <div class="cv-titre">Résultats judiciaires</div>
@@ -74,7 +74,7 @@ $CONTENU = <<<'HTML'
 
 <p>Waterloo, Braine-l'Alleud, l'Est de Bruxelles, Kraainem, Wezembeek-Oppem et les autres populations concernées par les approches de la piste 01 <strong>doivent elles aussi être entendues</strong>.</p>
 
-<h2>Ce que vous pouvez faire</h2>
+<h2 class="section-title">Ce que vous pouvez faire</h2>
 
 <div class="actions-grid">
   <div class="action-card">
@@ -94,7 +94,7 @@ $CONTENU = <<<'HTML'
   </div>
 </div>
 
-<h2>Pour continuer, nous avons besoin de vous</h2>
+<h2 class="section-title">Pour continuer, nous avons besoin de vous</h2>
 
 <p>Analyser plusieurs procédures judiciaires, consulter des spécialistes, mobiliser des avocats et, si nécessaire, intervenir juridiquement représente un coût considérable pour une ASBL.</p>
 
@@ -220,6 +220,8 @@ label.c small{color:#999;font-size:.76rem}
 .btn.grey{background:#eef3f9;color:#0e3d6b;text-decoration:none;display:inline-block}
 .log{background:#0e2438;color:#d6e4f0;padding:14px 18px;border-radius:9px;font-size:.82rem;line-height:1.8;margin-bottom:18px}
 .warn{background:#fdecea;border:1px solid #f5b7b1;color:#922b21;padding:13px 16px;border-radius:9px;font-size:.82rem;line-height:1.6;margin-top:22px}
+.fix{background:#eff6ff;border:1px solid #cfe2fb;color:#1673B2;padding:10px 13px;border-radius:8px;font-size:.8rem;line-height:1.55;margin-bottom:12px}
+.fix code{background:#dbeafe;padding:1px 5px;border-radius:4px;font-family:ui-monospace,Menlo,monospace;font-size:.92em}
 .links a{color:#1673B2;font-weight:700;text-decoration:none;font-size:.88rem;margin-right:16px}
 label.mode{display:flex;gap:11px;align-items:flex-start;padding:13px 15px;border:2px solid #e3ecf6;border-radius:10px;margin-bottom:10px;cursor:pointer;transition:border-color .15s,background .15s}
 label.mode:has(input:checked){border-color:#FF9900;background:#fffaf2}
@@ -228,7 +230,7 @@ label.mode strong{display:block;font-size:.92rem;color:#0e3d6b;margin-bottom:3px
 label.mode small{color:#888;font-size:.78rem;line-height:1.5;display:block}
 details summary{cursor:pointer;font-size:.85rem;color:#1673B2;font-weight:700;padding:8px 0}
 .prev{border:1.5px solid #e3ecf6;border-radius:10px;padding:16px 20px;margin-top:10px;max-height:420px;overflow-y:auto;background:#fcfdff;font-size:.85rem;line-height:1.6;color:#444}
-.prev h2{color:#FF9900;font-size:1rem;border-bottom:1px solid #e0e8f0;padding-bottom:4px;margin:16px 0 8px}
+.prev h2,.prev .section-title{color:#FF9900;font-weight:400;font-size:1.05rem;border-bottom:1px solid #c8dff0;padding-bottom:6px;margin:20px 0 10px}
 .prev .cadre-bleu{padding:10px 14px;background:#e8f3fb;border-left:4px solid #1673B2;color:#1673B2;margin:10px 0}
 .prev .cadre-vert{padding:10px 14px;background:#e8f5e9;border-left:4px solid #2e7d32;margin:10px 0}
 .prev .cadre-vert ul{list-style:none;padding:0}
@@ -279,7 +281,9 @@ details summary{cursor:pointer;font-size:.85rem;color:#1673B2;font-weight:700;pa
 
       <fieldset id="opt-update">
         <legend>Options — mise à jour</legend>
-        <label class="c"><input type="checkbox" name="backup" checked> Sauvegarder l'ancien contenu
+        <div class="fix">🎨 <strong>Correctif CSS appliqué</strong> — les titres utilisent désormais la classe
+        <code>section-title</code> (orange + filet), comme sur le reste du site. Relancez la mise à jour pour l'appliquer.</div>
+        <label class="c"><input type="checkbox" name="backup"> Sauvegarder l'ancien contenu
           <small>— copié dans une page masquée, restaurable depuis Admin → Pages</small></label>
       </fieldset>
 
