@@ -4,8 +4,17 @@
  * ⚠ À SUPPRIMER après usage.
  */
 require_once __DIR__ . '/config.php';
-session_start();
-if (empty($_SESSION['admin_logged_in'])) { http_response_code(403); exit('Accès refusé.'); }
+if (session_status() === PHP_SESSION_NONE) session_start();
+if (!function_exists('isAdminLoggedIn') || !isAdminLoggedIn()) {
+    http_response_code(403);
+    echo '<!DOCTYPE html><meta charset="utf-8"><div style="font-family:Arial;max-width:520px;margin:60px auto;padding:26px 30px;background:#fff;border-radius:12px;box-shadow:0 2px 14px rgba(0,0,0,.1)">'
+       . '<h2 style="color:#0e3d6b;margin:0 0 10px;font-size:1.1rem">🔒 Accès refusé</h2>'
+       . '<p style="color:#555;font-size:.9rem;line-height:1.6">Vous devez être connecté à l\'administration pour utiliser cet outil.</p>'
+       . '<p style="font-size:.8rem;color:#999">Session PHP : ' . session_status() . ' · ID : ' . (session_id() ?: 'aucun') . '</p>'
+       . '<a href="/admin/login.php" style="display:inline-block;margin-top:8px;background:#FF9900;color:#fff;font-weight:700;padding:11px 24px;border-radius:8px;text-decoration:none;font-size:.9rem">Se connecter →</a>'
+       . '</div>';
+    exit;
+}
 
 $db  = getDB();
 $log = array();
