@@ -89,6 +89,42 @@ a{color:#1673B2;font-weight:700}
   </div>
 </div>
 
+<div class="box">
+  <h2>Fichiers de session sur le serveur</h2>
+  <?php
+    $sp = ini_get('session.save_path') ?: sys_get_temp_dir();
+    $sid = session_id();
+    $f_courant = $sp . '/sess_' . $sid;
+    $cookie_sid = $_COOKIE[ini_get('session.name')] ?? '';
+    $f_cookie = $cookie_sid ? $sp . '/sess_' . $cookie_sid : '';
+  ?>
+  <table>
+    <tr><td>Dossier des sessions</td><td><code><?= htmlspecialchars($sp) ?></code>
+        <?= is_dir($sp) ? (is_writable($sp)?' ✅ accessible':' ⚠ non inscriptible') : ' ❌ introuvable' ?></td></tr>
+    <tr><td>Fichier de la session courante</td><td><code><?= htmlspecialchars($f_courant) ?></code><br>
+        <?= file_exists($f_courant) ? '✅ existe ('.filesize($f_courant).' o)' : '❌ absent' ?></td></tr>
+    <?php if ($f_cookie && $f_cookie !== $f_courant): ?>
+    <tr><td>Fichier de la session du cookie</td><td><code><?= htmlspecialchars($f_cookie) ?></code><br>
+        <?= file_exists($f_cookie) ? '✅ existe ('.filesize($f_cookie).' o)' : '❌ absent' ?></td></tr>
+    <?php endif; ?>
+    <?php
+      $found = @glob($sp . '/sess_*');
+      $n = is_array($found) ? count($found) : 0;
+    ?>
+    <tr><td>Sessions présentes dans le dossier</td><td><code><?= $n ?></code>
+        <?= $n === 0 ? ' — le dossier est vide ou illisible' : '' ?></td></tr>
+    <?php if (file_exists($f_courant)): ?>
+    <tr><td>Contenu brut du fichier</td><td><code><?= htmlspecialchars(substr(@file_get_contents($f_courant), 0, 300)) ?: '(vide)' ?></code></td></tr>
+    <?php endif; ?>
+  </table>
+  <div class="hint">
+    Si le fichier de session <strong>existe mais que <code>$_SESSION</code> est vide</strong>, PHP n'arrive pas
+    à le lire : soit une autre version de PHP écrit ailleurs, soit les permissions bloquent la lecture.<br>
+    Si le fichier est <strong>absent</strong> alors que le cookie est présent, la session a expiré ou a été
+    détruite — reconnectez-vous à l'admin puis rechargez cette page <em>sans</em> vous reconnecter entre-temps.
+  </div>
+</div>
+
 <div class="box" style="font-size:.85rem">
   <a href="/admin/dashboard.php">← Retour à l'admin</a> ·
   <a href="/outils-irm-migration.php">Migration IRM</a> ·

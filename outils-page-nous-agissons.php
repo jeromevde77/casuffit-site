@@ -5,18 +5,7 @@
  * Placé à la racine car le service worker met en cache /admin/.
  */
 require_once __DIR__ . '/config.php';
-// Le cookie de session peut être limité à /admin/ selon la configuration du serveur :
-// on force le chemin racine AVANT de démarrer la session pour retrouver la session admin.
-if (session_status() === PHP_SESSION_NONE) {
-    $p = session_get_cookie_params();
-    session_set_cookie_params([
-        'lifetime' => $p['lifetime'], 'path' => '/',
-        'domain'   => $p['domain'],
-        'secure'   => !empty($_SERVER['HTTPS']),
-        'httponly' => true, 'samesite' => 'Lax',
-    ]);
-    session_start();
-}
+if (session_status() === PHP_SESSION_NONE) session_start();
 if (!function_exists('isAdminLoggedIn') || !isAdminLoggedIn()) {
     http_response_code(403);
     echo '<!DOCTYPE html><meta charset="utf-8"><div style="font-family:Arial;max-width:520px;margin:60px auto;padding:26px 30px;background:#fff;border-radius:12px;box-shadow:0 2px 14px rgba(0,0,0,.1)">'
