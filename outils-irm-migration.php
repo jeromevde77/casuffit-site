@@ -48,6 +48,31 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['create'])) {
     header('Location: '.basename(__FILE__).'?done=1'); exit;
 }
 
+// ── 1bis. Test brut d'une requête IRM (diagnostic) ───────────────────────
+$probe = null;
+if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['probe'])) {
+    $ts  = strtotime(($_POST['pdate'] ?? date('Y-m-d')).' 12:00:00 UTC');
+    $ctx = stream_context_create(['http'=>['timeout'=>15,'user_agent'=>'casuffit/1.0','ignore_errors'=>true]]);
+    $f = gmdate('Y-m-d\TH:i:s\Z', $ts);
+    $t = gmdate('Y-m-d\TH:i:s\Z', $ts + 3600);
+    $url = 'https://opendata.meteo.be/service/ows?service=WFS&version=2.0.0&request=GetFeature'
+         . '&typeName=synop:synop_data&outputFormat=application/json&count=1&sortBy=timestamp+D'
+         . '&CQL_FILTER=' . urlencode("code=6451 AND timestamp >= '$f' AND timestamp <= '$t'");
+    $raw = @file_get_contents($url, false, $ctx);
+    $hdr = isset($http_response_header) ? implode(' | ', array_slice($http_response_header,0,3)) : '(aucun)';
+    $json = $raw !== false ? json_decode($raw, true) : null;
+    $props = $json['features'][0]['properties'] ?? null;
+    $probe = [
+        'url'   => $url,
+        'http'  => $hdr,
+        'ok'    => $raw !== false,
+        'len'   => $raw === false ? 0 : strlen($raw),
+        'nfeat' => isset($json['features']) ? count($json['features']) : 0,
+        'props' => $props,
+        'raw'   => $raw === false ? '' : substr($raw, 0, 1500),
+    ];
+}
+
 // ── 2. Remplissage rétroactif ────────────────────────────────────────────
 $fill = null;
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['fill']) && !$manquantes) {
@@ -148,6 +173,47 @@ a.lnk{color:#1673B2;font-weight:700;text-decoration:none;font-size:.88rem}
 </div>
 
 <?php if (!$manquantes): ?>
+<div class="box">
+  <h2>Test d'une requête IRM</h2>
+  <p style="font-size:.82rem;color:#888;margin:0 0 12px">
+    Avant d'importer, vérifiez que l'IRM répond et voyez les champs réellement disponibles.
+  </p>
+  <form method="POST">
+    <div class="fg"><label>Date à tester</label>
+      <input type="date" name="pdate" value="<?= htmlspecialchars($_POST['pdate'] ?? '2026-07-15') ?>"></div>
+    <button name="probe" value="1" class="btn btn2">🔬 Tester</button>
+  </form>
+
+  <?php if ($probe): ?>
+    <table style="margin-top:14px">
+      <tr><td>Réponse HTTP</td><td><code><?= htmlspecialchars($probe['http']) ?></code></td></tr>
+      <tr><td>Taille reçue</td><td><code><?= number_format($probe['len']) ?> octets</code>
+          <?= $probe['ok'] ? '' : ' ❌ requête échouée (réseau bloqué ?)' ?></td></tr>
+      <tr><td>Observations trouvées</td><td><code><?= $probe['nfeat'] ?></code></td></tr>
+    </table>
+    <?php if ($probe['props']): ?>
+      <p style="font-size:.82rem;font-weight:700;color:#0e3d6b;margin:14px 0 6px">Champs disponibles :</p>
+      <table>
+        <?php foreach ($probe['props'] as $k => $v): ?>
+        <tr><td><code><?= htmlspecialchars($k) ?></code></td>
+            <td><code><?= htmlspecialchars(is_scalar($v) ? (string)$v : json_encode($v)) ?></code>
+            <?= in_array($k, ['wind_speed','wind_direction','wind_peak_speed']) ? ' ← <strong>utilisé</strong>' : '' ?></td></tr>
+        <?php endforeach; ?>
+      </table>
+    <?php else: ?>
+      <div class="warn" style="margin-top:12px">
+        Aucune observation renvoyée pour cette date/heure.
+        <?php if ($probe['raw']): ?>
+          <details style="margin-top:8px"><summary style="cursor:pointer;font-weight:700">Voir la réponse brute</summary>
+          <code style="display:block;margin-top:8px;white-space:pre-wrap;font-size:.72rem"><?= htmlspecialchars($probe['raw']) ?></code></details>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+    <details style="margin-top:10px"><summary style="cursor:pointer;font-size:.8rem;color:#1673B2;font-weight:700">Voir l'URL interrogée</summary>
+      <code style="display:block;margin-top:6px;white-space:pre-wrap;font-size:.7rem"><?= htmlspecialchars($probe['url']) ?></code></details>
+  <?php endif; ?>
+</div>
+
 <div class="box">
   <h2>2. Remplissage rétroactif de l'historique</h2>
 
