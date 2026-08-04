@@ -1,4 +1,4 @@
-<?php /* includes/admin_sidebar.php — v7 : + Participants action */ ?>
+<?php /* includes/admin_sidebar.php — v8 : + Extraction vent */ ?>
 <?php
 // Rôle 'support' : accès limité à contacts.php uniquement
 $_admin_role = $_SESSION['admin_role'] ?? 'admin';
@@ -71,6 +71,7 @@ if (!empty($_SESSION['admin_2fa_required']) && !$_2fa_exempt) {
     <a href="action_participants.php" <?= basename($_SERVER['PHP_SELF'])==='action_participants.php' ?'class="active"':'' ?>>⚖️ Participants action</a>
     <?php endif; ?>
     <a href="roses_vents.php" <?= basename($_SERVER['PHP_SELF'])==='roses_vents.php' ?'class="active"':'' ?>>Roses des vents</a>
+    <a href="export_vent.php" <?= basename($_SERVER['PHP_SELF'])==='export_vent.php' ?'class="active"':'' ?>>Extraction vent</a>
     <a href="batc_api.php" <?= basename($_SERVER['PHP_SELF'])==='batc_api.php' ?'class="active"':'' ?>>API BATC</a>
     <a href="backup.php" <?= basename($_SERVER['PHP_SELF'])==='backup.php' ?'class="active"':'' ?>>Backup &amp; Export</a>
     <div class="nav-section">Newsletter</div>
