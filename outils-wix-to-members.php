@@ -9,7 +9,18 @@
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/membre/functions.php';
-if (session_status() === PHP_SESSION_NONE) session_start();
+// Le cookie de session peut être limité à /admin/ selon la configuration du serveur :
+// on force le chemin racine AVANT de démarrer la session pour retrouver la session admin.
+if (session_status() === PHP_SESSION_NONE) {
+    $p = session_get_cookie_params();
+    session_set_cookie_params([
+        'lifetime' => $p['lifetime'], 'path' => '/',
+        'domain'   => $p['domain'],
+        'secure'   => !empty($_SERVER['HTTPS']),
+        'httponly' => true, 'samesite' => 'Lax',
+    ]);
+    session_start();
+}
 requireAdmin();
 
 $db = getDB();
