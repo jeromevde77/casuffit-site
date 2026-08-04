@@ -53,13 +53,15 @@ function fetch_irm_wind(int $obs_ts, $ctx): array {
         $p = json_decode($raw, true)['features'][0]['properties'] ?? null;
         if ($p && isset($p['wind_speed']) && $p['wind_speed'] !== null) {
             return [
-                'dir' => isset($p['wind_direction']) && $p['wind_direction'] !== null
-                       ? (int)round((float)$p['wind_direction']) : null,
-                'spd' => round((float)$p['wind_speed'] * 1.94384, 1),
+                'dir'  => isset($p['wind_direction']) && $p['wind_direction'] !== null
+                        ? (int)round((float)$p['wind_direction']) : null,
+                'spd'  => round((float)$p['wind_speed'] * 1.94384, 1),
+                'gust' => isset($p['wind_peak_speed']) && $p['wind_peak_speed'] !== null
+                        ? round((float)$p['wind_peak_speed'] * 1.94384 * 2) / 2 : null,
             ];
         }
     }
-    return ['dir' => null, 'spd' => null];
+    return ['dir' => null, 'spd' => null, 'gust' => null];
 }
 
 // ── Connexion BDD ─────────────────────────────────────────────────────────
@@ -180,8 +182,10 @@ foreach ($metars as $m) {
     }
 
     // Rafale IRM
-    $irm_gust = fetch_irm_gust($obs_ts, $ctx);
+    // Un seul appel IRM par observation : rafale, direction et vitesse ensemble
+    // (l'IRM limite le nombre de requêtes — voir opendata.meteo.be/faq).
     $irm_wind = fetch_irm_wind($obs_ts, $ctx);
+    $irm_gust = $irm_wind['gust'];
     // Vent gust effectif = max(METAR, IRM)
     if ($irm_gust !== null && ($wind_gust === null || $irm_gust > $wind_gust)) {
         // on garde wind_gust METAR séparé, irm_gust séparé

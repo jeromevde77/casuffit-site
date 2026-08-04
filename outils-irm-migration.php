@@ -78,40 +78,58 @@ $fill = null;
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['fill']) && !$manquantes) {
     $d1 = $_POST['d1'] ?? date('Y-m-d', strtotime('-30 days'));
     $d2 = $_POST['d2'] ?? date('Y-m-d');
-    $ctx = stream_context_create(['http'=>['timeout'=>12,'user_agent'=>'casuffit/1.0','ignore_errors'=>true]]);
+    $ctx = stream_context_create(['http'=>['timeout'=>60,'user_agent'=>'casuffit/1.0','ignore_errors'=>true]]);
 
-    // Une requête IRM par heure de la période, puis rapprochement des observations METAR
-    $t0 = strtotime($d1.' 00:00:00 UTC');
-    $t1 = min(strtotime($d2.' 23:59:59 UTC'), time());
-    $heures = array();
-    for ($t = $t0; $t <= $t1; $t += 3600) $heures[] = $t;
-    if (count($heures) > 800) { $log[] = "⚠ Période trop longue (".count($heures)." heures, max 800). Réduisez l'intervalle."; }
-    else {
-        $upd = $db->prepare("UPDATE metar_history SET irm_dir=?, irm_speed=?
-                             WHERE obs_time >= ? AND obs_time < ? AND irm_speed IS NULL");
-        $ok = 0; $vide = 0; $lignes = 0;
-        foreach ($heures as $h) {
-            $f = gmdate('Y-m-d\TH:i:s\Z', $h);
-            $t = gmdate('Y-m-d\TH:i:s\Z', $h + 3600);
-            $url = 'https://opendata.meteo.be/service/ows?service=WFS&version=2.0.0&request=GetFeature'
-                 . '&typeName=synop:synop_data&outputFormat=application/json&count=1&sortBy=timestamp+D'
-                 . '&CQL_FILTER=' . urlencode("code=6451 AND timestamp >= '$f' AND timestamp <= '$t'");
-            $raw = @file_get_contents($url, false, $ctx);
-            if ($raw === false) { $vide++; continue; }
-            $p = json_decode($raw, true)['features'][0]['properties'] ?? null;
-            if (!$p || !isset($p['wind_speed'])) { $vide++; continue; }
-            $spd_kt = round((float)$p['wind_speed'] * 1.94384, 1);       // m/s → kt
-            $dir    = isset($p['wind_direction']) && $p['wind_direction'] !== null
-                    ? (int)round((float)$p['wind_direction']) : null;
-            $upd->execute(array($dir, $spd_kt,
-                                gmdate('Y-m-d H:i:s', $h), gmdate('Y-m-d H:i:s', $h + 3600)));
-            $lignes += $upd->rowCount();
-            $ok++;
-            usleep(180000);   // 180 ms — ne pas saturer l'IRM
+    // UNE SEULE requête WFS pour toute la période (l'IRM limite le nombre d'appels).
+    $f = gmdate('Y-m-d\TH:i:s\Z', strtotime($d1.' 00:00:00 UTC'));
+    $t = gmdate('Y-m-d\TH:i:s\Z', min(strtotime($d2.' 23:59:59 UTC'), time()));
+    $url = 'https://opendata.meteo.be/service/ows?service=WFS&version=2.0.0&request=GetFeature'
+         . '&typeName=synop:synop_data&outputFormat=application/json&count=5000&sortBy=timestamp+A'
+         . '&CQL_FILTER=' . urlencode("code=6451 AND timestamp >= '$f' AND timestamp <= '$t'");
+
+    $raw = @file_get_contents($url, false, $ctx);
+
+    if ($raw === false) {
+        $log[] = "❌ Requête impossible — le serveur n'a pas pu joindre l'IRM.";
+    } elseif (stripos($raw, 'Too many data request') !== false || stripos($raw, '<html') === 0) {
+        $log[] = "🚫 <strong>Quota IRM dépassé</strong> — le serveur est temporairement bloqué. Réessayez dans une heure.";
+    } else {
+        $feats = json_decode($raw, true)['features'] ?? null;
+        if ($feats === null) {
+            $log[] = "❌ Réponse illisible (".strlen($raw)." octets).";
+        } elseif (!$feats) {
+            $log[] = "ℹ Aucune observation IRM sur cette période.";
+        } else {
+            // Indexer les mesures IRM par heure UTC
+            $par_heure = [];
+            foreach ($feats as $ft) {
+                $p = $ft['properties'] ?? [];
+                if (!isset($p['timestamp']) || !isset($p['wind_speed'])) continue;
+                $h = gmdate('Y-m-d H:00:00', strtotime($p['timestamp']));
+                $par_heure[$h] = [
+                    'dir' => isset($p['wind_direction']) && $p['wind_direction'] !== null
+                           ? (int)round((float)$p['wind_direction']) : null,
+                    'spd' => round((float)$p['wind_speed'] * 1.94384, 1),
+                ];
+            }
+            // Rapprocher chaque observation METAR de l'heure IRM correspondante
+            $sel = $db->prepare("SELECT id, obs_time FROM metar_history
+                                 WHERE obs_time >= ? AND obs_time <= ? AND irm_speed IS NULL");
+            $sel->execute([gmdate('Y-m-d H:i:s', strtotime($d1.' 00:00:00 UTC')),
+                           gmdate('Y-m-d H:i:s', min(strtotime($d2.' 23:59:59 UTC'), time()))]);
+            $upd = $db->prepare("UPDATE metar_history SET irm_dir=?, irm_speed=? WHERE id=?");
+            $maj = 0; $sans = 0;
+            foreach ($sel->fetchAll() as $row) {
+                $h = date('Y-m-d H:00:00', strtotime($row['obs_time']));
+                if (isset($par_heure[$h])) {
+                    $upd->execute([$par_heure[$h]['dir'], $par_heure[$h]['spd'], $row['id']]);
+                    $maj++;
+                } else { $sans++; }
+            }
+            $log[] = "✅ <strong>1 requête</strong> a suffi : ".count($feats)." mesure(s) IRM reçue(s), "
+                   . count($par_heure)." heure(s) exploitable(s).";
+            $log[] = "✅ $maj observation(s) mise(s) à jour" . ($sans ? ", $sans sans correspondance horaire." : ".");
         }
-        $fill = array('heures'=>count($heures), 'ok'=>$ok, 'vide'=>$vide, 'lignes'=>$lignes);
-        $log[] = "✅ $ok heure(s) récupérée(s) sur ".count($heures).", $lignes observation(s) mise(s) à jour.";
-        if ($vide) $log[] = "ℹ $vide heure(s) sans donnée IRM disponible.";
     }
 }
 if (isset($_GET['done'])) $log[] = "✅ Colonnes créées.";
@@ -239,11 +257,11 @@ a.lnk{color:#1673B2;font-weight:700;text-decoration:none;font-size:.88rem}
     <button name="fill" value="1" class="btn btn2">🌬 Récupérer les données IRM</button>
   </form>
 
-  <div class="warn">
-    <strong>⚠ Durée</strong> — une requête par heure vers l'IRM, espacée de 180 ms.
-    Comptez environ <strong>3 minutes pour 30 jours</strong> (720 heures). Maximum 800 heures par passage :
-    au-delà, procédez par tranches. Seules les lignes sans donnée IRM sont mises à jour, vous pouvez
-    donc relancer sans risque de doublon.
+  <div class="info" style="margin-top:14px">
+    <strong>ℹ Une seule requête</strong> — l'outil interroge l'IRM une fois pour toute la période
+    (jusqu'à 5 000 mesures), puis rapproche chaque observation METAR de l'heure IRM correspondante.
+    Cela évite le blocage pour dépassement de quota.<br>
+    Seules les lignes sans donnée IRM sont complétées : vous pouvez relancer sans risque de doublon.
   </div>
 </div>
 <?php endif; ?>
