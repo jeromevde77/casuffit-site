@@ -39,6 +39,29 @@ function fetch_irm_gust(int $obs_ts, $ctx): ?float {
     return null;
 }
 
+/** Direction (°) et vitesse moyenne (kt) mesurées par l'IRM — station 6451. */
+function fetch_irm_wind(int $obs_ts, $ctx): array {
+    $irm_ts = mktime(date('H', $obs_ts), 0, 0, date('n', $obs_ts), date('j', $obs_ts), date('Y', $obs_ts));
+    foreach ([[$irm_ts, $irm_ts + 3600], [$irm_ts - 3600, $irm_ts]] as [$from, $to]) {
+        $f = gmdate('Y-m-d\TH:i:s\Z', $from);
+        $t = gmdate('Y-m-d\TH:i:s\Z', $to);
+        $url = 'https://opendata.meteo.be/service/ows?service=WFS&version=2.0.0&request=GetFeature'
+             . '&typeName=synop:synop_data&outputFormat=application/json&count=1&sortBy=timestamp+D'
+             . '&CQL_FILTER=' . urlencode("code=6451 AND timestamp >= '$f' AND timestamp <= '$t'");
+        $raw = @file_get_contents($url, false, $ctx);
+        if ($raw === false) continue;
+        $p = json_decode($raw, true)['features'][0]['properties'] ?? null;
+        if ($p && isset($p['wind_speed']) && $p['wind_speed'] !== null) {
+            return [
+                'dir' => isset($p['wind_direction']) && $p['wind_direction'] !== null
+                       ? (int)round((float)$p['wind_direction']) : null,
+                'spd' => round((float)$p['wind_speed'] * 1.94384, 1),
+            ];
+        }
+    }
+    return ['dir' => null, 'spd' => null];
+}
+
 // ── Connexion BDD ─────────────────────────────────────────────────────────
 try {
     $pdo = new PDO(
@@ -97,10 +120,10 @@ function apply_prs_logic(float $wdir, float $wspd, float $wgst): array {
 
 // ── Insertion en BDD ──────────────────────────────────────────────────────
 $sql = "INSERT IGNORE INTO metar_history
-        (obs_time, metar_raw, wind_dir, wind_speed, wind_gust, irm_gust, wind_variable,
+        (obs_time, metar_raw, wind_dir, wind_speed, wind_gust, irm_gust, irm_dir, irm_speed, wind_variable,
          temp, qnh, visib_m, ceiling_ft, runways, prs_active, prs_2013, tw_25, xw_25)
         VALUES
-        (:obs_time, :metar_raw, :wind_dir, :wind_speed, :wind_gust, :irm_gust, :wind_variable,
+        (:obs_time, :metar_raw, :wind_dir, :wind_speed, :wind_gust, :irm_gust, :irm_dir, :irm_speed, :wind_variable,
          :temp, :qnh, :visib_m, :ceiling_ft, :runways, :prs_active, :prs_2013, :tw_25, :xw_25)";
 
 $stmt   = $pdo->prepare($sql);
@@ -158,6 +181,7 @@ foreach ($metars as $m) {
 
     // Rafale IRM
     $irm_gust = fetch_irm_gust($obs_ts, $ctx);
+    $irm_wind = fetch_irm_wind($obs_ts, $ctx);
     // Vent gust effectif = max(METAR, IRM)
     if ($irm_gust !== null && ($wind_gust === null || $irm_gust > $wind_gust)) {
         // on garde wind_gust METAR séparé, irm_gust séparé
@@ -174,6 +198,8 @@ foreach ($metars as $m) {
             ':wind_speed'    => $wind_spd,
             ':wind_gust'     => $wind_gust,
             ':irm_gust'      => $irm_gust,
+            ':irm_dir'       => $irm_wind['dir'],
+            ':irm_speed'     => $irm_wind['spd'],
             ':wind_variable' => $wind_var,
             ':temp'          => $temp,
             ':qnh'           => $qnh,

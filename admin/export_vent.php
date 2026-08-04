@@ -41,22 +41,26 @@ $pistes_sel = isset($_GET['pistes']) ? (array)$_GET['pistes'] : ['25R','25L','01
 $pistes_sel = array_values(array_intersect($pistes_sel, array_keys(PISTES)));
 if (!$pistes_sel) $pistes_sel = ['25R'];
 $horaire = ($_GET['horaire'] ?? '') === '1';   // 1 obs/heure au lieu de toutes
+$source  = ($_GET['source'] ?? 'metar') === 'irm' ? 'irm' : 'metar';   // source des composantes
 
 // ── Vérification table ───────────────────────────────────────────────────
-$table_ok = false; $total_rows = 0; $periode_dispo = ['', ''];
+$table_ok = false; $total_rows = 0; $periode_dispo = ['', '']; $has_irm = false;
 try {
     $db->query("SELECT 1 FROM metar_history LIMIT 1");
     $table_ok = true;
     $total_rows = (int)$db->query("SELECT COUNT(*) FROM metar_history")->fetchColumn();
     $r = $db->query("SELECT MIN(obs_time) a, MAX(obs_time) b FROM metar_history")->fetch();
     $periode_dispo = [$r['a'] ?? '', $r['b'] ?? ''];
+    foreach ($db->query("SHOW COLUMNS FROM metar_history")->fetchAll() as $col)
+        if ($col['Field'] === 'irm_speed') { $has_irm = true; break; }
 } catch (Exception $e) {}
 
 // ── Extraction ───────────────────────────────────────────────────────────
 $rows = [];
 if ($table_ok && isset($_GET['go'])) {
+    $irm_cols = $has_irm ? ", irm_dir, irm_speed, irm_gust" : "";
     $sql = "SELECT obs_time, metar_raw, wind_dir, wind_speed, wind_gust, wind_variable,
-                   runways, prs_active, prs_2013, temp, qnh
+                   runways, prs_active, prs_2013, temp, qnh$irm_cols
             FROM metar_history
             WHERE obs_time >= ? AND obs_time < DATE_ADD(?, INTERVAL 1 DAY)";
     if ($horaire) $sql .= " AND MINUTE(obs_time) < 30";
@@ -75,7 +79,8 @@ if (isset($_GET['export']) && $rows) {
     echo "\xEF\xBB\xBF";
     $out = fopen('php://output', 'w');
 
-    $head = ['Date/Heure (UTC)','Direction (°)','Secteur','Vitesse (kt)','Rafales (kt)','Variable'];
+    $head = ['Date/Heure (UTC)','Dir. METAR (°)','Secteur','Vit. METAR (kt)','Raf. METAR (kt)','Variable'];
+    if ($has_irm) array_push($head, 'Dir. IRM (°)', 'Vit. IRM (kt)', 'Raf. IRM (kt)');
     foreach ($pistes_sel as $p) {
         $head[] = "Long. $p (kt)"; $head[] = "Long. raf. $p (kt)";
         $head[] = "Trav. $p (kt)"; $head[] = "Trav. raf. $p (kt)";
@@ -84,9 +89,15 @@ if (isset($_GET['export']) && $rows) {
     fputcsv($out, $head, ';');
 
     foreach ($rows as $r) {
-        $dir = $r['wind_dir'] !== null ? (int)$r['wind_dir'] : null;
-        $spd = (float)$r['wind_speed'];
-        $gst = $r['wind_gust'] !== null ? (float)$r['wind_gust'] : null;
+        if ($source === 'irm' && $has_irm && $r['irm_speed'] !== null) {
+            $dir = $r['irm_dir'] !== null ? (int)$r['irm_dir'] : null;
+            $spd = (float)$r['irm_speed'];
+            $gst = $r['irm_gust'] !== null ? (float)$r['irm_gust'] : null;
+        } else {
+            $dir = $r['wind_dir'] !== null ? (int)$r['wind_dir'] : null;
+            $spd = (float)$r['wind_speed'];
+            $gst = $r['wind_gust'] !== null ? (float)$r['wind_gust'] : null;
+        }
         $line = [
             date('d/m/Y H:i', strtotime($r['obs_time'])),
             $dir !== null ? $dir : 'VRB',
@@ -95,6 +106,11 @@ if (isset($_GET['export']) && $rows) {
             $gst !== null ? $gst : '',
             $r['wind_variable'] ? 'oui' : '',
         ];
+        if ($has_irm) {
+            $line[] = $r['irm_dir']   !== null ? (int)$r['irm_dir'] : '';
+            $line[] = $r['irm_speed'] !== null ? str_replace('.', ',', (string)$r['irm_speed']) : '';
+            $line[] = $r['irm_gust']  !== null ? str_replace('.', ',', (string)$r['irm_gust'])  : '';
+        }
         foreach ($pistes_sel as $p) {
             $c = composantes($dir, $spd, $gst, PISTES[$p]);
             $line[] = $c['tw']   !== null ? str_replace('.', ',', (string)$c['tw'])   : '';
@@ -192,6 +208,13 @@ td.num{text-align:right;font-family:ui-monospace,Menlo,monospace}
       <div class="fg"><label>Du</label><input type="date" name="d1" value="<?= htmlspecialchars($d1) ?>" required></div>
       <div class="fg"><label>Au</label><input type="date" name="d2" value="<?= htmlspecialchars($d2) ?>" required></div>
       <label class="chk"><input type="checkbox" name="horaire" value="1" <?= $horaire?'checked':'' ?>> Une observation par heure</label>
+      <?php if ($has_irm): ?>
+      <div class="fg"><label>Source des composantes</label>
+        <select name="source">
+          <option value="metar" <?= $source==='metar'?'selected':'' ?>>METAR (aéroport)</option>
+          <option value="irm"   <?= $source==='irm'?'selected':'' ?>>IRM (station 6451)</option>
+        </select></div>
+      <?php endif; ?>
       <button type="submit" name="go" value="1" class="btn btn-go">🔍 Extraire</button>
       <?php if ($rows): ?>
         <a class="btn btn-x" href="?<?= http_build_query(array_merge($_GET, ['export'=>1])) ?>">⬇ Exporter en CSV</a>
@@ -213,6 +236,10 @@ td.num{text-align:right;font-family:ui-monospace,Menlo,monospace}
     <strong>Long.</strong> = composante longitudinale : <strong>positif = vent de face</strong> (favorable),
     <strong>négatif = vent arrière</strong> (défavorable). <strong>Trav.</strong> = vent traversier, en valeur absolue.
     Seuils AIP 2013 : vent arrière <strong>7 kt</strong> (rafales comprises <strong>10 kt</strong>), traversier <strong>15 kt</strong>.
+    <?php if ($has_irm): ?><br>Deux sources : <strong style="color:#0e5a96">METAR</strong> (aéroport, toutes les 30 min)
+    et <strong style="color:#1a7a45">IRM</strong> (station officielle 6451, horaire). Le sélecteur choisit laquelle
+    sert au calcul des composantes.<?php else: ?>
+    <br><span style="color:#cc7a00">ℹ Direction et vitesse IRM non disponibles — lancez <code>outils-irm-migration.php</code> pour les ajouter.</span><?php endif; ?>
     <?php if ($periode_dispo[0]): ?><br>Données disponibles du <?= date('d/m/Y', strtotime($periode_dispo[0])) ?>
     au <?= date('d/m/Y', strtotime($periode_dispo[1])) ?> — <?= number_format($total_rows,0,',',' ') ?> observations.<?php endif; ?>
   </div>
@@ -237,28 +264,49 @@ td.num{text-align:right;font-family:ui-monospace,Menlo,monospace}
     <table>
       <tr>
         <th rowspan="2">Date / Heure (UTC)</th>
-        <th rowspan="2">Dir.</th><th rowspan="2">Sect.</th>
-        <th rowspan="2">Vit.</th><th rowspan="2">Raf.</th>
+        <th class="grp" colspan="4" style="background:#0e5a96">METAR</th>
+        <?php if ($has_irm): ?><th class="grp" colspan="3" style="background:#1a7a45">IRM</th><?php endif; ?>
         <?php foreach ($pistes_sel as $p): ?><th class="grp" colspan="2"><?= $p ?></th><?php endforeach; ?>
         <th rowspan="2">Pistes</th><th rowspan="2">PRS</th>
       </tr>
       <tr>
+        <th style="background:#0e5a96;font-size:.63rem">Dir.</th>
+        <th style="background:#0e5a96;font-size:.63rem">Sect.</th>
+        <th style="background:#0e5a96;font-size:.63rem">Vit.</th>
+        <th style="background:#0e5a96;font-size:.63rem">Raf.</th>
+        <?php if ($has_irm): ?>
+        <th style="background:#1a7a45;font-size:.63rem">Dir.</th>
+        <th style="background:#1a7a45;font-size:.63rem">Vit.</th>
+        <th style="background:#1a7a45;font-size:.63rem">Raf.</th>
+        <?php endif; ?>
         <?php foreach ($pistes_sel as $p): ?>
           <th style="background:#1673B2;font-size:.63rem" title="Composante longitudinale : négatif = vent arrière">Long.</th>
           <th style="background:#1673B2;font-size:.63rem" title="Vent traversier">Trav.</th>
         <?php endforeach; ?>
       </tr>
       <?php foreach ($rows as $r):
-        $dir = $r['wind_dir'] !== null ? (int)$r['wind_dir'] : null;
-        $spd = (float)$r['wind_speed'];
-        $gst = $r['wind_gust'] !== null ? (float)$r['wind_gust'] : null;
+        $use_irm = ($source === 'irm' && $has_irm && $r['irm_speed'] !== null);
+        if ($use_irm) {
+            $dir = $r['irm_dir'] !== null ? (int)$r['irm_dir'] : null;
+            $spd = (float)$r['irm_speed'];
+            $gst = $r['irm_gust'] !== null ? (float)$r['irm_gust'] : null;
+        } else {
+            $dir = $r['wind_dir'] !== null ? (int)$r['wind_dir'] : null;
+            $spd = (float)$r['wind_speed'];
+            $gst = $r['wind_gust'] !== null ? (float)$r['wind_gust'] : null;
+        }
       ?>
       <tr>
         <td><?= date('d/m H:i', strtotime($r['obs_time'])) ?></td>
-        <td class="num"><?= $dir !== null ? $dir.'°' : 'VRB' ?></td>
-        <td style="color:#888"><?= cardinal($dir) ?></td>
-        <td class="num"><?= $spd ?></td>
-        <td class="num" style="color:<?= $gst?'#e08800':'#ccc' ?>"><?= $gst !== null ? $gst : '—' ?></td>
+        <td class="num"><?= $r['wind_dir'] !== null ? (int)$r['wind_dir'].'°' : 'VRB' ?></td>
+        <td style="color:#888"><?= cardinal($r['wind_dir'] !== null ? (int)$r['wind_dir'] : null) ?></td>
+        <td class="num"><?= (float)$r['wind_speed'] ?></td>
+        <td class="num" style="color:<?= $r['wind_gust']?'#e08800':'#ccc' ?>"><?= $r['wind_gust'] !== null ? (float)$r['wind_gust'] : '—' ?></td>
+        <?php if ($has_irm): ?>
+        <td class="num" style="background:#f4fbf6"><?= $r['irm_dir']   !== null ? (int)$r['irm_dir'].'°' : '—' ?></td>
+        <td class="num" style="background:#f4fbf6"><?= $r['irm_speed'] !== null ? (float)$r['irm_speed'] : '—' ?></td>
+        <td class="num" style="background:#f4fbf6;color:<?= $r['irm_gust']?'#e08800':'#ccc' ?>"><?= $r['irm_gust'] !== null ? (float)$r['irm_gust'] : '—' ?></td>
+        <?php endif; ?>
         <?php foreach ($pistes_sel as $p):
           $c = composantes($dir, $spd, $gst, PISTES[$p]);
           $cls = ''; if ($c['tw'] !== null) { if ($c['tw'] < -7) $cls='tw-bad'; elseif ($c['tw'] < -5) $cls='tw-warn'; }
