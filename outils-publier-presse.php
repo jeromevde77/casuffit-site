@@ -12,7 +12,7 @@ $db  = getDB();
 $url = defined('SITE_URL') ? SITE_URL : 'https://www.casuffit.be';
 
 /* URL des articles sur les sites des journaux — A COMPLETER avec les liens exacts. */
-const URL_LALIBRE = 'https://www.lalibre.be/';
+const URL_LALIBRE = 'https://www.lalibre.be/belgique/societe/2026/08/29/survol-de-bruxelles-le-plan-de-jean-luc-crucke-pour-sortir-du-bourbier-politique-CDXPVCU7KBCGPN754WRQXBTJWM/';
 const URL_DH      = 'https://www.dh.be/';
 
 /* Page parue : floutee, seul le titre reste lisible (droit de citation).
