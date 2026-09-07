@@ -129,8 +129,15 @@ try {
 // News publiées
 $news_list = array();
 try {
-    $news_list = $db->query("SELECT * FROM news WHERE statut='publie' ORDER BY epingle DESC, date_creation DESC LIMIT 10")->fetchAll();
-} catch (Exception $e) {}
+    // « À la une » ordonnée manuellement (colonne ordre_une), puis par date
+    $news_list = $db->query("SELECT * FROM news WHERE statut='publie'
+                             ORDER BY epingle DESC, IF(ordre_une=0, 999999, ordre_une) ASC, date_creation DESC
+                             LIMIT 10")->fetchAll();
+} catch (Exception $e) {
+    try { // repli si la colonne ordre_une n'existe pas encore
+        $news_list = $db->query("SELECT * FROM news WHERE statut='publie' ORDER BY epingle DESC, date_creation DESC LIMIT 10")->fetchAll();
+    } catch (Exception $e2) {}
+}
 
 // News ciblée via ?news=ID (pour partage Facebook + ouverture directe)
 $news_single = null;

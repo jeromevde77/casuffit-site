@@ -4,6 +4,25 @@ session_start(); requireAdmin();
 require_once __DIR__ . '/../includes/csrf.php';
 $db = getDB();
 
+// ── « À la une » ordonnée : colonne ordre_une (auto-provisionnée) ────────
+try {
+    if (!$db->query("SHOW COLUMNS FROM news LIKE 'ordre_une'")->fetch()) {
+        $db->exec("ALTER TABLE news ADD COLUMN ordre_une INT NOT NULL DEFAULT 0 AFTER epingle");
+    }
+} catch (Throwable $e) { /* colonne absente : le tri retombe sur la date */ }
+
+/** Renumérote les actualités à la une de 1 à N dans leur ordre courant.
+ *  Retourne la liste des ids, dans l'ordre. */
+function normalise_une(PDO $db): array {
+    $ids = $db->query("SELECT id FROM news WHERE epingle=1
+                       ORDER BY IF(ordre_une=0, 999999, ordre_une) ASC, date_creation DESC")
+              ->fetchAll(PDO::FETCH_COLUMN);
+    $ids = array_map('intval', $ids);
+    $st  = $db->prepare("UPDATE news SET ordre_une=? WHERE id=?");
+    foreach ($ids as $i => $id) { $st->execute([$i + 1, $id]); }
+    return $ids;
+}
+
 $msg = ''; $error = '';
 $edit = null;
 
@@ -49,6 +68,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_news'])) {
                    ->execute(array($titre,$accroche,$contenu,$image,$statut,$epingle,$date_pub,$id));
             }
             $msg = '✅ Actualité mise à jour.';
+            // Mise à la une via la case à cocher : lui donner le dernier rang
+            if ($epingle) {
+                $rang = (int) $db->query("SELECT COALESCE(MAX(ordre_une),0) FROM news WHERE epingle=1")->fetchColumn();
+                $db->prepare("UPDATE news SET ordre_une=? WHERE id=? AND (ordre_une IS NULL OR ordre_une=0)")
+                   ->execute(array($rang + 1, $id));
+            } else {
+                $db->prepare("UPDATE news SET ordre_une=0 WHERE id=?")->execute(array($id));
+            }
         } else {
             if ($hasNlNews) {
                 $db->prepare("INSERT INTO news (titre,accroche,contenu,image_url,statut,epingle,date_publication,titre_nl,accroche_nl,contenu_nl,nl_status,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
@@ -84,8 +111,32 @@ if (isset($_GET['unpublish']) && is_numeric($_GET['unpublish'])) {
     header('Location: news.php?msg='.urlencode('Actualité dépubliée.')); exit;
 }
 if (isset($_GET['pin']) && is_numeric($_GET['pin'])) {
-    $db->prepare("UPDATE news SET epingle=1 WHERE id=?")->execute(array(intval($_GET['pin'])));
-    header('Location: news.php?msg='.urlencode('Actualité épinglée.')); exit;
+    // Mise à la une : placée en dernière position
+    $max = (int) $db->query("SELECT COALESCE(MAX(ordre_une),0) FROM news WHERE epingle=1")->fetchColumn();
+    $db->prepare("UPDATE news SET epingle=1, ordre_une=? WHERE id=?")
+       ->execute(array($max + 1, intval($_GET['pin'])));
+    header('Location: news.php?msg='.urlencode('Actualité mise à la une.')); exit;
+}
+if (isset($_GET['unpin']) && is_numeric($_GET['unpin'])) {
+    $db->prepare("UPDATE news SET epingle=0, ordre_une=0 WHERE id=?")->execute(array(intval($_GET['unpin'])));
+    normalise_une($db);
+    header('Location: news.php?msg='.urlencode('Actualité retirée de la une.')); exit;
+}
+// Monter / descendre dans la une
+if (isset($_GET['up']) || isset($_GET['down'])) {
+    $dir = isset($_GET['up']) ? -1 : 1;
+    $id  = intval($_GET['up'] ?? $_GET['down']);
+    $ids = normalise_une($db);                 // garantit des rangs 1..N
+    $pos = array_search($id, $ids, true);
+    if ($pos !== false) {
+        $swap = $pos + $dir;
+        if ($swap >= 0 && $swap < count($ids)) {
+            $st = $db->prepare("UPDATE news SET ordre_une=? WHERE id=?");
+            $st->execute([$swap + 1, $ids[$pos]]);
+            $st->execute([$pos  + 1, $ids[$swap]]);
+        }
+    }
+    header('Location: news.php?msg='.urlencode('Ordre de la une modifié.')); exit;
 }
 
 // Charger pour édition
@@ -98,7 +149,10 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
 if (isset($_GET['msg'])) $msg = $_GET['msg'];
 
 // Liste
-$news_list = $db->query("SELECT * FROM news ORDER BY epingle DESC, date_creation DESC LIMIT 50")->fetchAll();
+$news_list = $db->query("SELECT * FROM news
+                         ORDER BY epingle DESC, IF(ordre_une=0, 999999, ordre_une) ASC, date_creation DESC
+                         LIMIT 50")->fetchAll();
+$nb_une = 0; foreach ($news_list as $n) if (!empty($n['epingle'])) $nb_une++;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -643,7 +697,7 @@ function autoTranslateNews(newsId) {
 <?php else: ?>
 <!-- ═══ LISTE ═══ -->
 <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e0e8f0;background:#fff">
-  <h2 style="margin:0;font-size:1rem;color:#0e3d6b"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z"/></svg>Actualités</h2>
+  <h2 style="margin:0;font-size:1rem;color:#0e3d6b"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z"/></svg>Actualités<?php if ($nb_une): ?><span style="margin-left:8px;font-size:.7rem;font-weight:700;color:#b05a00;background:#fff8ee;border:1px solid #ffe0b2;border-radius:10px;padding:2px 9px"><?= $nb_une ?> à la une</span><?php endif; ?></h2>
   <a href="news.php?new=1" style="padding:7px 16px;background:#1673B2;color:#fff;border-radius:6px;font-size:.78rem;font-weight:700;text-decoration:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nouvelle actualité</a>
 </div>
 <div class="news-list-wrap">
@@ -653,7 +707,9 @@ function autoTranslateNews(newsId) {
     <?php foreach ($news_list as $n): ?>
     <div class="news-item-row">
       <div class="ni-status <?= htmlspecialchars($n['statut']) ?>"></div>
-      <div class="ni-pin"><?= $n['epingle'] ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF9900" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>' : '' ?></div>
+      <div class="ni-pin"><?php if (!empty($n['epingle'])): $rang = (int)($n['ordre_une'] ?? 0); ?>
+        <span title="À la une&nbsp;— position <?= $rang ?: '?' ?>" style="display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:21px;padding:0 5px;border-radius:11px;background:#FF9900;color:#fff;font-size:.7rem;font-weight:800"><?= $rang ?: '•' ?></span>
+      <?php endif; ?></div>
       <div class="ni-titre"><?= htmlspecialchars($n['titre']) ?></div>
       <div class="ni-date"><?= date('d/m/Y', strtotime($n['date_creation'])) ?></div>
       <div style="font-size:.7rem;padding:2px 7px;border-radius:10px;font-weight:600;
@@ -661,6 +717,13 @@ function autoTranslateNews(newsId) {
         <?= $n['statut'] ?>
       </div>
       <div class="ni-actions">
+        <?php if (!empty($n['epingle'])): ?>
+          <a href="news.php?up=<?= $n['id'] ?>" class="act-btn" title="Monter dans la une" style="color:#b05a00;border-color:#ffe0b2;background:#fff8ee;font-weight:800">&uarr;</a>
+          <a href="news.php?down=<?= $n['id'] ?>" class="act-btn" title="Descendre dans la une" style="color:#b05a00;border-color:#ffe0b2;background:#fff8ee;font-weight:800">&darr;</a>
+          <a href="news.php?unpin=<?= $n['id'] ?>" class="act-btn" title="Retirer de la une" style="color:#999;border-color:#e2e8f0;background:#f7f8fa;font-weight:800">&times;</a>
+        <?php else: ?>
+          <a href="news.php?pin=<?= $n['id'] ?>" class="act-btn" title="Mettre à la une" style="color:#FF9900;border-color:#ffe0b2;background:#fff8ee"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg></a>
+        <?php endif; ?>
         <a href="news.php?edit=<?= $n['id'] ?>" class="act-btn edit" title="Éditer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></a>
         <?php if ($n['statut'] !== 'publie'): ?>
           <a href="news.php?publish=<?= $n['id'] ?>" class="act-btn view" title="Publier"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></a>
