@@ -1,5 +1,5 @@
 <?php
-/* og-communes.php — v1
+/* og-communes.php — v2
  * Genere le visuel 1200x630 "communes survolees en piste 01" avec les logos
  * officiels des communes, charges depuis /medias/ (upload via Admin > Medias).
  *
@@ -126,10 +126,9 @@ imagettftext($im, 13, 0, $bx1 + 17, 68, $dark, $font_bold, $badge);
 $sign = 'Piste 01, ça suffit ! · UBCNA/BUTV · AwaCCS — 7 septembre 2026';
 imagettftext($im, 12, 0, 1140 - tw($font_reg, 12, $sign), 104, $light, $font_reg, $sign);
 
-// ── Accroche + titre ─────────────────────────────────────────────────────
-imagettftext($im, 14, 0, 60, 172, $orange, $font_bold, 'LISTE OFFICIELLE DU SERVICE FÉDÉRAL DE MÉDIATION');
-imagettftext($im, 34, 0, 60, 226, $white,  $font_bold, 'Ces communes sont survolées en piste 01.');
-imagettftext($im, 34, 0, 60, 274, $amber,  $font_bold, 'Depuis plus de vingt ans.');
+// ── Titre (centre verticalement entre l'en-tete et les cartes) ───────────
+imagettftext($im, 34, 0, 60, 212, $white, $font_bold, 'Ces communes sont survolées en piste 01.');
+imagettftext($im, 34, 0, 60, 260, $amber, $font_bold, 'Depuis plus de vingt ans.');
 
 // ── Cartes des communes ──────────────────────────────────────────────────
 $card_y = 306; $card_h = 132; $gap = 16; $margin = 60;
