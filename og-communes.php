@@ -117,6 +117,15 @@ if (file_exists($logo_path) && ($logo = @imagecreatefrompng($logo_path))) {
 imagettftext($im, 32, 0, 166, 82,  $orange, $font_bold, 'Ça suffit !');
 imagettftext($im, 15, 0, 168, 112, $light,  $font_reg,  'Nuisances aériennes — Piste 01');
 
+// Badge « communiqué de presse conjoint » + signataires (aligne a droite)
+$badge = 'COMMUNIQUÉ DE PRESSE CONJOINT';
+$bw    = tw($font_bold, 13, $badge) + 34;
+$bx1   = 1140 - $bw;
+rounded_rect($im, $bx1, 44, 1140, 80, 8, $orange);
+imagettftext($im, 13, 0, $bx1 + 17, 68, $dark, $font_bold, $badge);
+$sign = 'Piste 01, ça suffit ! · UBCNA/BUTV · AwaCCS — 4 septembre 2026';
+imagettftext($im, 12, 0, 1140 - tw($font_reg, 12, $sign), 104, $light, $font_reg, $sign);
+
 // ── Accroche + titre ─────────────────────────────────────────────────────
 imagettftext($im, 14, 0, 60, 172, $orange, $font_bold, 'LISTE OFFICIELLE DU SERVICE FÉDÉRAL DE MÉDIATION');
 imagettftext($im, 34, 0, 60, 226, $white,  $font_bold, 'Ces communes sont survolées en piste 01.');
