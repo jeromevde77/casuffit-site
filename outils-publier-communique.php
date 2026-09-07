@@ -10,7 +10,9 @@ requireAdmin();
 $db = getDB();
 
 // ── Contenu FR (texte du communique repris tel quel) ────────────────────
-$titre    = "📢 On atterrit en survolant des champs, pas des gens";
+$titre     = "On atterrit en survolant des champs, pas des gens";
+// Ancien titre (avec emoji) : permet de retrouver un article deja publie et de le renommer
+$titre_old = "\u{1F4E2} On atterrit en survolant des champs, pas des gens";
 $accroche = "Communiqué de presse conjoint (7 septembre 2026) — Le survol n'est pas un problème bruxellois. La périphérie et le Brabant wallon entendent ne pas en être les victimes silencieuses.";
 $contenu  = <<<'HTML'
 <p style="font-size:.85rem;color:#666;margin-bottom:18px"><strong>COMMUNIQUÉ DE PRESSE CONJOINT</strong><br>ASBL « Piste 01, ça suffit ! » — UBCNA/BUTV — AwaCCS<br>Le 7 septembre 2026</p>
@@ -74,16 +76,18 @@ $hasDeploye = colExists($db, 'deploye_defaut');
 $out = [];
 
 // ── Idempotence : ne pas reinserer si deja present ─────────────────────
-$st = $db->prepare("SELECT id FROM news WHERE titre = ? LIMIT 1");
-$st->execute([$titre]);
+// On cherche sous le titre actuel OU l'ancien titre (avec emoji) pour eviter un doublon
+$st = $db->prepare("SELECT id, titre FROM news WHERE titre = ? OR titre = ? LIMIT 1");
+$st->execute([$titre, $titre_old]);
 $existing = $st->fetch();
 
 if ($existing) {
-    // Deja publiee : on met a jour le texte et la date (corrige une publication anterieure)
+    // Deja publiee : on met a jour titre (sans emoji), texte et date
     $newId = (int) $existing['id'];
-    $db->prepare("UPDATE news SET accroche=?, contenu=?, date_publication=? WHERE id=?")
-       ->execute([$accroche, $contenu, '2026-09-07 09:00:00', $newId]);
-    $out[] = "✅ Actualité déjà présente (id=$newId) — texte et date mis à jour (07/09/2026).";
+    $db->prepare("UPDATE news SET titre=?, accroche=?, contenu=?, date_publication=? WHERE id=?")
+       ->execute([$titre, $accroche, $contenu, '2026-09-07 09:00:00', $newId]);
+    $renomme = ($existing['titre'] !== $titre) ? " Titre renommé (émoji retiré)." : "";
+    $out[] = "✅ Actualité déjà présente (id=$newId) — texte et date mis à jour (07/09/2026).$renomme";
 } else {
     // FR uniquement : les colonnes NL gardent leur valeur par défaut (à compléter dans Admin > Actualités)
     $db->prepare("INSERT INTO news (titre,accroche,contenu,image_url,statut,epingle,date_publication,created_by) VALUES (?,?,?,?,?,?,?,?)")
@@ -113,12 +117,12 @@ $nl_html  = <<<'HTML'
 <p>Une intervention en justice a un coût : honoraires d'avocat, constitution du dossier, expertise. <strong>Nous avons besoin de vous.</strong></p>
 
 <p style="text-align:center;margin:26px 0">
-  <a href="https://www.casuffit.be/don.php" style="display:inline-block;background:#FF9900;color:#fff;font-weight:800;padding:16px 32px;border-radius:8px;text-decoration:none;font-size:1.05rem">🔥 JE SOUTIENS L'INTERVENTION — JE FAIS UN DON</a>
+  <a href="https://www.casuffit.be/don.php" style="display:inline-block;background:#FF9900;color:#fff;font-weight:800;padding:16px 32px;border-radius:8px;text-decoration:none;font-size:1.05rem">JE SOUTIENS L'INTERVENTION — JE FAIS UN DON</a>
 </p>
 
 <p style="font-size:.9rem;color:#555">Ou par virement : <strong>IBAN BE41 0689 0149 6910</strong> — BIC GKCCBEBB — ASBL « Piste 01, ça suffit ! »<br>Communication : <em>Don Piste 01</em></p>
 
-<p>📄 Lire le communiqué complet : <a href="https://www.casuffit.be/#actualites">www.casuffit.be</a></p>
+<p>Lire le communiqué complet : <a href="https://www.casuffit.be/?news=13">www.casuffit.be</a></p>
 
 <p>Merci pour votre soutien — chaque don compte.<br><strong>L'équipe « Piste 01, ça suffit ! »</strong></p>
 HTML;
