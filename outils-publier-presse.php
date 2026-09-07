@@ -1,5 +1,5 @@
 <?php
-/* outils-publier-presse.php — v1
+/* outils-publier-presse.php — v2
  * Outil ponctuel : ajoute 2 actualites "revue de presse" (La Libre + DH du 29-30/08/2026)
  * avec lien vers le PDF de la page parue (deposé dans /assets/docs/).
  * Idempotent : relancer met a jour au lieu de dupliquer.
@@ -11,14 +11,20 @@ requireAdmin();
 $db  = getDB();
 $url = defined('SITE_URL') ? SITE_URL : 'https://www.casuffit.be';
 
-/* Extrait illustratif : uniquement l'ours du journal + le titre (droit de citation).
-   Pas de reproduction integrale, pas de PDF telechargeable. */
-function clip_img(string $src, string $alt, string $credit): string {
+/* URL des articles sur les sites des journaux — A COMPLETER avec les liens exacts. */
+const URL_LALIBRE = 'https://www.lalibre.be/';
+const URL_DH      = 'https://www.dh.be/';
+
+/* Page parue : floutee, seul le titre reste lisible (droit de citation).
+   Pas de reproduction exploitable, pas de PDF telechargeable, + lien vers l'original. */
+function page_img(string $src, string $alt, string $credit, string $lien, string $journal): string {
     return '<figure style="margin:26px 0;text-align:center">'
+         . '<a href="' . $lien . '" target="_blank" rel="noopener">'
          . '<img src="' . $src . '" alt="' . htmlspecialchars($alt, ENT_QUOTES) . '" '
-         . 'style="max-width:100%;height:auto;border:1px solid #e0e6ee;border-radius:6px">'
-         . '<figcaption style="font-size:.78rem;color:#888;margin-top:8px">' . $credit . '</figcaption>'
-         . '</figure>';
+         . 'style="max-width:100%;height:auto;border:1px solid #e0e6ee;border-radius:6px"></a>'
+         . '<figcaption style="font-size:.78rem;color:#888;margin-top:8px">' . $credit . '<br>'
+         . '<a href="' . $lien . '" target="_blank" rel="noopener" style="color:#1673B2;font-weight:700">'
+         . 'Lire l\'article sur ' . $journal . '</a></figcaption></figure>';
 }
 
 $articles = [];
@@ -65,12 +71,11 @@ $articles[] = [
                 . 'compatibles avec les exigences européennes de sécurité. Restent les réticences des partis flamands face '
                 . 'à tout report de nuisances, et l\'échéance du renouvellement du permis de Brussels Airport en 2028.</p>'
 
-                . clip_img('/assets/img/presse/2026-08-29-la-libre.png',
-                            'Titre de La Libre Belgique du 29-30 août 2026',
-                            'Extrait — La Libre Belgique, éd. des 29-30 août 2026 (Adrien de Marneffe). Tous droits réservés.')
-
-                . '<p style="font-size:.8rem;color:#888;text-align:center">Article complet à lire dans '
-                . 'La Libre Belgique, éd. des 29-30 août 2026.</p>',
+                . page_img('/assets/img/presse/2026-08-29-la-libre-page.jpg',
+                            'Page de La Libre Belgique du 29-30 août 2026 (texte volontairement flouté)',
+                            'La Libre Belgique, éd. des 29-30 août 2026 (Adrien de Marneffe). Tous droits réservés — '
+                            . 'page reproduite floutée, seul le titre est lisible.',
+                            URL_LALIBRE, 'lalibre.be'),
 ];
 
 // ── 2. La Dernière Heure ─────────────────────────────────────────────────
@@ -115,12 +120,11 @@ $articles[] = [
                 . '<p>L\'article rend également compte des tensions entre collectifs de riverains et rappelle que le '
                 . 'ministre Jean-Luc Crucke a l\'obligation d\'apporter une solution pour le 1er octobre prochain.</p>'
 
-                . clip_img('/assets/img/presse/2026-08-29-dh.png',
-                            'Titre de La Dernière Heure du 29-30 août 2026',
-                            'Extrait — La Dernière Heure, éd. des 29-30 août 2026 (Mathieu Ladevèze). Tous droits réservés.')
-
-                . '<p style="font-size:.8rem;color:#888;text-align:center">Article complet à lire dans '
-                . 'La Dernière Heure, éd. des 29-30 août 2026.</p>',
+                . page_img('/assets/img/presse/2026-08-29-dh-page.jpg',
+                            'Page de La Dernière Heure du 29-30 août 2026 (texte volontairement flouté)',
+                            'La Dernière Heure, éd. des 29-30 août 2026 (Mathieu Ladevèze). Tous droits réservés — '
+                            . 'page reproduite floutée, seul le titre est lisible.',
+                            URL_DH, 'dh.be'),
 ];
 
 // ── Colonnes optionnelles ────────────────────────────────────────────────
@@ -152,8 +156,8 @@ foreach ($articles as $a) {
 
 // Verification de la presence des extraits image
 foreach ([
-    '/assets/img/presse/2026-08-29-la-libre.png',
-    '/assets/img/presse/2026-08-29-dh.png',
+    '/assets/img/presse/2026-08-29-la-libre-page.jpg',
+    '/assets/img/presse/2026-08-29-dh-page.jpg',
 ] as $p) {
     $out[] = file_exists(__DIR__ . $p)
         ? "Extrait présent sur le serveur : $p"
