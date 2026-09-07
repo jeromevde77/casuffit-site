@@ -11,11 +11,14 @@ requireAdmin();
 $db  = getDB();
 $url = defined('SITE_URL') ? SITE_URL : 'https://www.casuffit.be';
 
-function pdf_box(string $href, string $label): string {
-    return '<p style="text-align:center;margin:26px 0">'
-         . '<a href="' . $href . '" target="_blank" rel="noopener" '
-         . 'style="display:inline-block;background:#1673B2;color:#fff;font-weight:800;padding:14px 30px;'
-         . 'border-radius:8px;text-decoration:none;font-size:1rem">' . $label . '</a></p>';
+/* Extrait illustratif : uniquement l'ours du journal + le titre (droit de citation).
+   Pas de reproduction integrale, pas de PDF telechargeable. */
+function clip_img(string $src, string $alt, string $credit): string {
+    return '<figure style="margin:26px 0;text-align:center">'
+         . '<img src="' . $src . '" alt="' . htmlspecialchars($alt, ENT_QUOTES) . '" '
+         . 'style="max-width:100%;height:auto;border:1px solid #e0e6ee;border-radius:6px">'
+         . '<figcaption style="font-size:.78rem;color:#888;margin-top:8px">' . $credit . '</figcaption>'
+         . '</figure>';
 }
 
 $articles = [];
@@ -62,10 +65,12 @@ $articles[] = [
                 . 'compatibles avec les exigences européennes de sécurité. Restent les réticences des partis flamands face '
                 . 'à tout report de nuisances, et l\'échéance du renouvellement du permis de Brussels Airport en 2028.</p>'
 
-                . pdf_box('/assets/docs/2026-08-29-la-libre-plan-crucke.pdf', 'Lire la page parue (PDF)')
+                . clip_img('/assets/img/presse/2026-08-29-la-libre.png',
+                            'Titre de La Libre Belgique du 29-30 août 2026',
+                            'Extrait — La Libre Belgique, éd. des 29-30 août 2026 (Adrien de Marneffe). Tous droits réservés.')
 
-                . '<p style="font-size:.8rem;color:#888;text-align:center">Source : La Libre Belgique, '
-                . 'éd. des 29-30 août 2026 (Adrien de Marneffe).</p>',
+                . '<p style="font-size:.8rem;color:#888;text-align:center">Article complet à lire dans '
+                . 'La Libre Belgique, éd. des 29-30 août 2026.</p>',
 ];
 
 // ── 2. La Dernière Heure ─────────────────────────────────────────────────
@@ -110,10 +115,12 @@ $articles[] = [
                 . '<p>L\'article rend également compte des tensions entre collectifs de riverains et rappelle que le '
                 . 'ministre Jean-Luc Crucke a l\'obligation d\'apporter une solution pour le 1er octobre prochain.</p>'
 
-                . pdf_box('/assets/docs/2026-08-29-dh-waterloo-intervention.pdf', 'Lire la page parue (PDF)')
+                . clip_img('/assets/img/presse/2026-08-29-dh.png',
+                            'Titre de La Dernière Heure du 29-30 août 2026',
+                            'Extrait — La Dernière Heure, éd. des 29-30 août 2026 (Mathieu Ladevèze). Tous droits réservés.')
 
-                . '<p style="font-size:.8rem;color:#888;text-align:center">Source : La Dernière Heure, '
-                . 'éd. des 29-30 août 2026 (Mathieu Ladevèze).</p>',
+                . '<p style="font-size:.8rem;color:#888;text-align:center">Article complet à lire dans '
+                . 'La Dernière Heure, éd. des 29-30 août 2026.</p>',
 ];
 
 // ── Colonnes optionnelles ────────────────────────────────────────────────
@@ -143,14 +150,14 @@ foreach ($articles as $a) {
     $ids[] = $id;
 }
 
-// Verification de la presence des PDF
+// Verification de la presence des extraits image
 foreach ([
-    '/assets/docs/2026-08-29-la-libre-plan-crucke.pdf',
-    '/assets/docs/2026-08-29-dh-waterloo-intervention.pdf',
+    '/assets/img/presse/2026-08-29-la-libre.png',
+    '/assets/img/presse/2026-08-29-dh.png',
 ] as $p) {
     $out[] = file_exists(__DIR__ . $p)
-        ? "PDF présent sur le serveur : $p"
-        : "PDF MANQUANT sur le serveur : $p (attendre la fin du déploiement)";
+        ? "Extrait présent sur le serveur : $p"
+        : "Extrait MANQUANT sur le serveur : $p (attendre la fin du déploiement)";
 }
 
 header('Content-Type: text/html; charset=utf-8');

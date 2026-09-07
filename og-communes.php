@@ -1,5 +1,5 @@
 <?php
-/* og-communes.php — v2
+/* og-communes.php — v3
  * Genere le visuel 1200x630 "communes survolees en piste 01" avec les logos
  * officiels des communes, charges depuis /medias/ (upload via Admin > Medias).
  *
@@ -127,8 +127,8 @@ $sign = 'Piste 01, ça suffit ! · UBCNA/BUTV · AwaCCS — 7 septembre 2026';
 imagettftext($im, 12, 0, 1140 - tw($font_reg, 12, $sign), 104, $light, $font_reg, $sign);
 
 // ── Titre (centre verticalement entre l'en-tete et les cartes) ───────────
-imagettftext($im, 34, 0, 60, 212, $white, $font_bold, 'Ces communes sont survolées en piste 01.');
-imagettftext($im, 34, 0, 60, 260, $amber, $font_bold, 'Depuis plus de vingt ans.');
+imagettftext($im, 34, 0, 60, 212, $white, $font_bold, '« Ça suffit ! » se joint à l\'action');
+imagettftext($im, 34, 0, 60, 260, $amber, $font_bold, 'des communes de la périphérie.');
 
 // ── Cartes des communes ──────────────────────────────────────────────────
 $card_y = 306; $card_h = 132; $gap = 16; $margin = 60;
@@ -159,8 +159,8 @@ foreach ($communes as $i => $com) {
 }
 
 // ── Pied : autres communes + chiffre cle ─────────────────────────────────
-imagettftext($im, 14, 0, 60, 522, $light, $font_reg, 'Ainsi que Rhode-Saint-Genèse, Lasne et La Hulpe.');
-imagettftext($im, 14, 0, 60, 550, $light, $font_reg, "Le couloir d'approche n'est pas vide — il n'a simplement jamais été compté.");
+imagettftext($im, 14, 0, 60, 522, $light, $font_reg, 'Requête en intervention volontaire — procédure Région bruxelloise / État fédéral.');
+imagettftext($im, 14, 0, 60, 550, $light, $font_reg, 'Notre demande : le retour aux pistes préférentielles 25R et 25L.');
 
 rounded_rect($im, 906, 486, 1140, 578, 12, $orange);
 $s1 = '175 000+'; $s2 = 'HABITANTS · 3 RÉGIONS';
