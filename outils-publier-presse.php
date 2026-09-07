@@ -13,7 +13,7 @@ $url = defined('SITE_URL') ? SITE_URL : 'https://www.casuffit.be';
 
 /* URL des articles sur les sites des journaux — A COMPLETER avec les liens exacts. */
 const URL_LALIBRE = 'https://www.lalibre.be/belgique/societe/2026/08/29/survol-de-bruxelles-le-plan-de-jean-luc-crucke-pour-sortir-du-bourbier-politique-CDXPVCU7KBCGPN754WRQXBTJWM/';
-const URL_DH      = 'https://www.dh.be/';
+const URL_DH      = 'https://www.dhnet.be/regions/bruxelles/bruxelles-mobilite/2026/08/29/nuisances-aeriennes-waterloo-simmisce-dans-laction-en-justice-bruxelloise-la-sante-des-brabancons-wallons-ne-vaut-pas-moins-que-celle-des-bruxellois-YHUQP5OVKRBHZOR7KC2HK3SPX4/';
 
 /* Page parue : floutee, seul le titre reste lisible (droit de citation).
    Pas de reproduction exploitable, pas de PDF telechargeable, + lien vers l'original. */
@@ -124,7 +124,7 @@ $articles[] = [
                             'Page de La Dernière Heure du 29-30 août 2026 (texte volontairement flouté)',
                             'La Dernière Heure, éd. des 29-30 août 2026 (Mathieu Ladevèze). Tous droits réservés — '
                             . 'page reproduite floutée, seul le titre est lisible.',
-                            URL_DH, 'dh.be'),
+                            URL_DH, 'dhnet.be'),
 ];
 
 // ── Colonnes optionnelles ────────────────────────────────────────────────
