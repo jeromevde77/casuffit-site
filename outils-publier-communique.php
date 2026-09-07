@@ -104,38 +104,65 @@ if ($hasDeploye && $newId) {
 }
 
 // ── Brouillon de newsletter (appel aux dons) — a relire dans Admin > Redaction ──
-$nl_sujet = "Piste 01 : nous allons en justice — aidez-nous à financer l'intervention";
+$nl_sujet     = "Survol : une décision est attendue le 1er octobre — nous avons besoin de vous";
+// Ancien sujet : permet de retrouver et de remplacer le brouillon precedent
+$nl_sujet_old = "Piste 01 : nous allons en justice — aidez-nous à financer l'intervention";
 $nl_html  = <<<'HTML'
-<p>Bonjour,</p>
+<p>Chers membres,</p>
 
-<p>Le 7 septembre, avec l'UBCNA/BUTV et AwaCCS, nous avons publié un <strong>communiqué de presse conjoint</strong> : <em>« On atterrit en survolant des champs, pas des gens »</em>.</p>
+<p>La Région de Bruxelles-Capitale a engagé une action en cessation contre la procédure RNP 07L. Si elle aboutit <strong>sans réforme des normes de vent</strong>, le trafic ne disparaîtra pas : il sera reporté sur d'autres communes. Déplacer une route aérienne d'une commune vers une autre ne résout rien — c'est un jeu à somme nulle, qui use les riverains autant que les finances publiques.</p>
 
-<p>Le message est clair : le survol de la piste 01 n'est pas un problème bruxellois. <strong>Plus de 175 000 habitants dans trois Régions</strong> — dont plus de 75 % hors de Bruxelles — subissent ces approches depuis plus de vingt ans. Kraainem, Wezembeek-Oppem, Woluwe-Saint-Pierre, Rhode-Saint-Genèse, Lasne, La Hulpe, Waterloo : ce couloir n'est pas vide, il n'a simplement jamais été compté.</p>
+<p>Notre position n'a pas changé depuis vingt ans : <strong>le problème n'est pas telle ou telle route, c'est l'usage excessif des pistes non préférentielles</strong>. Nous demandons le retour à ce qui a fonctionné pendant des décennies : privilégier au maximum les <strong>pistes 25R et 25L</strong>, qui sont dans l'axe du vent dominant et dont les approches survolent des zones agricoles et peu urbanisées. Cela suppose de corriger le problème à la racine : les <strong>normes de vent</strong>, leur application, et l'encadrement strict des sorties du système préférentiel.</p>
 
-<p><strong>Nous passons à l'action en justice.</strong> Aux côtés de la commune de Waterloo et d'autres communes, l'ASBL déposera une <strong>requête en intervention volontaire</strong> dans la procédure qui oppose la Région de Bruxelles-Capitale à l'État fédéral sur l'utilisation des pistes de Bruxelles-National. Objectif : que nos riverains soient enfin entendus, et que le problème soit traité à la racine — les normes de vent et l'encadrement strict des sorties du système préférentiel.</p>
+<h3 style="color:#0e3d6b;font-size:1rem;margin:26px 0 10px">Où nous en sommes</h3>
 
-<p>Une intervention en justice a un coût : honoraires d'avocat, constitution du dossier, expertise. <strong>Nous avons besoin de vous.</strong></p>
+<p>Le 7 septembre, avec l'UBCNA/BUTV et AwaCCS, nous avons publié un <strong>communiqué de presse conjoint</strong>. La commune de <strong>Waterloo</strong> a décidé de se joindre à la procédure par une <strong>requête en intervention volontaire</strong>, et nous l'accompagnons. Plusieurs communes de l'est de Bruxelles ont fait de même ; Rhode-Saint-Genèse envisage de suivre.</p>
+
+<p>Et le calendrier se resserre : le ministre de la Mobilité a annoncé qu'une décision devait être prise <strong>au plus tard le 1er octobre</strong>.</p>
+
+<p style="font-size:.92rem"><a href="https://www.casuffit.be/?news=13" style="color:#1673B2">Lire notre communiqué du 7 septembre</a> — et la <a href="https://www.casuffit.be/#actualites" style="color:#1673B2">revue de presse</a> (La Libre, La Dernière Heure).</p>
+
+<h3 style="color:#0e3d6b;font-size:1rem;margin:26px 0 10px">Nous avons besoin de vous — de votre nom</h3>
+
+<p>Devant un tribunal, une association pèse. <strong>Des centaines de riverains agissant en leur nom propre pèsent infiniment plus.</strong> Chaque personne qui se joint à la démarche rend notre voix plus difficile à ignorer.</p>
+
+<p>Connectez-vous à votre espace membre et cochez la case <em>« Je souhaite être contacté(e) pour participer à l'action en mon nom »</em>.</p>
+
+<ul style="line-height:1.7">
+  <li><strong>Cela ne vous engage à rien aujourd'hui.</strong> Rien ne sera introduit sans votre accord écrit et signé, que nous vous transmettrons ultérieurement.</li>
+  <li>Vous pouvez décocher à tout moment.</li>
+  <li><strong>Votre adresse complète doit être renseignée dans votre profil</strong> : elle établit votre intérêt à agir, c'est-à-dire le fait que vous êtes réellement survolé(e).</li>
+</ul>
 
 <p style="text-align:center;margin:26px 0">
-  <a href="https://www.casuffit.be/don.php" style="display:inline-block;background:#FF9900;color:#fff;font-weight:800;padding:16px 32px;border-radius:8px;text-decoration:none;font-size:1.05rem">JE SOUTIENS L'INTERVENTION — JE FAIS UN DON</a>
+  <a href="https://www.casuffit.be/membre/dashboard.php" style="display:inline-block;background:#1673B2;color:#fff;font-weight:800;padding:15px 30px;border-radius:8px;text-decoration:none;font-size:1rem">Accéder à mon espace membre</a>
+</p>
+
+<h3 style="color:#0e3d6b;font-size:1rem;margin:26px 0 10px">La justice a un coût</h3>
+
+<p>Analyser les procédures, consulter des spécialistes, mobiliser des avocats, intervenir devant le tribunal : tout cela représente des sommes considérables pour une ASBL de riverains.</p>
+
+<p><strong>Nous n'avons pas les moyens d'une Région.</strong> Face à des institutions qui disposent de budgets et de services juridiques entiers, nous n'avons que vous. Chaque don, chaque adhésion, chaque euro nous permet de rester dans la partie.</p>
+
+<p style="text-align:center;margin:26px 0">
+  <a href="https://www.casuffit.be/don.php" style="display:inline-block;background:#FF9900;color:#fff;font-weight:800;padding:15px 30px;border-radius:8px;text-decoration:none;font-size:1rem">Soutenir notre action</a>
 </p>
 
 <p style="font-size:.9rem;color:#555">Ou par virement : <strong>IBAN BE41 0689 0149 6910</strong> — BIC GKCCBEBB — ASBL « Piste 01, ça suffit ! »<br>Communication : <em>Don Piste 01</em></p>
 
-<p>Lire le communiqué complet : <a href="https://www.casuffit.be/?news=13">www.casuffit.be</a></p>
-
-<p>Merci pour votre soutien — chaque don compte.<br><strong>L'équipe « Piste 01, ça suffit ! »</strong></p>
+<p>Merci pour votre confiance et votre soutien.<br><strong>Piste 01 Ça Suffit !</strong></p>
 HTML;
 
-$st = $db->prepare("SELECT id FROM newsletters WHERE sujet = ? LIMIT 1");
-$st->execute([$nl_sujet]);
+// On cherche sous le sujet actuel OU l'ancien, pour remplacer le brouillon precedent
+$st = $db->prepare("SELECT id FROM newsletters WHERE sujet = ? OR sujet = ? LIMIT 1");
+$st->execute([$nl_sujet, $nl_sujet_old]);
 if ($nlx = $st->fetch()) {
     $nlId = (int) $nlx['id'];
     // Mise a jour uniquement tant qu'elle est en brouillon (jamais si deja envoyee)
-    $upd = $db->prepare("UPDATE newsletters SET contenu_html=?, contenu_text=? WHERE id=? AND statut='brouillon'");
-    $upd->execute([$nl_html, strip_tags($nl_html), $nlId]);
+    $upd = $db->prepare("UPDATE newsletters SET sujet=?, contenu_html=?, contenu_text=? WHERE id=? AND statut='brouillon'");
+    $upd->execute([$nl_sujet, $nl_html, strip_tags($nl_html), $nlId]);
     $out[] = $upd->rowCount()
-        ? "✅ Brouillon de newsletter (id=$nlId) — contenu mis à jour (date du 07/09)."
+        ? "✅ Brouillon de newsletter (id=$nlId) — sujet et contenu remplacés par la nouvelle version."
         : "ℹ️ Newsletter (id=$nlId) déjà envoyée ou modifiée — laissée intacte.";
 } else {
     $db->prepare("INSERT INTO newsletters (sujet, contenu_html, contenu_text, statut) VALUES (?,?,?,'brouillon')")
