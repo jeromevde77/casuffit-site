@@ -18,6 +18,20 @@ if ($id > 0) {
     } catch (Exception $e) {}
 }
 
+// Les polices GD (Liberation) n'ont aucun glyphe emoji/pictogramme : les laisser
+// produit du mojibake (ex. « 📢 » rendu « ð□□¢ »). On les retire pour l'image
+// uniquement — le titre reste intact sur le site et dans le texte du post.
+function strip_emoji(string $s): string {
+    $s = preg_replace(
+        '/[\x{1F000}-\x{1FAFF}\x{2600}-\x{27BF}\x{2190}-\x{21FF}\x{2B00}-\x{2BFF}'
+        . '\x{FE00}-\x{FE0F}\x{200D}\x{20E3}\x{E000}-\x{F8FF}]/u',
+        '', $s
+    );
+    return trim(preg_replace('/\s{2,}/u', ' ', $s));
+}
+$titre = strip_emoji($titre);
+if ($titre === '') $titre = 'Ça suffit !';
+
 // Vérifier GD + FreeType
 if (!function_exists('imagecreatetruecolor') || !function_exists('imagettftext')) {
     // Fallback : rediriger vers l'image statique
