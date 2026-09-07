@@ -123,7 +123,7 @@ $bw    = tw($font_bold, 13, $badge) + 34;
 $bx1   = 1140 - $bw;
 rounded_rect($im, $bx1, 44, 1140, 80, 8, $orange);
 imagettftext($im, 13, 0, $bx1 + 17, 68, $dark, $font_bold, $badge);
-$sign = 'Piste 01, ça suffit ! · UBCNA/BUTV · AwaCCS — 4 septembre 2026';
+$sign = 'Piste 01, ça suffit ! · UBCNA/BUTV · AwaCCS — 7 septembre 2026';
 imagettftext($im, 12, 0, 1140 - tw($font_reg, 12, $sign), 104, $light, $font_reg, $sign);
 
 // ── Accroche + titre ─────────────────────────────────────────────────────

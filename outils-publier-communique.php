@@ -11,9 +11,9 @@ $db = getDB();
 
 // ── Contenu FR (texte du communique repris tel quel) ────────────────────
 $titre    = "📢 On atterrit en survolant des champs, pas des gens";
-$accroche = "Communiqué de presse conjoint (4 septembre 2026) — Le survol n'est pas un problème bruxellois. La périphérie et le Brabant wallon entendent ne pas en être les victimes silencieuses.";
+$accroche = "Communiqué de presse conjoint (7 septembre 2026) — Le survol n'est pas un problème bruxellois. La périphérie et le Brabant wallon entendent ne pas en être les victimes silencieuses.";
 $contenu  = <<<'HTML'
-<p style="font-size:.85rem;color:#666;margin-bottom:18px"><strong>COMMUNIQUÉ DE PRESSE CONJOINT</strong><br>ASBL « Piste 01, ça suffit ! » — UBCNA/BUTV — AwaCCS<br>Le 4 septembre 2026</p>
+<p style="font-size:.85rem;color:#666;margin-bottom:18px"><strong>COMMUNIQUÉ DE PRESSE CONJOINT</strong><br>ASBL « Piste 01, ça suffit ! » — UBCNA/BUTV — AwaCCS<br>Le 7 septembre 2026</p>
 
 <p><strong>Le survol n'est pas un problème bruxellois. La périphérie et le Brabant wallon entendent ne pas en être les victimes silencieuses.</strong></p>
 
@@ -79,14 +79,17 @@ $st->execute([$titre]);
 $existing = $st->fetch();
 
 if ($existing) {
+    // Deja publiee : on met a jour le texte et la date (corrige une publication anterieure)
     $newId = (int) $existing['id'];
-    $out[] = "ℹ️ Actualité déjà présente (id=$newId) — rien réinséré.";
+    $db->prepare("UPDATE news SET accroche=?, contenu=?, date_publication=? WHERE id=?")
+       ->execute([$accroche, $contenu, '2026-09-07 09:00:00', $newId]);
+    $out[] = "✅ Actualité déjà présente (id=$newId) — texte et date mis à jour (07/09/2026).";
 } else {
     // FR uniquement : les colonnes NL gardent leur valeur par défaut (à compléter dans Admin > Actualités)
     $db->prepare("INSERT INTO news (titre,accroche,contenu,image_url,statut,epingle,date_publication,created_by) VALUES (?,?,?,?,?,?,?,?)")
-       ->execute([$titre, $accroche, $contenu, null, 'publie', 1, '2026-09-04 09:00:00', ADMIN_USER]);
+       ->execute([$titre, $accroche, $contenu, null, 'publie', 1, '2026-09-07 09:00:00', ADMIN_USER]);
     $newId = (int) $db->lastInsertId();
-    $out[] = "✅ Actualité créée (id=$newId), statut=publié, épinglée, datée du 04/09/2026.";
+    $out[] = "✅ Actualité créée (id=$newId), statut=publié, épinglée, datée du 07/09/2026.";
     $out[] = "ℹ️ Version NL non insérée (à ajouter dans Admin › Actualités si souhaité).";
 }
 
@@ -101,7 +104,7 @@ $nl_sujet = "Piste 01 : nous allons en justice — aidez-nous à financer l'inte
 $nl_html  = <<<'HTML'
 <p>Bonjour,</p>
 
-<p>Le 4 septembre, avec l'UBCNA/BUTV et AwaCCS, nous avons publié un <strong>communiqué de presse conjoint</strong> : <em>« On atterrit en survolant des champs, pas des gens »</em>.</p>
+<p>Le 7 septembre, avec l'UBCNA/BUTV et AwaCCS, nous avons publié un <strong>communiqué de presse conjoint</strong> : <em>« On atterrit en survolant des champs, pas des gens »</em>.</p>
 
 <p>Le message est clair : le survol de la piste 01 n'est pas un problème bruxellois. <strong>Plus de 175 000 habitants dans trois Régions</strong> — dont plus de 75 % hors de Bruxelles — subissent ces approches depuis plus de vingt ans. Kraainem, Wezembeek-Oppem, Woluwe-Saint-Pierre, Rhode-Saint-Genèse, Lasne, La Hulpe, Waterloo : ce couloir n'est pas vide, il n'a simplement jamais été compté.</p>
 
@@ -124,7 +127,12 @@ $st = $db->prepare("SELECT id FROM newsletters WHERE sujet = ? LIMIT 1");
 $st->execute([$nl_sujet]);
 if ($nlx = $st->fetch()) {
     $nlId = (int) $nlx['id'];
-    $out[] = "ℹ️ Brouillon de newsletter déjà présent (id=$nlId).";
+    // Mise a jour uniquement tant qu'elle est en brouillon (jamais si deja envoyee)
+    $upd = $db->prepare("UPDATE newsletters SET contenu_html=?, contenu_text=? WHERE id=? AND statut='brouillon'");
+    $upd->execute([$nl_html, strip_tags($nl_html), $nlId]);
+    $out[] = $upd->rowCount()
+        ? "✅ Brouillon de newsletter (id=$nlId) — contenu mis à jour (date du 07/09)."
+        : "ℹ️ Newsletter (id=$nlId) déjà envoyée ou modifiée — laissée intacte.";
 } else {
     $db->prepare("INSERT INTO newsletters (sujet, contenu_html, contenu_text, statut) VALUES (?,?,?,'brouillon')")
        ->execute([$nl_sujet, $nl_html, strip_tags($nl_html)]);
