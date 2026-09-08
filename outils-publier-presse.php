@@ -1,7 +1,7 @@
 <?php
-/* outils-publier-presse.php — v2
- * Outil ponctuel : ajoute 2 actualites "revue de presse" (La Libre + DH du 29-30/08/2026)
- * avec lien vers le PDF de la page parue (deposé dans /assets/docs/).
+/* outils-publier-presse.php — v3
+ * Outil ponctuel : ajoute 3 actualites "revue de presse" (La Libre + DH du 29-30/08/2026,
+ * retombees du communique du 07/09). Pages parues floutees + liens vers les originaux.
  * Idempotent : relancer met a jour au lieu de dupliquer.
  * Protege par requireAdmin(). A SUPPRIMER apres usage (voir CLAUDE.md).
  */
@@ -125,6 +125,40 @@ $articles[] = [
                             'La Dernière Heure, éd. des 29-30 août 2026 (Mathieu Ladevèze). Tous droits réservés — '
                             . 'page reproduite floutée, seul le titre est lisible.',
                             URL_DH, 'dhnet.be'),
+];
+
+// ── 3. Retombées du communiqué du 7 septembre ────────────────────────────
+$articles[] = [
+    'titre'    => "Après notre communiqué, la périphérie entre enfin dans le débat",
+    'accroche' => "Au lendemain de notre communiqué de presse conjoint, trois médias consacrent un article à "
+                . "l'entrée en justice de la commune de Waterloo et de notre ASBL. Pour la première fois, "
+                . "la périphérie et le Brabant wallon sont nommés dans ce dossier.",
+    'date'     => '2026-09-08 12:00:00',
+    'contenu'  => '<p>Le 7 septembre, avec l\'UBCNA/BUTV et AwaCCS, nous publiions un '
+                . '<a href="https://www.casuffit.be/?news=13" style="color:#1673B2">communiqué de presse conjoint</a> : '
+                . '<em>« On atterrit en survolant des champs, pas des gens. »</em></p>'
+
+                . '<p>Dès le lendemain, <strong>trois médias</strong> y consacrent un article. C\'est un tournant : '
+                . 'depuis des mois, le débat public sur le survol se limitait à Bruxelles. Aujourd\'hui, '
+                . '<strong>Waterloo, le Brabant wallon et les communes de la périphérie</strong> sont nommés — '
+                . 'et l\'action en justice qu\'ils engagent avec nous est relayée.</p>'
+
+                . '<h3>Les articles</h3>'
+                . '<ul style="line-height:1.9">'
+                . '<li><strong>BX1</strong> — <a href="https://bx1.be/categories/news/survols-aeriens-waterloo-et-lasbl-piste-01-ca-suffit-en-justice-contre-le-federal/" target="_blank" rel="noopener" style="color:#1673B2">Survols aériens : Waterloo et l\'ASBL « Piste 01 ça suffit » en justice contre le fédéral</a></li>'
+                . '<li><strong>21News</strong> — <a href="https://www.21news.be/survol-de-bruxelles-waterloo-et-les-riverains-de-la-piste-01-contre-attaquent-en-justice/" target="_blank" rel="noopener" style="color:#1673B2">Survol de Bruxelles : Waterloo et les riverains de la piste 01 contre-attaquent en justice</a></li>'
+                . '<li><strong>L\'Avenir</strong> — <a href="https://www.lavenir.net/regions/brabantwallon/waterloo/2026/09/08/nuisances-des-avions-lasbl-piste-01-ca-suffit-et-la-commune-de-waterloo-en-justice-contre-le-federal-LOCA2OIV3FCJ5BZRD37HYN4POA/" target="_blank" rel="noopener" style="color:#1673B2">Nuisances des avions : l\'ASBL « Piste 01 ça suffit » et la commune de Waterloo en justice contre le fédéral</a></li>'
+                . '</ul>'
+
+                . '<h3>Ce que nous continuerons de répéter</h3>'
+                . '<p>Être enfin cités ne suffit pas : encore faut-il que le fond soit entendu. Nous ne demandons '
+                . '<strong>ni déplacement des nuisances, ni clé de répartition entre pistes</strong>. Le problème n\'est '
+                . 'pas telle ou telle route : c\'est l\'<strong>usage excessif des pistes non préférentielles</strong>. '
+                . 'Notre demande reste la même — privilégier au maximum les <strong>pistes 25R et 25L</strong>, et traiter '
+                . 'la question à la racine : les <strong>normes de vent</strong>, leur application, et l\'encadrement '
+                . 'strict des sorties du système préférentiel.</p>'
+
+                . '<p>Une décision du ministre de la Mobilité est attendue <strong>au plus tard le 1er octobre</strong>.</p>',
 ];
 
 // ── Colonnes optionnelles ────────────────────────────────────────────────
