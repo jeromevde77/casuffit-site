@@ -1,7 +1,7 @@
 <?php
-/* outils-publier-presse.php — v3
- * Outil ponctuel : ajoute 3 actualites "revue de presse" (La Libre + DH du 29-30/08/2026,
- * retombees du communique du 07/09). Pages parues floutees + liens vers les originaux.
+/* outils-publier-presse.php — v4
+ * Outil ponctuel : ajoute 4 actualites (La Libre + DH du 29-30/08/2026, retombees du
+ * communique du 07/09, communique UBCNA du 01/10). Pages floutees + liens vers les originaux.
  * Idempotent : relancer met a jour au lieu de dupliquer.
  * Protege par requireAdmin(). A SUPPRIMER apres usage (voir CLAUDE.md).
  */
@@ -159,6 +159,76 @@ $articles[] = [
                 . 'strict des sorties du système préférentiel.</p>'
 
                 . '<p>Une décision du ministre de la Mobilité est attendue <strong>au plus tard le 1er octobre</strong>.</p>',
+];
+
+// ── 4. Communiqué de l'UBCNA/BUTV du 1er octobre 2026 ────────────────────
+$ubcna = <<<'HTML'
+<p style="font-size:.85rem;color:#666;margin-bottom:18px"><strong>COMMUNIQUÉ DE PRESSE DE L'UBCNA/BUTV</strong><br>Jeudi 1er octobre 2026</p>
+
+<p style="background:#f0f6ff;border-left:4px solid #1673B2;padding:12px 16px;border-radius:0 6px 6px 0;font-size:.9rem">
+Ce communiqué émane de l'<strong>UBCNA/BUTV</strong>, association partenaire. Nous le relayons intégralement à titre d'information.
+</p>
+
+<p>Nous constatons une très grande confusion dans l'analyse de la situation actuelle des procédures de survol autour de Bruxelles-National.</p>
+
+<p>Aussi nous apportons les précisions suivantes :</p>
+
+<ul style="line-height:1.8">
+<li>en septembre 2026, <strong>0 avion</strong>, aucun survol, pas un seul atterrissage n'a eu lieu sur la route faussement nommée Crucke, qui est en fait une décision de 2016/2018/2019 des Ministres successifs Galant, Belot et Gilkinet. Aucun passage d'avion n'a été organisé sur l'axe de l'atterrissage 07 Left tout au long du mois de septembre 2026 ;</li>
+<li>0 utilisation de la route RNP 07L démontre que c'est bien une utilisation éventuelle uniquement en fonction des conditions météorologiques ; en septembre on n'a pas constaté de vent d'Est ;</li>
+<li>la <strong>piste 01 à l'atterrissage a été activée pour 195 atterrissages</strong> en septembre 2026 à cause du vent de Nord ;</li>
+<li>ce sont uniquement les conditions de vent qui imposent soit l'usage de la 01 soit de la RNP 07L (30 activations 07L en juillet 2026, 2515 en août 2026 et 0 en septembre 2026).</li>
+</ul>
+
+<h3>Une nouvelle description de la procédure RNP 07 Left</h3>
+
+<p>Une nouvelle description définitive et permanente de la procédure d'approche RNP 07 Left a été publiée le <strong>20 août 2026</strong>, et entrée en service (si le vent l'impose) ce jeudi :</p>
+
+<ul style="line-height:1.8">
+<li>alignement à 4000 pieds dans l'axe de la piste plus loin, soit à Oetingen (Pajottegem) ;</li>
+<li>stabilisation des avions à 4000 pieds au-dessus de Lennik ;</li>
+<li>descente continue et rectiligne sans remise des gaz vers la piste 07L en survolant plus haut les zones situées dans l'axe de la piste.</li>
+</ul>
+
+<p>Les propositions alternatives d'approches non rectilignes par vent d'Est vers la piste 07L violent l'Arrêté royal de 1954 interdisant le survol du Domaine Royal de Laeken et envoient les avions au-dessus de la seule zone classée risque élevé SEVESO de tout Bruxelles : le terminal gazier de NOH.</p>
+
+<p>Le tracé rectiligne à 4000 pieds est conforme à la réglementation européenne, ne souffre d'aucune irrégularité (aucune étude ni consultation n'est nécessaire), et cette mesure ne rentre pas dans le cadre de l'approche équilibrée. Aucune disposition réglementaire nationale ou internationale ne prend en compte la densité de population ; les chiffres de densité énoncés sont très contestables car fort approximatifs.</p>
+
+<h3>Ce qui détermine l'usage des pistes</h3>
+
+<p>La procédure d'atterrissage RNP 07L n'est pas une procédure fixée par un horaire, ni par des dates et dépend uniquement de l'orientation et l'intensité des vents :</p>
+
+<ul style="line-height:1.8">
+<li>si le vent souffle de l'EST ce sera 07 et du NORD ce sera 01 ;</li>
+<li>il faut que le vent soit assez fort et ne permette pas de rester sur les pistes 25R/L, donc un vent qui soit supérieur à une composante effective de 7 nœuds ;</li>
+<li>les atterrissages 07L évitent des utilisations de pistes qui se croisent au sol et qui sont un schéma plus risqué ;</li>
+<li>la piste 07L est la plus longue et la mieux équipée (3 638 mètres) alors que la piste 01 est la plus courte et la moins bien équipée (2 987 mètres) ;</li>
+<li>l'approche RNP 07L par guidage GPS est actuellement la procédure qui assure la sécurité maximale des atterrissages.</li>
+</ul>
+
+<h3>Sur l'échéance du 1er octobre</h3>
+
+<p>Nous remarquons également que :</p>
+
+<ul style="line-height:1.8">
+<li>l'échéance de présentation d'un plan pour le 1er octobre 2026 résulte d'un jugement connu depuis le 26 février 2025 ;</li>
+<li>ce jugement de février 2025 ne concerne que les procédures Canal, Ring et Virage Gauche ainsi que les atterrissages 01 ;</li>
+<li>l'État doit présenter un Plan sous contrainte d'une astreinte de 10 000 € par jour de retard.</li>
+</ul>
+
+<p>Toutes ces précisions sont importantes pour vous permettre une analyse objective de la situation.</p>
+
+<hr style="border:none;border-top:1px solid #e0e6ee;margin:24px 0">
+<p style="font-size:.82rem;color:#888">Source : communiqué de presse de l'UBCNA/BUTV, 1er octobre 2026.</p>
+HTML;
+
+$articles[] = [
+    'titre'    => "UBCNA : 0 avion sur la route Crucke en septembre 2026",
+    'accroche' => "Communiqué de l'UBCNA/BUTV du 1er octobre 2026 : aucun atterrissage sur la RNP 07L en septembre, "
+                . "mais 195 atterrissages en piste 01 à cause du vent de Nord. Ce sont les conditions de vent, "
+                . "et elles seules, qui déterminent l'usage des pistes.",
+    'date'     => '2026-10-01 10:00:00',
+    'contenu'  => $ubcna,
 ];
 
 // ── Colonnes optionnelles ────────────────────────────────────────────────
