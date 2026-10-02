@@ -157,5 +157,11 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
 - Après chaque push, attendre ~45 s et vérifier le succès du workflow GitHub Actions.
 - Pour tester les modifications visuelles, consulter la prod après déploiement.
 
+## Reprise du projet
+
+Pour reprendre le projet sans contexte préalable (accès et comptes nécessaires,
+pièges de déploiement, état réel de la base, dette technique et chantiers en cours),
+voir **`REPRISE-PROJET.md`**.
+
 ---
-*Dernière mise à jour : juin 2026*
+*Dernière mise à jour : octobre 2026*
