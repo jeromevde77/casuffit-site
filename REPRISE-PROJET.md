@@ -120,24 +120,18 @@ renvoyée vers la page d'accueil via `ErrorDocument 403`).
 
 ## 6. ⚠️ Dette à traiter en priorité
 
-**Douze fichiers `outils-*.php` sont encore à la racine du dépôt et en production.**
+**Deux fichiers `outils-*.php` subsistent à la racine du dépôt et en production.**
 
 ```
-outils-action-migration.php      outils-newsletter-draft.php
-outils-diag-session.php          outils-page-nous-agissons.php
-outils-irm-migration.php         outils-publier-communique.php
-outils-maj-db.php                outils-publier-dh.php
-outils-newsletter-action.php     outils-publier-presse.php
-outils-newsletter-cessation.php  outils-wix-to-members.php
+outils-publier-communique.php    outils-publier-presse.php
 ```
 
 Chacun exécute des opérations en base et n'est protégé que par
 `$_SESSION['admin_logged_in']`. `CLAUDE.md` impose de les **supprimer après
-usage** — ce qui n'a pas été fait. C'est le principal risque de sécurité
-actuel du projet.
+usage** : ces deux-là sont encore à utiliser (voir §7), puis à supprimer.
 
-Deux d'entre eux restent **à utiliser avant suppression** :
-`outils-publier-communique.php` et `outils-publier-presse.php` (voir §7).
+Dix autres outils devenus obsolètes ont été supprimés le 2 octobre 2026
+(migration Wix, brouillons de newsletters, diagnostics, publications ponctuelles).
 
 ---
 
