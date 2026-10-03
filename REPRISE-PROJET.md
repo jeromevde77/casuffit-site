@@ -80,6 +80,14 @@ Sont **exclus** du transfert : `config.php`, `.git`, `.github`, `*.sql`
    mais ils sont absents de toute copie locale — ne jamais supposer leur présence.
    Les fichiers destinés à être déployés vont dans `assets/`.
 
+### Tester en local (Docker)
+
+`docker compose up -d --build` lance une copie du site sur `http://localhost:8080`
+(Apache + PHP 8.3 + MySQL 8, `.htaccess` appliqué), à partir d'une sauvegarde de
+la base déposée dans `docker/db-init/`. Aucun e-mail ne part. Mode d'emploi
+complet : **`docker/README.md`**. Docker ne sert qu'au test : rien de tout cela
+n'est déployé sur OVH.
+
 ---
 
 ## 4. Base de données

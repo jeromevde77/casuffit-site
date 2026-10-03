@@ -43,6 +43,8 @@ jobs:
               --exclude INSTALL\.md \
               --exclude medias/ \
               --exclude LIRE_MOI_UPLOAD\.txt \
+              --exclude ^docker/ \
+              --exclude ^docker-compose\.yml$ \
               ./ $FTP_SERVER_DIR;
             bye
           "

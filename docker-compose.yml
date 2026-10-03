@@ -1,0 +1,40 @@
+# Environnement de TEST LOCAL uniquement (Docker). La production OVH n'utilise pas Docker.
+# Mode d'emploi : docker/README.md
+services:
+  web:
+    build: ./docker
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/config.docker.php:/var/www/html/config.php:ro
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    # Mode SQL non strict, comme sur OVH (certaines lignes de la prod ne passent pas en mode strict)
+    command: --sql-mode=NO_ENGINE_SUBSTITUTION --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: casuffit
+      MYSQL_USER: casuffit
+      MYSQL_PASSWORD: casuffit
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./docker/db-init:/docker-entrypoint-initdb.d:ro
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+      UPLOAD_LIMIT: 100M
+    depends_on:
+      - db
+
+volumes:
+  db-data:

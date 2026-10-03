@@ -39,3 +39,7 @@ Thumbs.db
 config.php
 *.log
 admin/EMERGENCY_ACTIVE
+
+# ─── Docker local : sauvegardes de la base (données personnelles) ───────
+docker/db-init/*
+!docker/db-init/.gitkeep
