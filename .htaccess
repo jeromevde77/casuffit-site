@@ -14,7 +14,7 @@ AddDefaultCharset UTF-8
     Deny from all
 </FilesMatch>
 
-<FilesMatch "^(config\.php|README\.md|INSTALL\.md|LIRE_MOI_UPLOAD\.txt|\.env|.*\.bak)$">
+<FilesMatch "^(config\.php|README\.md|INSTALL\.md|CLAUDE\.md|REPRISE-PROJET\.md|deploy\.sh|LIRE_MOI_UPLOAD\.txt|\.env|.*\.bak)$">
     Order allow,deny
     Deny from all
 </FilesMatch>
