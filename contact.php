@@ -1,5 +1,5 @@
 <?php
-// contact.php — Page de contact Ça suffit ! (standalone, sans header.php)
+// contact.php — Page de contact (v2 : anti-spam) Ça suffit ! (standalone, sans header.php)
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/mail_helper.php';
 session_start();
@@ -11,6 +11,37 @@ function tr(bool $nl, string $fr, string $nls): string { return $nl ? $nls : $fr
 $success = false; $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // ── Anti-spam (mêmes protections que api/contact_submit.php) ─────────
+    // Rate limiting : max 5 soumissions par session et par heure
+    $rl = $_SESSION['contact_rl'] ?? ['count' => 0, 'since' => time()];
+    if (time() - $rl['since'] > 3600) { $rl = ['count' => 0, 'since' => time()]; }
+    $rl['count']++;
+    $_SESSION['contact_rl'] = $rl;
+
+    // Piège temporel + question mathématique, stockés en session à l'affichage du formulaire
+    $captcha_attendu = $_SESSION['contact_captcha'] ?? null;
+    $captcha_ts      = $_SESSION['contact_captcha_ts'] ?? 0;
+    $elapsed         = time() - $captcha_ts;
+    $captcha_saisi   = trim($_POST['captcha'] ?? '');
+    unset($_SESSION['contact_captcha'], $_SESSION['contact_captcha_ts']); // usage unique
+
+    $is_bot = false;
+    if (!empty($_POST['website'])) {
+        // Honeypot rempli : on fait semblant d'avoir réussi, sans rien envoyer
+        $is_bot = true; $success = true;
+    } elseif ($rl['count'] > 5) {
+        $is_bot = true;
+        $error = tr($is_nl, 'Trop de messages envoyés. Réessayez dans une heure.', 'Te veel berichten verzonden. Probeer het over een uur opnieuw.');
+    } elseif (!$captcha_ts || $elapsed < 3 || $elapsed > 7200) {
+        $is_bot = true;
+        $error = tr($is_nl, 'La page a expiré. Merci de réessayer.', 'De pagina is verlopen. Probeer het opnieuw.');
+    } elseif ($captcha_attendu === null || !ctype_digit($captcha_saisi) || (int)$captcha_saisi !== (int)$captcha_attendu) {
+        $is_bot = true;
+        $error = tr($is_nl, 'Réponse anti-spam incorrecte. Merci de vérifier le calcul.', 'Anti-spam antwoord onjuist. Controleer de berekening.');
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_bot) {
     $nom     = trim($_POST['nom']     ?? '');
     $email   = trim($_POST['email']   ?? '');
     $sujet   = trim($_POST['sujet']   ?? '');
@@ -45,6 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Nouvelle question anti-spam à chaque affichage du formulaire
+$ct_a = random_int(2, 9);
+$ct_b = random_int(2, 9);
+$_SESSION['contact_captcha']    = $ct_a + $ct_b;
+$_SESSION['contact_captcha_ts'] = time();
 
 $logo_path = __DIR__.'/assets/img/logo.png';
 $logo_b64  = file_exists($logo_path) ? base64_encode(file_get_contents($logo_path)) : null;
@@ -136,17 +173,17 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
     </a>
     <a class="ct-link ct-plainte" href="/plainte.php<?= $is_nl ? '?lang=nl' : '' ?>">
       <span class="ct-ic">⚠️</span>
-      <div><div><?= tr($is_nl,'Klacht indienen voor een overvlucht','Porter plainte pour un survol') ?></div><div class="ct-sub"><?= tr($is_nl,'Snel klachtinstrument →','Outil de plainte rapide →') ?></div></div>
+      <div><div><?= tr($is_nl,'Porter plainte pour un survol','Klacht indienen voor een overvlucht') ?></div><div class="ct-sub"><?= tr($is_nl,'Outil de plainte rapide →','Snel klachtinstrument →') ?></div></div>
     </a>
   </div>
 
   <div class="ct-card">
-    <div class="ct-card-title">📝 <?= tr($is_nl, 'Stuur een bericht', 'Envoyer un message') ?></div>
+    <div class="ct-card-title">📝 <?= tr($is_nl, 'Envoyer un message', 'Stuur een bericht') ?></div>
 
     <?php if ($success): ?>
       <div class="alert alert-ok">✅ <?= tr($is_nl,
-        'Uw bericht is goed verzonden. Wij antwoorden zo snel mogelijk. U heeft een ontvangstbevestiging ontvangen.',
-        'Votre message a bien été envoyé. Nous vous répondrons dès que possible. Un accusé de réception vous a été envoyé.') ?></div>
+        'Votre message a bien été envoyé. Nous vous répondrons dès que possible. Un accusé de réception vous a été envoyé.',
+        'Uw bericht is goed verzonden. Wij antwoorden zo snel mogelijk. U heeft een ontvangstbevestiging ontvangen.') ?></div>
     <?php elseif ($error): ?>
       <div class="alert alert-err">⚠ <?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
@@ -155,16 +192,16 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
     <form method="POST" action="/contact<?= $is_nl ? '?lang=nl' : '' ?>">
       <div class="form-row">
         <div class="form-group">
-          <label><?= tr($is_nl,'Naam *','Nom *') ?></label>
-          <input type="text" name="nom" required value="<?= htmlspecialchars($_POST['nom'] ?? '') ?>" placeholder="<?= tr($is_nl,'Uw naam','Votre nom') ?>">
+          <label><?= tr($is_nl,'Nom *','Naam *') ?></label>
+          <input type="text" name="nom" required value="<?= htmlspecialchars($_POST['nom'] ?? '') ?>" placeholder="<?= tr($is_nl,'Votre nom','Uw naam') ?>">
         </div>
         <div class="form-group">
-          <label><?= tr($is_nl,'E-mail *','Email *') ?></label>
+          <label><?= tr($is_nl,'Email *','E-mail *') ?></label>
           <input type="email" name="email" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" placeholder="votre@email.be">
         </div>
       </div>
       <div class="form-group">
-        <label><?= tr($is_nl,'Onderwerp','Sujet') ?></label>
+        <label><?= tr($is_nl,'Sujet','Onderwerp') ?></label>
         <select name="sujet">
           <?php
           $sujets = $is_nl ? [
@@ -190,17 +227,23 @@ body{font-family:"Helvetica Neue",Arial,sans-serif;background:#f0f4f8;color:#333
         </select>
       </div>
       <div class="form-group">
-        <label><?= tr($is_nl,'Bericht *','Message *') ?></label>
-        <textarea name="message" required placeholder="<?= tr($is_nl,'Uw bericht...','Votre message...') ?>"><?= htmlspecialchars($_POST['message'] ?? '') ?></textarea>
+        <label><?= tr($is_nl,'Message *','Bericht *') ?></label>
+        <textarea name="message" required placeholder="<?= tr($is_nl,'Votre message...','Uw bericht...') ?>"><?= htmlspecialchars($_POST['message'] ?? '') ?></textarea>
       </div>
-      <button type="submit" class="btn-send">📨 <?= tr($is_nl,'Bericht verzenden','Envoyer le message') ?></button>
+      <div class="form-group">
+        <label><?= tr($is_nl,"Anti-spam : combien font $ct_a + $ct_b ? *","Anti-spam : hoeveel is $ct_a + $ct_b ? *") ?></label>
+        <input type="text" name="captcha" inputmode="numeric" required autocomplete="off" style="max-width:180px" placeholder="<?= tr($is_nl,'Votre réponse','Uw antwoord') ?>">
+      </div>
+      <!-- Honeypot : doit rester vide -->
+      <div style="display:none" aria-hidden="true"><input type="text" name="website" value="" tabindex="-1" autocomplete="off"></div>
+      <button type="submit" class="btn-send">📨 <?= tr($is_nl,'Envoyer le message','Bericht verzenden') ?></button>
     </form>
     <?php endif; ?>
   </div>
 </div>
 
 <div class="ct-footer">
-  <a href="/">← <?= tr($is_nl,'Terug naar de site','Retour au site') ?></a>
+  <a href="/">← <?= tr($is_nl,'Retour au site','Terug naar de site') ?></a>
   &nbsp;·&nbsp;
   <a href="/contact<?= $is_nl ? '' : '?lang=nl' ?>"><?= $is_nl ? 'FR' : 'NL' ?></a>
   &nbsp;·&nbsp;
